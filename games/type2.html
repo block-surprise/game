@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>ワード・ストライク | 本格タイピング練習</title>
+    <meta name="google-adsense-account" content="ca-pub-3571574988222927">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3571574988222927" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { margin: 0; background-color: #0d1117; color: #c9d1d9; font-family: 'Consolas', 'Monaco', monospace; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        #game-container { position: relative; width: 800px; height: 600px; background: #161b22; border: 2px solid #30363d; border-radius: 10px; overflow: hidden; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
+        .word { position: absolute; font-size: 24px; font-weight: bold; white-space: nowrap; color: #58a6ff; text-shadow: 0 0 10px rgba(88,166,255,0.5); }
+        .word .typed { color: #f85149; }
+        #ui-layer { position: absolute; top: 10px; width: 100%; display: flex; justify-content: space-around; font-size: 1.2rem; pointer-events: none; }
+        #combo-info { position: absolute; bottom: 20px; left: 20px; font-size: 2rem; color: #d29922; font-style: italic; opacity: 0; transition: 0.2s; }
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13,17,23,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; }
+        .btn { background: #238636; color: white; border: none; padding: 15px 40px; border-radius: 6px; font-size: 1.5rem; cursor: pointer; font-weight: bold; }
+        .pc-msg { color: #8b949e; margin-bottom: 20px; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="ui-layer">
+        <span>SCORE: <span id="score">0</span></span>
+        <span>LEVEL: <span id="level">1</span></span>
+    </div>
+    <div id="combo-info">0 COMBO!</div>
+    
+    <div id="overlay">
+        <div class="pc-msg"><i class="fa-solid fa-keyboard"></i> PCキーボード専用</div>
+        <h1 style="color:#58a6ff; font-size: 3rem; margin:10px;">WORD STRIKE</h1>
+        <p>上から来る単語を入力して破壊せよ！</p>
+        <button class="btn" onclick="startGame()">MISSION START</button>
+        <a href="/" style="color:#8b949e; text-decoration:none; margin-top:20px;">← 一覧に戻る</a>
+    </div>
+</div>
+
+<script>
+    const container = document.getElementById('game-container');
+    const scoreDisp = document.getElementById('score');
+    const levelDisp = document.getElementById('level');
+    const comboDisp = document.getElementById('combo-info');
+    const overlay = document.getElementById('overlay');
+
+    const wordList = ["html", "css", "javascript", "google", "typing", "coding", "web", "browser", "computer", "network", "system", "database", "script", "style", "header", "footer", "content", "display", "flex", "grid", "border", "margin", "padding", "color"];
+    
+    let activeWords = [];
+    let score = 0;
+    let level = 1;
+    let combo = 0;
+    let isPlaying = false;
+    let spawnTimer;
+
+    function startGame() {
+        isPlaying = true;
+        score = 0;
+        level = 1;
+        combo = 0;
+        activeWords.forEach(w => w.el.remove());
+        activeWords = [];
+        overlay.style.display = 'none';
+        scoreDisp.innerText = score;
+        levelDisp.innerText = level;
+        
+        spawnWord();
+        requestAnimationFrame(update);
+    }
+
+    function spawnWord() {
+        if (!isPlaying) return;
+        const text = wordList[Math.floor(Math.random() * wordList.length)];
+        const el = document.createElement('div');
+        el.className = 'word';
+        el.innerText = text;
+        const x = Math.random() * (container.offsetWidth - 150);
+        el.style.left = x + 'px';
+        el.style.top = '-30px';
+        container.appendChild(el);
+        
+        activeWords.push({
+            el: el,
+            text: text,
+            typed: "",
+            y: -30,
+            speed: 1 + (level * 0.2)
+        });
+
+        const nextSpawn = Math.max(800, 2000 - (level * 100));
+        spawnTimer = setTimeout(spawnWord, nextSpawn);
+    }
+
+    function update() {
+        if (!isPlaying) return;
+
+        for (let i = activeWords.length - 1; i >= 0; i--) {
+            const w = activeWords[i];
+            w.y += w.speed;
+            w.el.style.top = w.y + 'px';
+
+            if (w.y > container.offsetHeight) {
+                gameOver();
+                return;
+            }
+        }
+        requestAnimationFrame(update);
+    }
+
+    window.addEventListener('keydown', (e) => {
+        if (!isPlaying) return;
+        const key = e.key.toLowerCase();
+        if (key.length !== 1) return;
+
+        // 入力中の単語があるか、新しく一致する単語を探す
+        let target = activeWords.find(w => w.typed.length > 0);
+        if (!target) {
+            target = activeWords.find(w => w.text.startsWith(key));
+        }
+
+        if (target && target.text[target.typed.length] === key) {
+            target.typed += key;
+            target.el.innerHTML = `<span class="typed">${target.typed}</span>${target.text.substring(target.typed.length)}`;
+            
+            if (target.typed === target.text) {
+                // 単語完成
+                score += target.text.length * 10;
+                combo++;
+                showCombo();
+                scoreDisp.innerText = score;
+                target.el.remove();
+                activeWords = activeWords.filter(w => w !== target);
+                
+                if (score > level * 500) {
+                    level++;
+                    levelDisp.innerText = level;
+                }
+            }
+        } else {
+            // ミス
+            combo = 0;
+            comboDisp.style.opacity = 0;
+        }
+    });
+
+    function showCombo() {
+        if (combo < 2) return;
+        comboDisp.innerText = `${combo} COMBO!`;
+        comboDisp.style.opacity = 1;
+        // 少し画面を揺らす
+        container.style.transform = `translate(${Math.random()*4-2}px, ${Math.random()*4-2}px)`;
+        setTimeout(() => container.style.transform = 'none', 50);
+    }
+
+    function gameOver() {
+        isPlaying = false;
+        clearTimeout(spawnTimer);
+        overlay.style.display = 'flex';
+        overlay.querySelector('h1').innerText = "MISSION FAILED";
+        overlay.querySelector('p').innerText = `SCORE: ${score} (LEVEL: ${level})`;
+    }
+</script>
+</body>
+</html>
