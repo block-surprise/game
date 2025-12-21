@@ -83,10 +83,15 @@
 </head>
 <body>
 
-<a href="bonus.html" class="login-counter-nav">
-    <i class="fa-solid fa-fire"></i>
-    <span>連続 <span id="nav-login-days" class="login-days">0</span> 日</span>
-</a>
+<div style="position: fixed; top: 15px; right: 15px; display: flex; gap: 10px; z-index: 1000;">
+    <a href="bonus.html" class="login-counter-nav" style="position: static;">
+        <i class="fa-solid fa-fire"></i>
+        <span><span id="nav-login-days" class="login-days">0</span> 日</span>
+    </a>
+    <a href="profile.html" class="login-counter-nav" style="position: static; border-color: #e91e63; color: #e91e63;">
+        <i class="fa-solid fa-user"></i>
+    </a>
+</div>
 
 <div class="container">
     <h1><i class="fa-solid fa-gamepad"></i>ミニゲームセンター</h1>
