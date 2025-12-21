@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>マージ・サークル</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <style>
+        body { margin: 0; background: #fdf5e6; font-family: sans-serif; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
+        #game-info { width: 100%; max-width: 400px; display: flex; justify-content: space-between; padding: 10px; box-sizing: border-box; font-size: 1.2rem; font-weight: bold; color: #5d4037; }
+        canvas { box-shadow: 0 10px 30px rgba(0,0,0,0.1); background: #fff; max-width: 100vw; }
+        .back-link { margin-top: 10px; color: #8d6e63; text-decoration: none; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <div id="game-info">
+        <span>SCORE: <span id="score">0</span></span>
+        <span>NEXT: <span id="next-emoji">🍎</span></span>
+    </div>
+    <div id="game-container"></div>
+    <a href="index.html" class="back-link"><i class="fa-solid fa-house"></i> 一覧に戻る</a>
+
+<script>
+    const { Engine, Render, Runner, Bodies, Composite, Events } = Matter;
+
+    const engine = Engine.create();
+    const world = engine.world;
+    const container = document.getElementById('game-container');
+    const scoreDisp = document.getElementById('score');
+    const nextDisp = document.getElementById('next-emoji');
+
+    const width = 360;
+    const height = 500;
+    let score = 0;
+    let currentLevel = 0;
+    const levels = [
+        { size: 15, emoji: '🍒', score: 2 },
+        { size: 25, emoji: '🍓', score: 4 },
+        { size: 35, emoji: '🍇', score: 8 },
+        { size: 45, emoji: '🍊', score: 16 },
+        { size: 55, emoji: '🍎', score: 32 },
+        { size: 70, emoji: '🍐', score: 64 },
+        { size: 85, emoji: '🍑', score: 128 },
+        { size: 100, emoji: '🍍', score: 256 },
+        { size: 120, emoji: '🍈', score: 512 },
+        { size: 140, emoji: '🍉', score: 1024 }
+    ];
+
+    const render = Render.create({
+        element: container,
+        engine: engine,
+        options: { width, height, wireframes: false, background: '#fff' }
+    });
+
+    // 壁の作成
+    const walls = [
+        Bodies.rectangle(width/2, height + 10, width, 20, { isStatic: true, render: { fillStyle: '#8d6e63' } }),
+        Bodies.rectangle(-10, height/2, 20, height, { isStatic: true }),
+        Bodies.rectangle(width + 10, height/2, 20, height, { isStatic: true })
+    ];
+    Composite.add(world, walls);
+
+    Render.run(render);
+    Runner.run(Runner.create(), engine);
+
+    function createCircle(x, level) {
+        const circle = Bodies.circle(x, 30, levels[level].size, {
+            restitution: 0.3,
+            friction: 0.1,
+            label: 'fruit_' + level,
+            render: {
+                sprite: {
+                    texture: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="80">${levels[level].emoji}</text></svg>`,
+                    xScale: levels[level].size / 40,
+                    yScale: levels[level].size / 40
+                }
+            }
+        });
+        return circle;
+    }
+
+    let isClickable = true;
+    window.addEventListener('mousedown', (e) => drop(e));
+    window.addEventListener('touchstart', (e) => drop(e.touches[0]));
+
+    function drop(e) {
+        if (!isClickable) return;
+        const rect = render.canvas.getBoundingClientRect();
+        const x = Math.max(20, Math.min(width - 20, e.clientX - rect.left));
+        
+        const newFruit = createCircle(x, currentLevel);
+        Composite.add(world, newFruit);
+        
+        isClickable = false;
+        currentLevel = Math.floor(Math.random() * 3);
+        nextDisp.textContent = levels[currentLevel].emoji;
+        
+        setTimeout(() => isClickable = true, 600);
+    }
+
+    Events.on(engine, 'collisionStart', (event) => {
+        event.pairs.forEach((pair) => {
+            const { bodyA, bodyB } = pair;
+            if (bodyA.label === bodyB.label && bodyA.label.startsWith('fruit_')) {
+                const level = parseInt(bodyA.label.split('_')[1]);
+                if (level < levels.length - 1) {
+                    const newX = (bodyA.position.x + bodyB.position.x) / 2;
+                    const newY = (bodyA.position.y + bodyB.position.y) / 2;
+                    
+                    Composite.remove(world, [bodyA, bodyB]);
+                    const evolved = createCircle(newX, level + 1);
+                    Matter.Body.setPosition(evolved, { x: newX, y: newY });
+                    Composite.add(world, evolved);
+                    
+                    score += levels[level].score;
+                    scoreDisp.textContent = score;
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>
