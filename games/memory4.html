@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>メモリー・タイル | 瞬間配置記憶</title>
+    <meta name="google-adsense-account" content="ca-pub-3571574988222927">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3571574988222927" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { margin: 0; background: #eef2f3; font-family: 'Helvetica Neue', Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        #game-container { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; width: 90%; max-width: 400px; }
+        h1 { color: #333; font-size: 1.5rem; margin-bottom: 10px; }
+        #stats { display: flex; justify-content: space-around; margin-bottom: 20px; font-weight: bold; color: #555; }
+        #grid { display: grid; gap: 8px; margin: 0 auto; transition: 0.3s; }
+        .tile { width: 100%; aspect-ratio: 1; background: #ddd; border-radius: 6px; cursor: pointer; transition: transform 0.2s, background 0.3s; }
+        .tile.active { background: #3498db; transform: scale(0.95); }
+        .tile.correct { background: #2ecc71; }
+        .tile.wrong { background: #e74c3c; }
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; display: none; }
+        .btn { background: #3498db; color: white; border: none; padding: 12px 30px; border-radius: 25px; font-size: 1.1rem; cursor: pointer; margin-top: 20px; }
+        .back-link { color: #ccc; text-decoration: none; margin-top: 15px; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <h1><i class="fa-solid fa-th"></i> メモリー・タイル</h1>
+    <div id="stats">
+        <span>LEVEL: <span id="level">1</span></span>
+        <span>SCORE: <span id="score">0</span></span>
+    </div>
+    <div id="grid"></div>
+</div>
+
+<div id="overlay">
+    <h2 id="result-msg">GAME OVER</h2>
+    <p>最終スコア: <span id="final-score">0</span></p>
+    <button class="btn" onclick="location.reload()">再挑戦</button>
+    <a href="/" class="back-link">一覧に戻る</a>
+</div>
+
+<script>
+    const grid = document.getElementById('grid');
+    const levelDisp = document.getElementById('level');
+    const scoreDisp = document.getElementById('score');
+    const overlay = document.getElementById('overlay');
+    const finalScoreDisp = document.getElementById('final-score');
+
+    let level = 1;
+    let score = 0;
+    let gridSize = 3; // 3x3
+    let activeTiles = [];
+    let userSelections = [];
+    let isShowing = false;
+    let isWaitingInput = false;
+
+    function initGame() {
+        gridSize = Math.min(6, 3 + Math.floor((level - 1) / 3));
+        const tileCount = Math.min(12, 2 + level);
+        
+        grid.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+        grid.innerHTML = '';
+        activeTiles = [];
+        userSelections = [];
+
+        // タイル生成
+        for (let i = 0; i < gridSize * gridSize; i++) {
+            const tile = document.createElement('div');
+            tile.className = 'tile';
+            tile.dataset.index = i;
+            tile.onclick = () => handleTileClick(i, tile);
+            grid.appendChild(tile);
+        }
+
+        // 正解のタイルをランダム決定
+        while (activeTiles.length < tileCount) {
+            let r = Math.floor(Math.random() * (gridSize * gridSize));
+            if (!activeTiles.includes(r)) activeTiles.push(r);
+        }
+
+        setTimeout(showTiles, 800);
+    }
+
+    function showTiles() {
+        isShowing = true;
+        activeTiles.forEach(index => {
+            grid.children[index].classList.add('active');
+        });
+
+        setTimeout(() => {
+            activeTiles.forEach(index => {
+                grid.children[index].classList.remove('active');
+            });
+            isShowing = false;
+            isWaitingInput = true;
+        }, 1000 + (level * 100)); // レベルに応じて表示時間調整
+    }
+
+    function handleTileClick(index, el) {
+        if (isShowing || !isWaitingInput || userSelections.includes(index)) return;
+
+        if (activeTiles.includes(index)) {
+            el.classList.add('correct');
+            userSelections.push(index);
+            score += 10;
+            scoreDisp.innerText = score;
+
+            if (userSelections.length === activeTiles.length) {
+                isWaitingInput = false;
+                level++;
+                levelDisp.innerText = level;
+                setTimeout(initGame, 1000);
+            }
+        } else {
+            el.classList.add('wrong');
+            gameOver();
+        }
+    }
+
+    function gameOver() {
+        isWaitingInput = false;
+        // 正解をすべて表示
+        activeTiles.forEach(index => {
+            grid.children[index].classList.add('correct');
+        });
+        
+        setTimeout(() => {
+            overlay.style.display = 'flex';
+            finalScoreDisp.innerText = score;
+        }, 1000);
+    }
+
+    initGame();
+</script>
+</body>
+</html>
