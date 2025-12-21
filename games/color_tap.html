@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>カラー・タップ | 色彩検定パズル</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { margin: 0; background-color: #f0f2f5; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; touch-action: manipulation; }
+        .header { text-align: center; margin-bottom: 20px; width: 100%; }
+        #score-board { font-size: 1.5rem; font-weight: bold; color: #333; }
+        #timer-bar-container { width: 80%; height: 10px; background: #ddd; border-radius: 5px; margin: 10px auto; overflow: hidden; }
+        #timer-bar { width: 100%; height: 100%; background: #2ecc71; transition: width 0.1s linear; }
+        
+        #grid { 
+            display: grid; gap: 8px; width: 90vw; height: 90vw; max-width: 400px; max-height: 400px;
+            background: #fff; padding: 10px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .tile { border-radius: 6px; cursor: pointer; transition: transform 0.1s; }
+        .tile:active { transform: scale(0.95); }
+
+        #overlay { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(255,255,255,0.9); display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; z-index: 100; 
+        }
+        .btn { background: #3498db; color: #fff; border: none; padding: 15px 40px; border-radius: 50px; font-size: 1.2rem; cursor: pointer; font-weight: bold; margin-top: 20px; }
+        .back-link { margin-top: 20px; color: #666; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div id="score-board">LEVEL: <span id="level">1</span></div>
+        <div id="timer-bar-container"><div id="timer-bar"></div></div>
+    </div>
+
+    <div id="grid"></div>
+
+    <div id="overlay">
+        <h1 id="msg-title">COLOR TAP</h1>
+        <p id="msg-body">仲間外れの色を1つ選ぼう！</p>
+        <button class="btn" onclick="startGame()">スタート</button>
+        <a href="/" class="back-link">← 一覧に戻る</a>
+    </div>
+
+<script>
+    let level = 1;
+    let timeLeft = 15;
+    let timer;
+    let isPlaying = false;
+    const grid = document.getElementById('grid');
+    const levelDisp = document.getElementById('level');
+    const timerBar = document.getElementById('timer-bar');
+    const overlay = document.getElementById('overlay');
+
+    function startGame() {
+        level = 1;
+        timeLeft = 15;
+        isPlaying = true;
+        overlay.style.display = 'none';
+        updateTimer();
+        renderGrid();
+        
+        if (timer) clearInterval(timer);
+        timer = setInterval(() => {
+            timeLeft -= 0.1;
+            updateTimer();
+            if (timeLeft <= 0) gameOver();
+        }, 100);
+    }
+
+    function updateTimer() {
+        timerBar.style.width = (timeLeft / 15 * 100) + '%';
+        if (timeLeft < 5) timerBar.style.background = '#e74c3c';
+        else timerBar.style.background = '#2ecc71';
+    }
+
+    function renderGrid() {
+        grid.innerHTML = '';
+        const size = level < 3 ? 2 : level < 6 ? 3 : level < 10 ? 4 : level < 15 ? 5 : level < 25 ? 6 : level < 40 ? 7 : 8;
+        grid.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+
+        // ベースカラーの生成
+        const r = Math.floor(Math.random() * 200);
+        const g = Math.floor(Math.random() * 200);
+        const b = Math.floor(Math.random() * 200);
+        const baseColor = `rgb(${r},${g},${b})`;
+
+        // 差分（レベルが上がるほど小さくなる）
+        const diff = Math.max(3, 40 - Math.floor(level / 1.5));
+        const targetColor = `rgb(${r + diff},${g + diff},${b + diff})`;
+
+        const targetIndex = Math.floor(Math.random() * size * size);
+
+        for (let i = 0; i < size * size; i++) {
+            const tile = document.createElement('div');
+            tile.className = 'tile';
+            tile.style.backgroundColor = (i === targetIndex) ? targetColor : baseColor;
+            tile.onclick = () => {
+                if (!isPlaying) return;
+                if (i === targetIndex) {
+                    level++;
+                    levelDisp.innerText = level;
+                    timeLeft = Math.min(15, timeLeft + 1.5); // 正解で少し回復
+                    renderGrid();
+                } else {
+                    timeLeft -= 2; // 間違えると減る
+                }
+            };
+            grid.appendChild(tile);
+        }
+    }
+
+    function gameOver() {
+        isPlaying = false;
+        clearInterval(timer);
+        overlay.style.display = 'flex';
+        document.getElementById('msg-title').innerText = "TIME UP!";
+        document.getElementById('msg-body').innerText = `到達レベル: ${level}`;
+        document.querySelector('.btn').innerText = "リトライ";
+    }
+</script>
+</body>
+</html>
