@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ログインボーナス | ミニゲームセンター</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { margin: 0; background: #f0f2f5; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .bonus-container { background: white; width: 90%; max-width: 400px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
+        h1 { color: #007bff; margin-bottom: 5px; }
+        .streak-info { font-size: 1.2rem; margin-bottom: 20px; color: #555; }
+        .streak-num { font-size: 2.5rem; font-weight: bold; color: #ff9800; }
+        
+        .stamp-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 20px 0; }
+        .stamp { width: 100%; aspect-ratio: 1; background: #eee; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #ccc; position: relative; }
+        .stamp.active { background: #fff9c4; color: #fbc02d; border: 2px solid #fbc02d; animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .stamp.active::after { content: '✔'; position: absolute; font-size: 1rem; bottom: 2px; right: 2px; }
+        
+        @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+        
+        .msg { background: #e3f2fd; padding: 10px; border-radius: 10px; color: #007bff; margin-bottom: 20px; display: none; }
+        .btn-back { display: inline-block; padding: 12px 30px; background: #007bff; color: white; text-decoration: none; border-radius: 25px; font-weight: bold; transition: 0.3s; }
+        .btn-back:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+
+<div class="bonus-container">
+    <h1>LOGIN BONUS</h1>
+    <p class="streak-info">現在 <span id="streak-count" class="streak-num">0</span> 日連続ログイン中！</p>
+    
+    <div id="msg-box" class="msg">本日のスタンプを押しました！</div>
+    
+    <div class="stamp-grid" id="stamp-grid">
+        </div>
+
+    <p style="font-size: 0.8rem; color: #888; margin-bottom: 20px;">毎日ログインしてスタンプを貯めよう！<br>称号ランクが上がりやすくなります。</p>
+    
+    <a href="index.html" class="btn-back">ホームに戻る</a>
+</div>
+
+<script>
+    const streakEl = document.getElementById('streak-count');
+    const msgBox = document.getElementById('msg-box');
+    const grid = document.getElementById('stamp-grid');
+
+    function checkLogin() {
+        const now = new Date();
+        const today = now.getFullYear() + "-" + (now.getMonth() + 1) + "-" + now.getDate();
+        const lastLogin = localStorage.getItem('last_login_date');
+        let streak = parseInt(localStorage.getItem('login_streak') || 0);
+
+        if (lastLogin !== today) {
+            // 昨日の日付をチェック（連続判定）
+            const yesterday = new Date(now);
+            yesterday.setDate(now.getDate() - 1);
+            const yesterdayStr = yesterday.getFullYear() + "-" + (yesterday.getMonth() + 1) + "-" + yesterday.getDate();
+
+            if (lastLogin === yesterdayStr) {
+                streak++;
+            } else {
+                streak = 1; // 途切れたら1から
+            }
+
+            localStorage.setItem('login_streak', streak);
+            localStorage.setItem('last_login_date', today);
+            
+            // ログイン回数(game_visits)にボーナス加算
+            let visits = parseInt(localStorage.getItem('game_visits') || 0);
+            localStorage.setItem('game_visits', visits + 5); // ボーナスで+5回分
+
+            msgBox.style.display = 'block';
+        }
+
+        streakEl.innerText = streak;
+        renderStamps(streak);
+    }
+
+    function renderStamps(streak) {
+        grid.innerHTML = '';
+        const maxStamps = 12; // 12個表示
+        for (let i = 1; i <= maxStamps; i++) {
+            const stamp = document.createElement('div');
+            stamp.className = 'stamp' + (i <= streak ? ' active' : '');
+            stamp.innerHTML = '<i class="fa-solid fa-star"></i>';
+            grid.appendChild(stamp);
+        }
+    }
+
+    checkLogin();
+</script>
+</body>
+</html>
