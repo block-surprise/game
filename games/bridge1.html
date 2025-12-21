@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>スティック・ブリッジ</title>
+    <meta name="google-adsense-account" content="ca-pub-3571574988222927">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3571574988222927" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { margin: 0; background: #f0f0f0; font-family: sans-serif; overflow: hidden; touch-action: none; }
+        canvas { display: block; background: linear-gradient(#a1c4fd, #c2e9fb); }
+        #ui { position: absolute; top: 20px; width: 100%; text-align: center; pointer-events: none; }
+        #score { font-size: 3rem; font-weight: bold; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; z-index: 100; }
+        .btn { background: #ff4757; color: white; border: none; padding: 15px 40px; border-radius: 50px; font-size: 1.2rem; cursor: pointer; font-weight: bold; box-shadow: 0 4px 0 #e67e22; }
+        .back-link { margin-top: 20px; color: #eee; text-decoration: none; font-size: 0.9rem; }
+        .hint { position: absolute; bottom: 15%; width: 100%; text-align: center; color: #555; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div id="ui"><div id="score">0</div></div>
+    <canvas id="gameCanvas"></canvas>
+    <div id="hint" class="hint">画面を長押しして棒を伸ばそう！</div>
+
+    <div id="overlay">
+        <h1>STICK BRIDGE</h1>
+        <p>ピッタリの長さで橋を架けろ！</p>
+        <button class="btn" onclick="resetGame()">スタート</button>
+        <a href="/" class="back-link"><i class="fa-solid fa-house"></i> 一覧に戻る</a>
+    </div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreDisp = document.getElementById('score');
+    const overlay = document.getElementById('overlay');
+    const hint = document.getElementById('hint');
+
+    let platforms = [];
+    let stick = { length: 0, angle: 0, isExtending: false, isRotating: false };
+    let score = 0;
+    let gameState = "WAITING"; // WAITING, EXTENDING, ROTATING, WALKING, FALLING
+    let playerX = 0;
+    let scrollOffset = 0;
+
+    function init() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        resetGame();
+    }
+
+    function resetGame() {
+        score = 0;
+        scoreDisp.innerText = score;
+        platforms = [
+            { x: 50, w: 60 },
+            { x: 200 + Math.random() * 100, w: 40 + Math.random() * 40 }
+        ];
+        playerX = platforms[0].x + platforms[0].w - 20;
+        gameState = "WAITING";
+        stick = { length: 0, angle: 0, isExtending: false, isRotating: false };
+        scrollOffset = 0;
+        overlay.style.display = 'none';
+        hint.style.opacity = 1;
+        draw();
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.translate(-scrollOffset, 0);
+
+        // プラットフォーム描画
+        ctx.fillStyle = "#2d3436";
+        platforms.forEach(p => {
+            ctx.fillRect(p.x, canvas.height - 200, p.w, 200);
+        });
+
+        // プレイヤー描画
+        ctx.font = "30px Arial";
+        ctx.fillText("🏃", playerX, canvas.height - 200);
+
+        // スティック描画
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = "#d63031";
+        const stickStartX = platforms[0].x + platforms[0].w;
+        const stickStartY = canvas.height - 200;
+        
+        ctx.beginPath();
+        ctx.moveTo(stickStartX, stickStartY);
+        const endX = stickStartX + Math.cos(stick.angle - Math.PI/2) * stick.length;
+        const endY = stickStartY + Math.sin(stick.angle - Math.PI/2) * stick.length;
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+
+        ctx.restore();
+
+        if (gameState === "EXTENDING") {
+            stick.length += 4;
+            requestAnimationFrame(draw);
+        } else if (gameState === "ROTATING") {
+            stick.angle += 0.1;
+            if (stick.angle >= Math.PI / 2) {
+                stick.angle = Math.PI / 2;
+                checkSuccess();
+            } else {
+                requestAnimationFrame(draw);
+            }
+        } else if (gameState === "WALKING") {
+            const targetX = platforms[1].x + platforms[1].w - 20;
+            playerX += 3;
+            if (playerX >= targetX) {
+                playerX = targetX;
+                nextStep();
+            } else {
+                requestAnimationFrame(draw);
+            }
+        } else if (gameState === "FALLING") {
+            playerX += 1;
+            ctx.clearRect(0,0,canvas.width,canvas.height); // 再描画用
+            draw(); // 簡易的な落下
+        }
+    }
+
+    function checkSuccess() {
+        const bridgeEnd = platforms[0].x + platforms[0].w + stick.length;
+        const p2 = platforms[1];
+        if (bridgeEnd >= p2.x && bridgeEnd <= p2.x + p2.w) {
+            score++;
+            scoreDisp.innerText = score;
+            gameState = "WALKING";
+            hint.style.opacity = 0;
+        } else {
+            setTimeout(() => {
+                overlay.style.display = 'flex';
+                overlay.querySelector('h1').innerText = "落下！";
+            }, 500);
+        }
+        draw();
+    }
+
+    function nextStep() {
+        platforms.shift();
+        const nextW = 40 + Math.random() * 50;
+        const nextX = platforms[0].x + platforms[0].w + 50 + Math.random() * 150;
+        platforms.push({ x: nextX, w: nextW });
+        
+        // スクロールアニメーション（簡易）
+        const shift = platforms[0].x - 50;
+        platforms.forEach(p => p.x -= shift);
+        playerX -= shift;
+        stick.length = 0;
+        stick.angle = 0;
+        gameState = "WAITING";
+        draw();
+    }
+
+    // イベント
+    const startAction = () => {
+        if (gameState === "WAITING") {
+            gameState = "EXTENDING";
+            draw();
+        }
+    };
+    const endAction = () => {
+        if (gameState === "EXTENDING") {
+            gameState = "ROTATING";
+            draw();
+        }
+    };
+
+    window.addEventListener('mousedown', startAction);
+    window.addEventListener('mouseup', endAction);
+    window.addEventListener('touchstart', (e) => { e.preventDefault(); startAction(); });
+    window.addEventListener('touchend', (e) => { e.preventDefault(); endAction(); });
+
+    window.onload = init;
+</script>
+</body>
+</html>
