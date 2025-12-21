@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>スリリング・ドッジ</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #222; font-family: sans-serif; touch-action: none; }
+        #gameCanvas { display: block; background: #000; margin: 0 auto; }
+        #ui { position: absolute; top: 10px; left: 10px; color: white; font-size: 20px; pointer-events: none; }
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
+        .btn { background: #00d2ff; color: black; border: none; padding: 15px 30px; font-size: 1.2rem; border-radius: 30px; cursor: pointer; font-weight: bold; margin-top: 20px; }
+        .back-link { margin-top: 15px; color: #ccc; text-decoration: none; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+<div id="ui">Score: <span id="score">0</span></div>
+<canvas id="gameCanvas"></canvas>
+
+<div id="overlay">
+    <h1 id="title">スリリング・ドッジ</h1>
+    <p id="result"></p>
+    <button id="startBtn" class="btn">スタート</button>
+    <a href="/" class="back-link">← ゲーム一覧に戻る</a>
+</div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreElement = document.getElementById('score');
+    const overlay = document.getElementById('overlay');
+    const startBtn = document.getElementById('startBtn');
+    const resultText = document.getElementById('result');
+
+    let gameActive = false;
+    let score = 0;
+    let player = { x: 0, y: 0, size: 40 };
+    let obstacles = [];
+    let speed = 3;
+
+    // キャンバスサイズ設定
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        player.x = canvas.width / 2 - player.size / 2;
+        player.y = canvas.height - 80;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // 操作設定（マウス＆タッチ）
+    function movePlayer(e) {
+        if (!gameActive) return;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        player.x = clientX - player.size / 2;
+    }
+    window.addEventListener('mousemove', movePlayer);
+    window.addEventListener('touchstart', movePlayer);
+    window.addEventListener('touchmove', movePlayer);
+
+    function spawnObstacle() {
+        if (!gameActive) return;
+        const size = 30 + Math.random() * 20;
+        obstacles.push({
+            x: Math.random() * (canvas.width - size),
+            y: -size,
+            size: size,
+            speed: speed + Math.random() * 2
+        });
+        // スコアに応じて徐々に難易度アップ
+        setTimeout(spawnObstacle, Math.max(200, 600 - score * 5));
+    }
+
+    function update() {
+        if (!gameActive) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // プレイヤー描画
+        ctx.font = "40px Arial";
+        ctx.fillText("🚀", player.x, player.y + 35);
+
+        // 障害物更新
+        obstacles.forEach((ob, index) => {
+            ob.y += ob.speed;
+            ctx.fillText("👾", ob.x, ob.y + ob.size);
+
+            // 当たり判定
+            if (ob.y + ob.size > player.y && ob.y < player.y + player.size &&
+                ob.x + ob.size > player.x && ob.x < player.x + player.size) {
+                gameOver();
+            }
+
+            // 画面外に出たら削除
+            if (ob.y > canvas.height) {
+                obstacles.splice(index, 1);
+                score++;
+                scoreElement.textContent = score;
+            }
+        });
+
+        requestAnimationFrame(update);
+    }
+
+    function startGame() {
+        score = 0;
+        scoreElement.textContent = score;
+        obstacles = [];
+        speed = 3;
+        gameActive = true;
+        overlay.style.display = 'none';
+        spawnObstacle();
+        update();
+    }
+
+    function gameOver() {
+        gameActive = false;
+        overlay.style.display = 'flex';
+        document.getElementById('title').textContent = "Game Over!";
+        resultText.textContent = "Score: " + score;
+        startBtn.textContent = "もう一度遊ぶ";
+    }
+
+    startBtn.addEventListener('click', startGame);
+</script>
+</body>
+</html>
