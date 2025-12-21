@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://games.ad-hub.f5.si/index.html</loc>
+    <lastmod>2025-12-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>https://games.ad-hub.f5.si/about.html</loc>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://games.ad-hub.f5.si/policy.html</loc>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://games.ad-hub.f5.si/profile.html</loc>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://games.ad-hub.f5.si/bonus.html</loc>
+    <priority>0.5</priority>
+  </url>
+
+  <url><loc>https://games.ad-hub.f5.si/games/quiz1.html</loc><priority>0.8</priority></url>
+  <url><loc>https://games.ad-hub.f5.si/games/memory1.html</loc><priority>0.8</priority></url>
+  <url><loc>https://games.ad-hub.f5.si/games/memory2.html</loc><priority>0.8</priority></url>
+  <url><loc>https://games.ad-hub.f5.si/games/memory3.html</loc><priority>0.8</priority></url>
+  <url><loc>https://games.ad-hub.f5.si/games/memory4.html</loc><priority>0.8</priority></url>
+  <url><loc>https://games.ad-hub.f5.si/games/color_tap.html</loc><priority>0.8</priority></url>
+  <url><loc>https://games.ad-hub.f5.si/games/merge1.html</loc><priority>0.8</priority></url>
+  <url><loc>https://games.ad-hub.f5.si/games/stack1.html</loc><priority>0.8</priority></url>
+  <url><loc>https://games.ad-hub.f5.si/games/circle_merge.html</loc><priority>0.8</priority></url>
+  <url><loc>https://games.ad-hub.f5.si/games/balance1.html</loc><priority>0.8</priority></url>
+  <url><loc>https://games.ad-hub.f5.si/games/timer1.html</loc><priority>0.8</priority></url>
+  <url><loc>https://games.ad-hub.f5.si/games/dodge1.html</loc><priority>0.8</priority></url>
+  <url><loc>https://games.ad-hub.f5.si/games/clicker1.html</loc><priority>0.8</priority></url>
+  <url><loc>https://games.ad-hub.f5.si/games/step1.html</loc><priority>0.8</priority></url>
+  <url><loc>https://games.ad-hub.f5.si/games/fly1.html</loc><priority>0.8</priority></url>
+  <url><loc>https://games.ad-hub.f5.si/games/cross1.html</loc><priority>0.8</priority></url>
+  <url><loc>https://games.ad-hub.f5.si/games/bridge1.html</loc><priority>0.8</priority></url>
+  <url><loc>https://games.ad-hub.f5.si/games/shoot1.html</loc><priority>0.8</priority></url>
+  <url><loc>https://games.ad-hub.f5.si/games/line_def.html</loc><priority>0.8</priority></url>
+  <url><loc>https://games.ad-hub.f5.si/games/pc_mouse1.html</loc><priority>0.8</priority></url>
+  <url><loc>https://games.ad-hub.f5.si/games/slice1.html</loc><priority>0.8</priority></url>
+  <url><loc>https://games.ad-hub.f5.si/games/type1.html</loc><priority>0.8</priority></url>
+  <url><loc>https://games.ad-hub.f5.si/games/type2.html</loc><priority>0.8</priority></url>
+  <url><loc>https://games.ad-hub.f5.si/games/burst1.html</loc><priority>0.8</priority></url>
+  <url><loc>https://games.ad-hub.f5.si/games/connect1.html</loc><priority>0.8</priority></url>
+</urlset>
