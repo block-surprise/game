@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ミニゲームセンター</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3571574988222927" crossorigin="anonymous"></script>
     <meta name="google-adsense-account" content="ca-pub-3571574988222927">
     
@@ -11,9 +14,12 @@
         body { margin: 0; background-color: #f4f7f6; font-family: sans-serif; color: #333; line-height: 1.6; }
         .container { max-width: 800px; margin: 20px auto; background-color: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         h1 { text-align: center; color: #007bff; border-bottom: 3px solid #b8daff; padding-bottom: 15px; }
+        h1 i { margin-right: 10px; } /* タイトルアイコンの隙間 */
+        
         .intro { text-align: center; color: #666; margin-bottom: 30px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
         .card-link { text-decoration: none; color: inherit; display: block; }
+        
         .card {
             background-color: #fff;
             border: 1px solid #e0e0e0;
@@ -26,7 +32,11 @@
             flex-direction: column;
         }
         .card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); border-color: #007bff; }
-        .card h2 { margin: 0 0 10px 0; color: #007bff; font-size: 1.2em; }
+        
+        /* アイコンの色とデザイン */
+        .card h2 { margin: 0 0 10px 0; color: #007bff; font-size: 1.2em; display: flex; align-items: center; gap: 12px; }
+        .card h2 i { font-size: 1.1em; width: 25px; text-align: center; }
+        
         .card p { margin: 0; font-size: 0.9em; color: #555; flex-grow: 1; }
         .play-tag {
             display: inline-block;
@@ -47,53 +57,53 @@
 <body>
 
 <div class="container">
-    <h1>🎮 ミニゲームセンター</h1>
+    <h1><i class="fa-solid fa-gamepad"></i>ミニゲームセンター</h1>
     <p class="intro">登録不要！ブラウザで今すぐ遊べる無料ゲーム集です。</p>
 
     <div class="grid">
         <a href="games/quiz1" class="card-link">
             <div class="card">
-                <h2>🔢 瞬間！足し算</h2>
+                <h2><i class="fa-solid fa-calculator"></i>瞬間！足し算</h2>
                 <p>次々と出る足し算を素早く解こう！脳トレにぴったりのハイスピード計算ゲーム。</p>
                 <div class="play-tag">あそぶ</div>
             </div>
         </a>
 
         <a href="games/timer1" class="card-link">
-    <div class="card">
-        <h2>⏱ 10秒チャレンジ</h2>
-        <p>10秒ピッタリを目指せ！5秒後から数字が消えるドキドキの反射神経ゲーム。</p>
-        <div class="play-tag">あそぶ</div>
-    </div>
-</a>
+            <div class="card">
+                <h2><i class="fa-solid fa-stopwatch"></i>10秒チャレンジ</h2>
+                <p>10秒ピッタリを目指せ！5秒後から数字が消えるドキドキの反射神経ゲーム。</p>
+                <div class="play-tag">あそぶ</div>
+            </div>
+        </a>
 
         <a href="games/dodge1" class="card-link">
-    <div class="card">
-        <h2>🚀 スリリング・ドッジ</h2>
-        <p>上から降ってくるエイリアンを避け続けろ！スコアが上がると速度もアップ！</p>
-        <div class="play-tag">あそぶ</div>
-    </div>
-</a>
+            <div class="card">
+                <h2><i class="fa-solid fa-shuttle-space"></i>スリリング・ドッジ</h2>
+                <p>上から降ってくるエイリアンを避け続けろ！スコアが上がると速度もアップ！</p>
+                <div class="play-tag">あそぶ</div>
+            </div>
+        </a>
+
         <a href="games/memory1.html" class="card-link">
-    <div class="card">
-        <h2>🧠 絵文字めくり</h2>
-        <p>同じ絵文字を揃えよう！あなたの記憶力は何ミスでクリアできるかな？</p>
-        <div class="play-tag">あそぶ</div>
-    </div>
-</a>
+            <div class="card">
+                <h2><i class="fa-solid fa-brain"></i>絵文字めくり</h2>
+                <p>同じ絵文字を揃えよう！あなたの記憶力は何ミスでクリアできるかな？</p>
+                <div class="play-tag">あそぶ</div>
+            </div>
+        </a>
 
         <a href="games/merge1.html" class="card-link">
-    <div class="card">
-        <h2>🔢 ナンバーズ・マージ</h2>
-        <p>同じ数字を重ねて合体！スワイプ操作で大きな数字を目指す中毒性抜群パズル。</p>
-        <div class="play-tag">あそぶ</div>
+            <div class="card">
+                <h2><i class="fa-solid fa-border-all"></i>ナンバーズ・マージ</h2>
+                <p>同じ数字を重ねて合体！スワイプ操作で大きな数字を目指す中毒性抜群パズル。</p>
+                <div class="play-tag">あそぶ</div>
+            </div>
+        </a>
     </div>
-</a>
-
-        </div>
 
     <div class="footer-nav">
-        <a href="https://ad-hub.f5.si/tools_index.html" class="back-btn">← 便利ツール一覧を開く</a>
+        <a href="https://ad-hub.f5.si/tools_index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> 便利ツール一覧を開く</a>
     </div>
 </div>
 
