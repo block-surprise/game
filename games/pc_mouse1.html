@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>カーソル・サバイバル | PC専用</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { margin: 0; background-color: #000; color: #fff; font-family: sans-serif; overflow: hidden; cursor: crosshair; }
+        #game-area { width: 100vw; height: 100vh; position: relative; }
+        .enemy { 
+            position: absolute; border-radius: 50%; background: radial-gradient(circle, #ff4757, #ff6b81);
+            box-shadow: 0 0 10px #ff4757; pointer-events: none;
+        }
+        #info { position: absolute; top: 20px; left: 20px; pointer-events: none; user-select: none; }
+        #score { font-size: 2rem; font-weight: bold; color: #2ed573; }
+        #msg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; background: rgba(0,0,0,0.8); padding: 30px; border: 2px solid #fff; border-radius: 15px; }
+        .btn { background: #2ed573; border: none; padding: 10px 20px; color: #fff; font-size: 1.2rem; cursor: pointer; border-radius: 5px; margin-top: 15px; }
+        .pc-only { color: #ffa502; font-size: 0.8rem; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div id="game-area">
+    <div id="info">
+        <div id="score">SCORE: 0.00s</div>
+        <div style="font-size: 0.9rem; color: #ccc;">赤い玉から逃げろ！</div>
+    </div>
+
+    <div id="msg">
+        <div class="pc-only"><i class="fa-solid fa-mouse"></i> マウス操作専用</div>
+        <h1>CURSOR SURVIVAL</h1>
+        <p>枠の外に出るか、敵に触れると終了！</p>
+        <button class="btn" onclick="startGame()">ゲーム開始</button>
+        <br>
+        <a href="index.html" style="color: #ccc; text-decoration: none; font-size: 0.8rem; display: block; margin-top: 15px;">一覧に戻る</a>
+    </div>
+</div>
+
+<script>
+    let score = 0;
+    let isPlaying = false;
+    let enemies = [];
+    const gameArea = document.getElementById('game-area');
+    const scoreDisp = document.getElementById('score');
+    const msg = document.getElementById('msg');
+    let lastTime;
+
+    class Enemy {
+        constructor() {
+            this.size = 15 + Math.random() * 25;
+            this.x = Math.random() * window.innerWidth;
+            this.y = Math.random() * window.innerHeight;
+            // プレイヤーの初期位置（画面中央付近）から離して配置
+            if(Math.abs(this.x - window.innerWidth/2) < 200) this.x += 300;
+            
+            this.vx = (Math.random() - 0.5) * 6;
+            this.vy = (Math.random() - 0.5) * 6;
+            this.el = document.createElement('div');
+            this.el.className = 'enemy';
+            this.el.style.width = this.size + 'px';
+            this.el.style.height = this.size + 'px';
+            gameArea.appendChild(this.el);
+        }
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+            if (this.x <= 0 || this.x >= window.innerWidth - this.size) this.vx *= -1;
+            if (this.y <= 0 || this.y >= window.innerHeight - this.size) this.vy *= -1;
+            this.el.style.left = this.x + 'px';
+            this.el.style.top = this.y + 'px';
+        }
+    }
+
+    function startGame() {
+        msg.style.display = 'none';
+        score = 0;
+        enemies.forEach(e => e.el.remove());
+        enemies = [];
+        for(let i=0; i<5; i++) enemies.push(new Enemy());
+        isPlaying = true;
+        lastTime = Date.now();
+        requestAnimationFrame(gameLoop);
+    }
+
+    function gameLoop() {
+        if (!isPlaying) return;
+        
+        let now = Date.now();
+        score += (now - lastTime) / 1000;
+        lastTime = now;
+        scoreDisp.innerText = `SCORE: ${score.toFixed(2)}s`;
+
+        // 5秒ごとに敵を増やす
+        if (Math.floor(score * 100) % 500 === 0 && enemies.length < 20) {
+            enemies.push(new Enemy());
+        }
+
+        enemies.forEach(e => e.update());
+        requestAnimationFrame(gameLoop);
+    }
+
+    gameArea.addEventListener('mousemove', (e) => {
+        if (!isPlaying) return;
+        
+        // 衝突判定
+        enemies.forEach(enemy => {
+            const dx = e.clientX - (enemy.x + enemy.size/2);
+            const dy = e.clientY - (enemy.y + enemy.size/2);
+            const distance = Math.sqrt(dx*dx + dy*dy);
+            if (distance < enemy.size/2 + 5) {
+                gameOver();
+            }
+        });
+
+        // 画面外判定
+        if (e.clientX <= 2 || e.clientX >= window.innerWidth - 2 || e.clientY <= 2 || e.clientY >= window.innerHeight - 2) {
+            gameOver();
+        }
+    });
+
+    function gameOver() {
+        isPlaying = false;
+        msg.style.display = 'block';
+        msg.querySelector('h1').innerText = "GAME OVER";
+        msg.querySelector('p').innerText = `記録: ${score.toFixed(2)}秒`;
+    }
+</script>
+</body>
+</html>
