@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>パーフェクト・バランス</title>
+    <meta name="google-adsense-account" content="ca-pub-3571574988222927">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3571574988222927" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <style>
+        body { margin: 0; background: #fdf5e6; font-family: sans-serif; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
+        #game-info { width: 100%; max-width: 400px; display: flex; justify-content: space-between; padding: 15px; box-sizing: border-box; font-size: 1.2rem; font-weight: bold; color: #5d4037; }
+        #canvas-container { position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-bottom: 5px solid #8d6e63; }
+        canvas { background: #fff; max-width: 100vw; }
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; flex-direction: column; align-items: center; justify-content: center; color: white; z-index: 100; }
+        .btn { background: #2ecc71; color: white; border: none; padding: 12px 30px; border-radius: 25px; font-size: 1.1rem; cursor: pointer; margin-top: 20px; font-weight: bold; }
+        .back-link { margin-top: 15px; color: #8d6e63; text-decoration: none; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <div id="game-info">
+        <span>SCORE: <span id="score">0</span></span>
+        <span>NEXT: <span id="next-shape">□</span></span>
+    </div>
+
+    <div id="canvas-container">
+        <div id="overlay">
+            <h1>崩壊！</h1>
+            <p>最終スコア: <span id="final-score">0</span></p>
+            <button class="btn" onclick="resetGame()">リトライ</button>
+        </div>
+    </div>
+
+    <a href="/" class="back-link"><i class="fa-solid fa-house"></i> 一覧に戻る</a>
+
+<script>
+    const { Engine, Render, Runner, Bodies, Composite, Events } = Matter;
+
+    let engine, render, runner;
+    const width = 360;
+    const height = 500;
+    let score = 0;
+    let isGameOver = false;
+
+    function init() {
+        engine = Engine.create();
+        render = Render.create({
+            element: document.getElementById('canvas-container'),
+            engine: engine,
+            options: { width, height, wireframes: false, background: '#fff' }
+        });
+
+        // 土台の作成
+        const ground = Bodies.rectangle(width / 2, height - 20, 150, 40, { 
+            isStatic: true, 
+            render: { fillStyle: '#8d6e63' },
+            label: 'ground'
+        });
+        Composite.add(engine.world, [ground]);
+
+        Render.run(render);
+        runner = Runner.create();
+        Runner.run(runner, engine);
+
+        // 落下判定（画面外に出たらゲームオーバー）
+        Events.on(engine, 'afterUpdate', () => {
+            const bodies = Composite.allBodies(engine.world);
+            bodies.forEach(body => {
+                if (body.position.y > height + 100 && !body.isStatic) {
+                    endGame();
+                }
+            });
+        });
+    }
+
+    function dropBlock(x) {
+        if (isGameOver) return;
+
+        const shapes = [
+            { w: 40, h: 40, type: 'rect' },
+            { w: 80, h: 20, type: 'rect' },
+            { w: 30, h: 60, type: 'rect' },
+            { r: 25, type: 'circle' }
+        ];
+        const shape = shapes[Math.floor(Math.random() * shapes.length)];
+        
+        let block;
+        if (shape.type === 'rect') {
+            block = Bodies.rectangle(x, 50, shape.w, shape.h, { 
+                restitution: 0.2, 
+                friction: 0.5,
+                render: { fillStyle: `hsl(${Math.random() * 360}, 70%, 60%)` }
+            });
+        } else {
+            block = Bodies.circle(x, 50, shape.r, { 
+                restitution: 0.2, 
+                friction: 0.5,
+                render: { fillStyle: `hsl(${Math.random() * 360}, 70%, 60%)` }
+            });
+        }
+
+        Composite.add(engine.world, block);
+        score++;
+        document.getElementById('score').innerText = score;
+    }
+
+    function endGame() {
+        if (isGameOver) return;
+        isGameOver = true;
+        document.getElementById('overlay').style.display = 'flex';
+        document.getElementById('final-score').innerText = score;
+    }
+
+    function resetGame() {
+        location.reload();
+    }
+
+    // クリック・タップ操作
+    window.addEventListener('mousedown', (e) => {
+        if (e.target.tagName === 'CANVAS') {
+            const rect = render.canvas.getBoundingClientRect();
+            dropBlock(e.clientX - rect.left);
+        }
+    });
+
+    window.addEventListener('touchstart', (e) => {
+        if (e.target.tagName === 'CANVAS') {
+            const rect = render.canvas.getBoundingClientRect();
+            dropBlock(e.touches[0].clientX - rect.left);
+        }
+    });
+
+    init();
+</script>
+</body>
+</html>
