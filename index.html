@@ -6,49 +6,52 @@
     <title>ミニゲームセンター</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3571574988222927" crossorigin="anonymous"></script>
-    <meta name="google-adsense-account" content="ca-pub-3571574988222927">
-    
+
     <style>
         body { margin: 0; background-color: #f4f7f6; font-family: sans-serif; color: #333; line-height: 1.6; }
         .container { max-width: 800px; margin: 20px auto; background-color: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         h1 { text-align: center; color: #007bff; border-bottom: 3px solid #b8daff; padding-bottom: 15px; }
-        h1 i { margin-right: 10px; } /* タイトルアイコンの隙間 */
+        h1 i { margin-right: 10px; }
         
-        .intro { text-align: center; color: #666; margin-bottom: 30px; }
+        .intro { text-align: center; color: #666; margin-bottom: 20px; }
+
+        /* フィルターボタンのスタイル */
+        .filter-container { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
+        .filter-btn {
+            border: 2px solid #007bff; background: transparent; color: #007bff;
+            padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: bold; transition: 0.3s;
+        }
+        .filter-btn.active { background: #007bff; color: #fff; }
+        .filter-btn:hover { background: rgba(0, 123, 255, 0.1); }
+        .filter-btn.active:hover { background: #0056b3; }
+
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-        .card-link { text-decoration: none; color: inherit; display: block; }
         
+        /* 非表示にする時のアニメーション */
+        .card-link { text-decoration: none; color: inherit; display: block; transition: 0.3s; }
+        .card-link.hidden { display: none; }
+
         .card {
-            background-color: #fff;
-            border: 1px solid #e0e0e0;
-            border-radius: 12px;
-            padding: 20px;
-            transition: 0.3s;
-            height: 100%;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
+            background-color: #fff; border: 1px solid #e0e0e0; border-radius: 12px;
+            padding: 20px; transition: 0.3s; height: 100%; box-sizing: border-box;
+            display: flex; flex-direction: column;
         }
         .card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); border-color: #007bff; }
         
-        /* アイコンの色とデザイン */
         .card h2 { margin: 0 0 10px 0; color: #007bff; font-size: 1.2em; display: flex; align-items: center; gap: 12px; }
         .card h2 i { font-size: 1.1em; width: 25px; text-align: center; }
         
         .card p { margin: 0; font-size: 0.9em; color: #555; flex-grow: 1; }
+
+        /* 対応端末バッジ */
+        .platform-badge { font-size: 0.7em; margin-top: 10px; color: #888; }
+
         .play-tag {
-            display: inline-block;
-            margin-top: 15px;
-            background-color: #ffc107;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            font-weight: bold;
-            text-align: center;
-            width: fit-content;
+            display: inline-block; margin-top: 15px; background-color: #ffc107;
+            padding: 5px 15px; border-radius: 20px; font-size: 0.8em;
+            font-weight: bold; text-align: center; width: fit-content;
         }
+
         .footer-nav { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; }
         .back-btn { color: #007bff; text-decoration: none; font-weight: bold; }
         @media (max-width: 600px) { .container { margin: 10px; padding: 20px; } }
@@ -60,77 +63,111 @@
     <h1><i class="fa-solid fa-gamepad"></i>ミニゲームセンター</h1>
     <p class="intro">登録不要！ブラウザで今すぐ遊べる無料ゲーム集です。</p>
 
-    <div class="grid">
-        <a href="games/quiz1" class="card-link">
+    <div class="filter-container">
+        <button class="filter-btn active" onclick="filterGames('all', this)">すべて</button>
+        <button class="filter-btn" onclick="filterGames('all-device', this)">全端末対応</button>
+        <button class="filter-btn" onclick="filterGames('pc', this)">PCのみ</button>
+        <button class="filter-btn" onclick="filterGames('mobile', this)">スマホのみ</button>
+    </div>
+
+    <div class="grid" id="gameGrid">
+        <a href="games/quiz1" class="card-link" data-platform="all-device">
             <div class="card">
                 <h2><i class="fa-solid fa-calculator"></i>瞬間！足し算</h2>
                 <p>次々と出る足し算を素早く解こう！脳トレにぴったりのハイスピード計算ゲーム。</p>
+                <div class="platform-badge"><i class="fa-solid fa-mobile-screen"></i> <i class="fa-solid fa-desktop"></i> 全端末対応</div>
                 <div class="play-tag">あそぶ</div>
             </div>
         </a>
 
-        <a href="games/timer1" class="card-link">
+        <a href="games/timer1" class="card-link" data-platform="all-device">
             <div class="card">
                 <h2><i class="fa-solid fa-stopwatch"></i>10秒チャレンジ</h2>
                 <p>10秒ピッタリを目指せ！5秒後から数字が消えるドキドキの反射神経ゲーム。</p>
+                <div class="platform-badge"><i class="fa-solid fa-mobile-screen"></i> <i class="fa-solid fa-desktop"></i> 全端末対応</div>
                 <div class="play-tag">あそぶ</div>
             </div>
         </a>
 
-        <a href="games/dodge1" class="card-link">
+        <a href="games/dodge1" class="card-link" data-platform="mobile">
             <div class="card">
                 <h2><i class="fa-solid fa-shuttle-space"></i>スリリング・ドッジ</h2>
                 <p>上から降ってくるエイリアンを避け続けろ！スコアが上がると速度もアップ！</p>
+                <div class="platform-badge"><i class="fa-solid fa-mobile-screen"></i> スマホ推奨</div>
                 <div class="play-tag">あそぶ</div>
             </div>
         </a>
 
-        <a href="games/memory1.html" class="card-link">
+        <a href="games/memory1.html" class="card-link" data-platform="all-device">
             <div class="card">
                 <h2><i class="fa-solid fa-brain"></i>絵文字めくり</h2>
                 <p>同じ絵文字を揃えよう！あなたの記憶力は何ミスでクリアできるかな？</p>
+                <div class="platform-badge"><i class="fa-solid fa-mobile-screen"></i> <i class="fa-solid fa-desktop"></i> 全端末対応</div>
                 <div class="play-tag">あそぶ</div>
             </div>
         </a>
 
-        <a href="games/merge1.html" class="card-link">
+        <a href="games/merge1.html" class="card-link" data-platform="all-device">
             <div class="card">
                 <h2><i class="fa-solid fa-border-all"></i>ナンバーズ・マージ</h2>
                 <p>同じ数字を重ねて合体！スワイプ操作で大きな数字を目指す中毒性抜群パズル。</p>
+                <div class="platform-badge"><i class="fa-solid fa-mobile-screen"></i> <i class="fa-solid fa-desktop"></i> 全端末対応</div>
                 <div class="play-tag">あそぶ</div>
             </div>
         </a>
 
-            <a href="games/memory2.html" class="card-link">
-    <div class="card">
-        <h2><i class="fa-solid fa-lightbulb"></i>シモン・メモリー</h2>
-        <p>光る順番をどこまで覚えられる？音と光を頼りに記憶の限界に挑もう。</p>
-        <div class="play-tag">あそぶ</div>
-    </div>
-</a>
+        <a href="games/memory2.html" class="card-link" data-platform="all-device">
+            <div class="card">
+                <h2><i class="fa-solid fa-lightbulb"></i>シモン・メモリー</h2>
+                <p>光る順番をどこまで覚えられる？音と光を頼りに記憶の限界に挑もう。</p>
+                <div class="platform-badge"><i class="fa-solid fa-mobile-screen"></i> <i class="fa-solid fa-desktop"></i> 全端末対応</div>
+                <div class="play-tag">あそぶ</div>
+            </div>
+        </a>
 
-    <a href="games/memory3.html" class="card-link">
-    <div class="card">
-        <h2><i class="fa-solid fa-bolt"></i>ナンバー・フラッシュ</h2>
-        <p>一瞬だけ表示される数字の場所を覚えられるか？レベルが上がるほど難解になる瞬間記憶ゲーム。</p>
-        <div class="play-tag">あそぶ</div>
-    </div>
-</a>
+        <a href="games/memory3.html" class="card-link" data-platform="all-device">
+            <div class="card">
+                <h2><i class="fa-solid fa-bolt"></i>ナンバー・フラッシュ</h2>
+                <p>一瞬だけ表示される数字の場所を覚えられるか？レベルが上がるほど難解になる瞬間記憶ゲーム。</p>
+                <div class="platform-badge"><i class="fa-solid fa-mobile-screen"></i> <i class="fa-solid fa-desktop"></i> 全端末対応</div>
+                <div class="play-tag">あそぶ</div>
+            </div>
+        </a>
 
-    <a href="games/clicker1.html" class="card-link">
-    <div class="card">
-        <h2><i class="fa-solid fa-coins"></i>マネークリッカー</h2>
-        <p>画面をタップしてお金を稼ごう！貯まったお金で設備を強化すれば、自動で大富豪になれるかも！？</p>
-        <div class="play-tag">あそぶ</div>
+        <a href="games/clicker1.html" class="card-link" data-platform="all-device">
+            <div class="card">
+                <h2><i class="fa-solid fa-coins"></i>マネークリッカー</h2>
+                <p>画面をタップしてお金を稼ごう！貯まったお金で設備を強化すれば、自動で大富豪になれるかも！？</p>
+                <div class="platform-badge"><i class="fa-solid fa-mobile-screen"></i> <i class="fa-solid fa-desktop"></i> 全端末対応</div>
+                <div class="play-tag">あそぶ</div>
+            </div>
+        </a>
     </div>
-</a>
-    </div>
-
 
     <div class="footer-nav">
         <a href="https://ad-hub.f5.si/tools_index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> 便利ツール一覧を開く</a>
     </div>
 </div>
+
+<script>
+    function filterGames(category, btn) {
+        // ボタンの活性化状態を切り替え
+        const buttons = document.querySelectorAll('.filter-btn');
+        buttons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // カードの表示・非表示
+        const cards = document.querySelectorAll('.card-link');
+        cards.forEach(card => {
+            const platform = card.getAttribute('data-platform');
+            if (category === 'all' || platform === category) {
+                card.classList.remove('hidden');
+            } else {
+                card.classList.add('hidden');
+            }
+        });
+    }
+</script>
 
 </body>
 </html>
