@@ -14,10 +14,8 @@
         .container { max-width: 900px; margin: 20px auto; background-color: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); position: relative; }
         h1 { text-align: center; color: #007bff; border-bottom: 3px solid #b8daff; padding-bottom: 10px; margin-bottom: 10px; }
         
-        /* サイト説明文 */
         .site-description { text-align: center; color: #666; max-width: 600px; margin: 10px auto 30px; font-size: 0.95rem; line-height: 1.6; padding: 0 15px; }
 
-        /* 右上のナビゲーション（ログイン日数 & プロフィール） */
         .nav-buttons { position: fixed; top: 15px; right: 15px; display: flex; gap: 10px; z-index: 1000; }
         .nav-btn { background: white; padding: 8px 15px; border-radius: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer; border: 1px solid #007bff; display: flex; align-items: center; gap: 8px; transition: 0.3s; text-decoration: none; color: #333; font-size: 0.85rem; }
         .nav-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.15); }
@@ -81,7 +79,7 @@
     
     <p class="site-description">
         <strong>「ミニゲームセンター」</strong>へようこそ！<br>
-        登録不要・無料で遊べる25種類以上のゲームを公開中。スマホ・PCどちらでも、隙間時間にすぐ遊べるミニゲームをお楽しみください。
+        登録不要・無料で遊べる25種類のHTML5ゲームを公開中。スマホ・PCどちらでも、隙間時間にすぐ遊べる高品質なミニゲームをお楽しみください。
     </p>
     
     <div class="status-bar">
@@ -121,70 +119,85 @@
     </div>
 
     <div class="grid" id="gameGrid">
-        <a href="games/quiz1" class="card-link" data-genre="brain" data-platform="all-device">
-            <div class="card">
-                <h2><i class="fa-solid fa-calculator"></i>瞬間！足し算</h2>
-                <p>次々と出る足し算を素早く解こう！ハイスピード計算脳トレ。</p>
-                <div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div>
-            </div>
+        <a href="games/quiz1.html" class="card-link" data-genre="brain" data-platform="all-device">
+            <div class="card"><h2><i class="fa-solid fa-calculator"></i>瞬間！足し算</h2><p>次々と出る足し算を素早く解こう！</p><div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div></div>
         </a>
         <a href="games/memory1.html" class="card-link" data-genre="brain" data-platform="all-device">
-            <div class="card">
-                <h2><i class="fa-solid fa-brain"></i>絵文字めくり</h2>
-                <p>同じ絵文字を揃えよう！記憶力が試されるカードゲーム。</p>
-                <div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div>
-            </div>
+            <div class="card"><h2><i class="fa-solid fa-brain"></i>絵文字めくり</h2><p>同じ絵文字を揃える記憶カードゲーム。</p><div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div></div>
+        </a>
+        <a href="games/memory2.html" class="card-link" data-genre="brain" data-platform="all-device">
+            <div class="card"><h2><i class="fa-solid fa-lightbulb"></i>シモン・メモリー</h2><p>光る順番を記憶するリズムゲーム。</p><div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div></div>
+        </a>
+        <a href="games/memory3.html" class="card-link" data-genre="brain" data-platform="all-device">
+            <div class="card"><h2><i class="fa-solid fa-bolt"></i>ナンバー・フラッシュ</h2><p>一瞬の配置を覚える瞬間記憶トレ。</p><div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div></div>
+        </a>
+        <a href="games/memory4.html" class="card-link" data-genre="brain" data-platform="all-device">
+            <div class="card"><h2><i class="fa-solid fa-table-cells"></i>メモリー・タイル</h2><p>光るタイルの配置を記憶せよ。</p><div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div></div>
+        </a>
+        <a href="games/color_tap.html" class="card-link" data-genre="brain" data-platform="all-device">
+            <div class="card"><h2><i class="fa-solid fa-eye"></i>カラー・タップ</h2><p>仲間外れの色を探す色彩パズル。</p><div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div></div>
         </a>
         <a href="games/burst1.html" class="card-link" data-genre="brain" data-platform="all-device">
-            <div class="card">
-                <h2><i class="fa-solid fa-fire-flame-curved"></i>ナンバー・バースト</h2>
-                <p>1から25までを最速で叩け！周辺視野を鍛えるスピードゲーム。</p>
-                <div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div>
-            </div>
+            <div class="card"><h2><i class="fa-solid fa-fire-flame-curved"></i>ナンバー・バースト</h2><p>1から25までを最速で叩け！</p><div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div></div>
         </a>
-        <a href="games/connect1.html" class="card-link" data-genre="puzzle" data-platform="all-device">
-            <div class="card">
-                <h2><i class="fa-solid fa-route"></i>カラフル・コネクト</h2>
-                <p>同じ色のドット同士を線で繋ごう！全てのマスを埋める知略パズル。</p>
-                <div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div>
-            </div>
+
+        <a href="games/merge1.html" class="card-link" data-genre="puzzle" data-platform="all-device">
+            <div class="card"><h2><i class="fa-solid fa-border-all"></i>ナンバーズ・マージ</h2><p>2048を目指す中毒性抜群パズル。</p><div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div></div>
+        </a>
+        <a href="games/stack1.html" class="card-link" data-genre="puzzle" data-platform="all-device">
+            <div class="card"><h2><i class="fa-solid fa-cubes"></i>ブロック・スタック</h2><p>王道の落ちものパズルゲーム。</p><div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div></div>
         </a>
         <a href="games/circle_merge.html" class="card-link" data-genre="puzzle" data-platform="all-device">
-            <div class="card">
-                <h2><i class="fa-solid fa-circle-nodes"></i>マージ・サークル</h2>
-                <p>同じフルーツをくっつけて大きく！物理演算パズル。</p>
-                <div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div>
-            </div>
+            <div class="card"><h2><i class="fa-solid fa-circle-nodes"></i>マージ・サークル</h2><p>フルーツをくっつけて大きくしよう。</p><div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div></div>
         </a>
-        <a href="games/slice1.html" class="card-link" data-genre="action" data-platform="all-device">
-            <div class="card">
-                <h2><i class="fa-solid fa-scissors"></i>スライス・マスター</h2>
-                <p>物体をスパスパ切り刻め！物理演算による爽快アクション。</p>
-                <div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div>
-            </div>
+        <a href="games/balance1.html" class="card-link" data-genre="puzzle" data-platform="all-device">
+            <div class="card"><h2><i class="fa-solid fa-mountain"></i>パーフェクト・バランス</h2><p>ブロックを高く積み上げる物理パズル。</p><div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div></div>
         </a>
-        <a href="games/line_def.html" class="card-link" data-genre="action" data-platform="all-device">
-            <div class="card">
-                <h2><i class="fa-solid fa-pen-nib"></i>ライン・ディフェンダー</h2>
-                <p>線を引いてバリアを作れ！中央のコアを守り抜く新感覚アクション。</p>
-                <div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div>
-            </div>
+        <a href="games/connect1.html" class="card-link" data-genre="puzzle" data-platform="all-device">
+            <div class="card"><h2><i class="fa-solid fa-route"></i>カラフル・コネクト</h2><p>ドットを線で繋ぐ知略パズル。</p><div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div></div>
+        </a>
+
+        <a href="games/timer1.html" class="card-link" data-genre="action" data-platform="all-device">
+            <div class="card"><h2><i class="fa-solid fa-stopwatch"></i>10秒チャレンジ</h2><p>体内時計で10秒ピッタリを狙え。</p><div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div></div>
+        </a>
+        <a href="games/dodge1.html" class="card-link" data-genre="action" data-platform="mobile">
+            <div class="card"><h2><i class="fa-solid fa-shuttle-space"></i>スリリング・ドッジ</h2><p>迫りくる敵を避け続けろ！</p><div class="platform-badge">スマホ推奨</div><div class="play-tag">あそぶ</div></div>
+        </a>
+        <a href="games/clicker1.html" class="card-link" data-genre="action" data-platform="all-device">
+            <div class="card"><h2><i class="fa-solid fa-coins"></i>マネークリッカー</h2><p>タップで稼いで大富豪を目指せ。</p><div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div></div>
+        </a>
+        <a href="games/step1.html" class="card-link" data-genre="action" data-platform="mobile">
+            <div class="card"><h2><i class="fa-solid fa-stairs"></i>スカイ・ステップ</h2><p>リズムよく階段をのぼるアクション。</p><div class="platform-badge">スマホ推奨</div><div class="play-tag">あそぶ</div></div>
+        </a>
+        <a href="games/fly1.html" class="card-link" data-genre="action" data-platform="all-device">
+            <div class="card"><h2><i class="fa-solid fa-plane-up"></i>スカイ・ナビゲーター</h2><p>ロケットを操作して柱を避けろ。</p><div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div></div>
+        </a>
+        <a href="games/cross1.html" class="card-link" data-genre="action" data-platform="all-device">
+            <div class="card"><h2><i class="fa-solid fa-road"></i>アニマル・ダッシュ</h2><p>タイミングよく道路を横断せよ。</p><div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div></div>
+        </a>
+        <a href="games/bridge1.html" class="card-link" data-genre="action" data-platform="mobile">
+            <div class="card"><h2><i class="fa-solid fa-ruler-horizontal"></i>スティック・ブリッジ</h2><p>橋の長さを目測で決めるゲーム。</p><div class="platform-badge">スマホ推奨</div><div class="play-tag">あそぶ</div></div>
         </a>
         <a href="games/shoot1.html" class="card-link" data-genre="action" data-platform="all-device">
-            <div class="card">
-                <h2><i class="fa-solid fa-shuttle-space"></i>スター・ディフェンダー</h2>
-                <p>エイリアン軍団を撃墜せよ！爽快SFシューティング。</p>
-                <div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div>
-            </div>
+            <div class="card"><h2><i class="fa-solid fa-shuttle-space"></i>スター・ディフェンダー</h2><p>爽快なSFシューティングゲーム。</p><div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div></div>
         </a>
+        <a href="games/line_def.html" class="card-link" data-genre="action" data-platform="all-device">
+            <div class="card"><h2><i class="fa-solid fa-pen-nib"></i>ライン・ディフェンダー</h2><p>線を引いてコアを守る新感覚防衛。</p><div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div></div>
+        </a>
+        <a href="games/pc_mouse1.html" class="card-link" data-genre="action" data-platform="pc">
+            <div class="card"><h2><i class="fa-solid fa-mouse-pointer"></i>カーソル・サバイバル</h2><p>マウス操作で敵を避け続ける。</p><div class="platform-badge">PC専用</div><div class="play-tag">あそぶ</div></div>
+        </a>
+        <a href="games/slice1.html" class="card-link" data-genre="action" data-platform="all-device">
+            <div class="card"><h2><i class="fa-solid fa-scissors"></i>スライス・マスター</h2><p>物体をスパスパ切り刻む爽快感。</p><div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div></div>
+        </a>
+
         <a href="games/type1.html" class="card-link" data-genre="typing" data-platform="pc">
-            <div class="card">
-                <h2><i class="fa-solid fa-keyboard"></i>タイプ・マスター</h2>
-                <p>正確さと速さを競う、PC専用の英単語タイピング練習。</p>
-                <div class="platform-badge">PC専用</div><div class="play-tag">あそぶ</div>
-            </div>
+            <div class="card"><h2><i class="fa-solid fa-keyboard"></i>タイプ・マスター</h2><p>PC専用の英単語タイピング練習。</p><div class="platform-badge">PC専用</div><div class="play-tag">あそぶ</div></div>
         </a>
-        </div>
+        <a href="games/type2.html" class="card-link" data-genre="typing" data-platform="pc">
+            <div class="card"><h2><i class="fa-solid fa-keyboard"></i>ワード・ストライク</h2><p>単語を撃ち落とす爽快タイピング。</p><div class="platform-badge">PC専用</div><div class="play-tag">あそぶ</div></div>
+        </a>
+    </div>
 
     <div class="footer-nav">
         <a href="about.html" class="back-btn"><i class="fa-solid fa-circle-info"></i> 当サイトについて</a>
@@ -206,7 +219,6 @@
         const streak = parseInt(localStorage.getItem('login_streak') || 0);
         document.getElementById('nav-login-days').innerText = streak;
 
-        // --- 連続記録（streak）ベースの称号判定 ---
         let rank = "ビジター";
         if (streak >= 12) rank = "伝説のゲーマー";
         else if (streak >= 7) rank = "ゲームマスター";
