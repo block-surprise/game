@@ -12,8 +12,21 @@
     <style>
         body { margin: 0; background-color: #f4f7f6; font-family: sans-serif; color: #333; line-height: 1.6; }
         .container { max-width: 900px; margin: 20px auto; background-color: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #007bff; border-bottom: 3px solid #b8daff; padding-bottom: 15px; }
+        h1 { text-align: center; color: #007bff; border-bottom: 3px solid #b8daff; padding-bottom: 10px; margin-bottom: 10px; }
         
+        /* ランク表示・おすすめボタンのスタイル */
+        .status-bar { text-align: center; margin-bottom: 20px; }
+        .rank-display { font-size: 0.9rem; color: #666; margin-bottom: 15px; }
+        .rank-name { color: #e91e63; font-weight: bold; background: #fff0f5; padding: 2px 10px; border-radius: 10px; }
+        
+        .recommend-section { margin-bottom: 25px; }
+        .btn-recommend { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; 
+            border: none; padding: 12px 25px; border-radius: 25px; font-weight: bold; 
+            cursor: pointer; box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3); transition: 0.3s;
+        }
+        .btn-recommend:hover { transform: scale(1.05); filter: brightness(1.1); }
+
         .search-section { margin-bottom: 30px; background: #f8f9fa; padding: 20px; border-radius: 12px; border: 1px solid #eee; }
         .search-box { position: relative; margin-bottom: 20px; }
         .search-box i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #888; }
@@ -29,18 +42,9 @@
         }
         .filter-btn.active { background: #007bff; color: #fff; border-color: #007bff; }
 
-        /* --- グリッドレイアウト --- */
-        .grid { 
-            display: grid; 
-            grid-template-columns: 1fr; /* スマホは1列 */
-            gap: 20px; 
-        }
-
-        @media (min-width: 600px) {
-            .grid { 
-                grid-template-columns: repeat(2, 1fr); /* PCは2列 */
-            }
-        }
+        /* グリッドレイアウト */
+        .grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        @media (min-width: 600px) { .grid { grid-template-columns: repeat(2, 1fr); } }
 
         .card-link { text-decoration: none; color: inherit; display: block; transition: 0.3s; }
         .card-link.hidden { display: none; }
@@ -52,9 +56,18 @@
         }
         .card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); border-color: #007bff; }
         
+        /* おすすめ抽選時のハイライト演出 */
+        .highlight-card { 
+            animation: highlightEffect 1.2s ease-in-out 2; 
+            border: 3px solid #ffc107 !important;
+        }
+        @keyframes highlightEffect {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); box-shadow: 0 0 25px rgba(255, 193, 7, 0.5); }
+        }
+
         .card h2 { margin: 0 0 10px 0; color: #007bff; font-size: 1.1em; display: flex; align-items: center; gap: 10px; }
         .card p { margin: 0; font-size: 0.85rem; color: #555; flex-grow: 1; }
-        
         .platform-badge { font-size: 0.75em; margin-top: 10px; color: #888; }
         .play-tag {
             display: inline-block; margin-top: 12px; background-color: #ffc107;
@@ -71,6 +84,17 @@
 <div class="container">
     <h1><i class="fa-solid fa-gamepad"></i>ミニゲームセンター</h1>
     
+    <div class="status-bar">
+        <div class="rank-display">
+            現在の称号: <span id="userRank" class="rank-name">読み込み中...</span>
+        </div>
+        <div class="recommend-section">
+            <button class="btn-recommend" onclick="pickRandomGame()">
+                <i class="fa-solid fa-wand-sparkles"></i> 今日のおすすめを抽選！
+            </button>
+        </div>
+    </div>
+
     <div class="search-section">
         <div class="search-box">
             <i class="fa-solid fa-magnifying-glass"></i>
@@ -103,11 +127,9 @@
             <div class="card">
                 <h2><i class="fa-solid fa-calculator"></i>瞬間！足し算</h2>
                 <p>次々と出る足し算を素早く解こう！ハイスピード計算脳トレ。</p>
-                <div class="platform-badge"><i class="fa-solid fa-mobile-screen"></i> <i class="fa-solid fa-desktop"></i> 全端末</div>
-                <div class="play-tag">あそぶ</div>
+                <div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div>
             </div>
         </a>
-
         <a href="games/memory1.html" class="card-link" data-genre="brain" data-platform="all-device">
             <div class="card">
                 <h2><i class="fa-solid fa-brain"></i>絵文字めくり</h2>
@@ -115,7 +137,6 @@
                 <div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div>
             </div>
         </a>
-
         <a href="games/memory2.html" class="card-link" data-genre="brain" data-platform="all-device">
             <div class="card">
                 <h2><i class="fa-solid fa-lightbulb"></i>シモン・メモリー</h2>
@@ -123,15 +144,20 @@
                 <div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div>
             </div>
         </a>
-
         <a href="games/memory3.html" class="card-link" data-genre="brain" data-platform="all-device">
             <div class="card">
                 <h2><i class="fa-solid fa-bolt"></i>ナンバー・フラッシュ</h2>
-                <p>一瞬の数字配置を覚える、高難度の瞬間記憶トレーニング。</p>
+                <p>一瞬の配置を覚える、高難度の瞬間記憶トレーニング。</p>
                 <div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div>
             </div>
         </a>
-
+        <a href="games/memory4.html" class="card-link" data-genre="brain" data-platform="all-device">
+            <div class="card">
+                <h2><i class="fa-solid fa-table-cells"></i>メモリー・タイル</h2>
+                <p>光るタイルの配置を記憶せよ！究極の空間認識記憶ゲーム。</p>
+                <div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div>
+            </div>
+        </a>
         <a href="games/color_tap.html" class="card-link" data-genre="brain" data-platform="all-device">
             <div class="card">
                 <h2><i class="fa-solid fa-eye"></i>カラー・タップ</h2>
@@ -147,15 +173,13 @@
                 <div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div>
             </div>
         </a>
-
         <a href="games/stack1.html" class="card-link" data-genre="puzzle" data-platform="all-device">
             <div class="card">
                 <h2><i class="fa-solid fa-cubes"></i>ブロック・スタック</h2>
-                <p>ブロックを並べて消そう！王道の落ちものアクションパズル。</p>
+                <p>ブロックを並べて消そう！王道の落ちものパズル。</p>
                 <div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div>
             </div>
         </a>
-
         <a href="games/circle_merge.html" class="card-link" data-genre="puzzle" data-platform="all-device">
             <div class="card">
                 <h2><i class="fa-solid fa-circle-nodes"></i>マージ・サークル</h2>
@@ -171,23 +195,20 @@
                 <div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div>
             </div>
         </a>
-
         <a href="games/dodge1" class="card-link" data-genre="action" data-platform="mobile">
             <div class="card">
                 <h2><i class="fa-solid fa-shuttle-space"></i>スリリング・ドッジ</h2>
-                <p>迫りくるエイリアンを避け続けろ！ハイスピード回避アクション。</p>
+                <p>エイリアンを避け続けろ！ハイスピード回避アクション。</p>
                 <div class="platform-badge">スマホ推奨</div><div class="play-tag">あそぶ</div>
             </div>
         </a>
-
         <a href="games/clicker1.html" class="card-link" data-genre="action" data-platform="all-device">
             <div class="card">
                 <h2><i class="fa-solid fa-coins"></i>マネークリッカー</h2>
-                <p>タップで稼げ！放置と連打で大富豪を目指す。全端末対応。</p>
+                <p>タップで稼げ！放置と連打で大富豪を目指す。</p>
                 <div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div>
             </div>
         </a>
-
         <a href="games/step1.html" class="card-link" data-genre="action" data-platform="mobile">
             <div class="card">
                 <h2><i class="fa-solid fa-stairs"></i>スカイ・ステップ</h2>
@@ -195,15 +216,13 @@
                 <div class="platform-badge">スマホ推奨</div><div class="play-tag">あそぶ</div>
             </div>
         </a>
-
         <a href="games/fly1.html" class="card-link" data-genre="action" data-platform="all-device">
             <div class="card">
                 <h2><i class="fa-solid fa-plane-up"></i>スカイ・ナビゲーター</h2>
                 <p>ロケットを浮遊させて柱を避けろ！中毒性の高い回避ゲーム。</p>
-                <div class="platform-badge">スマホ推奨</div><div class="play-tag">あそぶ</div>
+                <div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div>
             </div>
         </a>
-
         <a href="games/cross1.html" class="card-link" data-genre="action" data-platform="all-device">
             <div class="card">
                 <h2><i class="fa-solid fa-road"></i>アニマル・ダッシュ</h2>
@@ -211,19 +230,24 @@
                 <div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div>
             </div>
         </a>
-
         <a href="games/bridge1.html" class="card-link" data-genre="action" data-platform="mobile">
             <div class="card">
                 <h2><i class="fa-solid fa-ruler-horizontal"></i>スティック・ブリッジ</h2>
-                <p>橋の長さを目測で決めろ！絶妙な操作が鍵のスマホゲーム。</p>
+                <p>橋の長さを目測で決めろ！絶妙な操作が鍵のスマホアクション。</p>
                 <div class="platform-badge">スマホ推奨</div><div class="play-tag">あそぶ</div>
             </div>
         </a>
-
+        <a href="games/shoot1.html" class="card-link" data-genre="action" data-platform="all-device">
+            <div class="card">
+                <h2><i class="fa-solid fa-shuttle-space"></i>スター・ディフェンダー</h2>
+                <p>エイリアン軍団を撃墜せよ！爽快SFシューティング。</p>
+                <div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div>
+            </div>
+        </a>
         <a href="games/pc_mouse1.html" class="card-link" data-genre="action" data-platform="pc">
             <div class="card">
                 <h2><i class="fa-solid fa-mouse-pointer"></i>カーソル・サバイバル</h2>
-                <p>マウスカーソルだけで敵を避けろ！PC専用精密アクション。</p>
+                <p>マウスカーソルで敵を避けろ！PC専用精密アクション。</p>
                 <div class="platform-badge">PC専用</div><div class="play-tag">あそぶ</div>
             </div>
         </a>
@@ -235,32 +259,13 @@
                 <div class="platform-badge">PC専用</div><div class="play-tag">あそぶ</div>
             </div>
         </a>
-
         <a href="games/type2.html" class="card-link" data-genre="typing" data-platform="pc">
             <div class="card">
                 <h2><i class="fa-solid fa-keyboard"></i>ワード・ストライク</h2>
-                <p>落下する単語を撃ち落とせ！爽快感抜群のタイピングゲーム。</p>
+                <p>落下する単語を撃ち落とせ！爽快タイピングゲーム。</p>
                 <div class="platform-badge">PC専用</div><div class="play-tag">あそぶ</div>
             </div>
         </a>
-
-        <a href="games/memory4.html" class="card-link" data-genre="brain" data-platform="all-device">
-    <div class="card">
-        <h2><i class="fa-solid fa-table-cells"></i>メモリー・タイル</h2>
-        <p>【脳トレ】一瞬だけ光るタイルの配置を記憶せよ！レベルが上がるほど複雑になる、究極の空間認識記憶ゲーム。</p>
-        <div class="platform-badge"><i class="fa-solid fa-mobile-screen"></i> <i class="fa-solid fa-desktop"></i> 全端末対応</div>
-        <div class="play-tag">あそぶ</div>
-    </div>
-</a>
-
-        <a href="games/shoot1.html" class="card-link" data-genre="action" data-platform="all-device">
-    <div class="card">
-        <h2><i class="fa-solid fa-shuttle-space"></i>スター・ディフェンダー</h2>
-        <p>【全端末対応】迫りくるエイリアン軍団を撃墜せよ！ドラッグ操作で敵を狙い打つ爽快SFシューティング。</p>
-        <div class="platform-badge"><i class="fa-solid fa-mobile-screen"></i> <i class="fa-solid fa-desktop"></i> 全端末対応</div>
-        <div class="play-tag">あそぶ</div>
-    </div>
-</a>
     </div>
 
     <div class="footer-nav">
@@ -271,6 +276,38 @@
 <script>
     let activeGenre = 'all';
     let activeDevice = 'all';
+
+    // 称号システム
+    function updateRank() {
+        let visits = localStorage.getItem('game_visits') || 0;
+        visits = parseInt(visits) + 1;
+        localStorage.setItem('game_visits', visits);
+
+        let rank = "ビジター";
+        if (visits > 50) rank = "伝説のゲーマー";
+        else if (visits > 20) rank = "ゲームマスター";
+        else if (visits > 10) rank = "常連さん";
+        else if (visits > 5) rank = "ルーキー";
+        document.getElementById('userRank').innerText = rank;
+    }
+
+    // ランダム抽選
+    function pickRandomGame() {
+        const visibleCards = Array.from(document.querySelectorAll('.card-link:not(.hidden)'));
+        if (visibleCards.length === 0) return;
+
+        visibleCards.forEach(c => c.querySelector('.card').classList.remove('highlight-card'));
+        const target = visibleCards[Math.floor(Math.random() * visibleCards.length)];
+        
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        target.querySelector('.card').classList.add('highlight-card');
+
+        setTimeout(() => {
+            if(confirm("今日のおすすめは『" + target.querySelector('h2').innerText + "』です！遊びますか？")) {
+                location.href = target.href;
+            }
+        }, 1200);
+    }
 
     function setFilter(type, value, btn) {
         const parent = btn.parentElement;
@@ -291,7 +328,9 @@
             const desc = card.querySelector('p').innerText.toLowerCase();
 
             const matchGenre = (activeGenre === 'all' || genre === activeGenre);
-            const matchDevice = (activeDevice === 'all' || platform === activeDevice || (activeDevice === 'mobile' && platform === 'all-device') || (activeDevice === 'pc' && platform === 'all-device'));
+            const matchDevice = (activeDevice === 'all' || platform === activeDevice || 
+                               (activeDevice === 'mobile' && platform === 'all-device') || 
+                               (activeDevice === 'pc' && platform === 'all-device'));
             const matchSearch = (title.includes(searchText) || desc.includes(searchText));
 
             if (matchGenre && matchDevice && matchSearch) {
@@ -301,6 +340,9 @@
             }
         });
     }
+
+    // 初回実行
+    window.onload = updateRank;
 </script>
 </body>
 </html>
