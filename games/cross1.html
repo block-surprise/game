@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>アニマル・ダッシュ</title>
+    <meta name="google-adsense-account" content="ca-pub-3571574988222927">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3571574988222927" crossorigin="anonymous"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { margin: 0; background: #a2d149; font-family: sans-serif; overflow: hidden; touch-action: none; text-align: center; }
+        canvas { display: block; margin: 0 auto; background: #a2d149; max-width: 100vw; max-height: 80vh; }
+        .stats { font-size: 1.5rem; font-weight: bold; color: white; margin: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; z-index: 100; }
+        .btn { background: #ff4757; color: white; border: none; padding: 15px 40px; border-radius: 50px; font-size: 1.2rem; cursor: pointer; font-weight: bold; box-shadow: 0 4px 0 #e67e22; }
+        .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #e67e22; }
+        .back-link { margin-top: 20px; color: #ccc; text-decoration: none; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <div class="stats">SCORE: <span id="score">0</span></div>
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="overlay">
+        <h1>ANIMAL DASH</h1>
+        <p>タップで前進！車を避けろ！</p>
+        <button class="btn" onclick="startGame()">スタート</button>
+        <a href="index.html" class="back-link"><i class="fa-solid fa-house"></i> 一覧に戻る</a>
+    </div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreDisp = document.getElementById('score');
+    const overlay = document.getElementById('overlay');
+
+    const GRID = 40;
+    const ROWS = 12;
+    const COLS = 9;
+    canvas.width = COLS * GRID;
+    canvas.height = ROWS * GRID;
+
+    let score, player, lanes, gameActive;
+
+    function init() {
+        score = 0;
+        gameActive = false;
+        player = { x: 4, y: ROWS - 2 };
+        lanes = [];
+        for (let i = 0; i < ROWS; i++) {
+            lanes.push(createLane(i));
+        }
+    }
+
+    function createLane(index) {
+        const type = (index === ROWS - 1 || index === ROWS - 2) ? 'grass' : (Math.random() > 0.4 ? 'road' : 'grass');
+        const direction = Math.random() > 0.5 ? 1 : -1;
+        const speed = 1.5 + Math.random() * 2;
+        const vehicles = [];
+        if (type === 'road') {
+            vehicles.push({ x: Math.random() * COLS });
+            if(Math.random() > 0.5) vehicles.push({ x: (vehicles[0].x + 4) % COLS });
+        }
+        return { type, direction, speed, vehicles };
+    }
+
+    function startGame() {
+        init();
+        gameActive = true;
+        overlay.style.display = 'none';
+        requestAnimationFrame(loop);
+    }
+
+    function loop() {
+        if (!gameActive) return;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 背景とレーンの描画
+        for (let i = 0; i < ROWS; i++) {
+            const lane = lanes[i];
+            ctx.fillStyle = lane.type === 'grass' ? '#a2d149' : '#576574';
+            ctx.fillRect(0, i * GRID, canvas.width, GRID);
+
+            if (lane.type === 'road') {
+                lane.vehicles.forEach(v => {
+                    v.x += (lane.direction * lane.speed) / 40;
+                    if (v.x > COLS) v.x = -1;
+                    if (v.x < -1) v.x = COLS;
+
+                    // 車の描画
+                    ctx.font = "30px Arial";
+                    ctx.fillText(lane.direction > 0 ? "🚗" : "🚕", v.x * GRID, i * GRID + 30);
+
+                    // 当たり判定
+                    if (player.y === i && Math.abs(player.x - v.x) < 0.7) {
+                        gameOver();
+                    }
+                });
+            }
+        }
+
+        // プレイヤーの描画
+        ctx.font = "30px Arial";
+        ctx.fillText("🐥", player.x * GRID, player.y * GRID + 30);
+
+        requestAnimationFrame(loop);
+    }
+
+    function move() {
+        if (!gameActive) return;
+        player.y--;
+        score++;
+        scoreDisp.innerText = score;
+
+        // 新しいレーンを追加し、古いレーンを削除して無限に進む演出
+        lanes.pop();
+        lanes.unshift(createLane(0));
+        player.y++; // 相対位置を維持
+    }
+
+    function gameOver() {
+        gameActive = false;
+        overlay.style.display = 'flex';
+        overlay.querySelector('h1').innerText = "GAME OVER";
+        overlay.querySelector('p').innerText = `SCORE: ${score}`;
+    }
+
+    window.addEventListener('mousedown', (e) => { if(e.button === 0) move(); });
+    window.addEventListener('touchstart', (e) => { e.preventDefault(); move(); });
+    window.addEventListener('keydown', (e) => { if(e.code === 'Space' || e.code === 'ArrowUp') move(); });
+
+    init();
+    // 初回描画
+    ctx.fillStyle = '#a2d149';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+</script>
+</body>
+</html>
