@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>マネークリッカー</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { font-family: sans-serif; background-color: #f0f2f5; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; color: #333; }
+        .stats { font-size: 2rem; font-weight: bold; margin: 20px 0; color: #28a745; }
+        .main-btn { 
+            width: 200px; height: 200px; background: #fff; border: 10px solid #28a745; border-radius: 50%; 
+            font-size: 5rem; display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; box-shadow: 0 10px 0 #1e7e34; transition: 0.1s; user-select: none;
+        }
+        .main-btn:active { transform: translateY(5px); box-shadow: 0 5px 0 #1e7e34; }
+        
+        .shop { width: 100%; max-width: 400px; margin-top: 30px; }
+        .item { 
+            background: white; padding: 15px; margin-bottom: 10px; border-radius: 10px; 
+            display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .item.disabled { opacity: 0.5; cursor: not-allowed; }
+        .item-info h3 { margin: 0; font-size: 1rem; }
+        .item-info p { margin: 0; font-size: 0.8rem; color: #666; }
+        .buy-btn { background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .buy-btn:disabled { background: #ccc; }
+        
+        .back-link { margin-top: 30px; color: #666; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+    <h1><i class="fa-solid fa-coins"></i> マネークリッカー</h1>
+    <div class="stats">¥ <span id="money">0</span></div>
+    
+    <div class="main-btn" id="click-btn">💰</div>
+
+    <div class="shop">
+        <div class="item">
+            <div class="item-info">
+                <h3><i class="fa-solid fa-hand-pointer"></i> パワーアップ</h3>
+                <p>1クリックの稼ぎ +1 (現在: ¥<span id="click-val">1</span>)</p>
+            </div>
+            <button class="buy-btn" id="buy-click">¥10</button>
+        </div>
+        <div class="item">
+            <div class="item-info">
+                <h3><i class="fa-solid fa-robot"></i> 自動ツール</h3>
+                <p>1秒ごとに自動で稼ぐ (現在: ¥<span id="auto-val">0</span>/s)</p>
+            </div>
+            <button class="buy-btn" id="buy-auto">¥50</button>
+        </div>
+    </div>
+
+    <a href="/" class="back-link"><i class="fa-solid fa-arrow-left"></i> ゲーム一覧に戻る</a>
+
+<script>
+    let money = 0;
+    let clickPower = 1;
+    let autoPower = 0;
+    let clickCost = 10;
+    let autoCost = 50;
+
+    const moneyDisp = document.getElementById('money');
+    const clickValDisp = document.getElementById('click-val');
+    const autoValDisp = document.getElementById('auto-val');
+    const buyClickBtn = document.getElementById('buy-click');
+    const buyAutoBtn = document.getElementById('buy-auto');
+
+    function updateDisp() {
+        moneyDisp.textContent = Math.floor(money);
+        clickValDisp.textContent = clickPower;
+        autoValDisp.textContent = autoPower;
+        buyClickBtn.textContent = `¥${clickCost}`;
+        buyAutoBtn.textContent = `¥${autoCost}`;
+        buyClickBtn.disabled = money < clickCost;
+        buyAutoBtn.disabled = money < autoCost;
+    }
+
+    document.getElementById('click-btn').addEventListener('click', () => {
+        money += clickPower;
+        updateDisp();
+    });
+
+    buyClickBtn.addEventListener('click', () => {
+        if (money >= clickCost) {
+            money -= clickCost;
+            clickPower += 1;
+            clickCost = Math.floor(clickCost * 1.5);
+            updateDisp();
+        }
+    });
+
+    buyAutoBtn.addEventListener('click', () => {
+        if (money >= autoCost) {
+            money -= autoCost;
+            autoPower += 1;
+            autoCost = Math.floor(autoCost * 1.8);
+            updateDisp();
+        }
+    });
+
+    setInterval(() => {
+        money += autoPower;
+        updateDisp();
+    }, 1000);
+
+    updateDisp();
+</script>
+</body>
+</html>
