@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>ナンバーズ・マージ</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         body { font-family: 'Arial', sans-serif; background-color: #faf8ef; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; overflow: hidden; touch-action: none; }
         .header { text-align: center; margin-bottom: 10px; }
@@ -11,6 +12,7 @@
         .grid-container { width: 320px; height: 320px; background: #bbada0; border-radius: 6px; position: relative; padding: 10px; box-sizing: border-box; }
         .grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); gap: 10px; width: 100%; height: 100%; }
         .cell { background: rgba(238, 228, 218, 0.35); border-radius: 3px; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; color: #776e65; transition: all 0.1s ease; }
+        /* 各数字の色設定 */
         .cell-2 { background: #eee4da; }
         .cell-4 { background: #ede0c8; }
         .cell-8 { background: #f2b179; color: white; }
@@ -38,9 +40,155 @@
     </div>
 
     <button class="btn" onclick="setupGame()">NEW GAME</button>
-    <a href="/" class="back-link">← ゲーム一覧に戻る</a>
+    <a href="index.html" class="back-link">← ゲーム一覧に戻る</a>
 
 <script>
     const gridDisplay = document.getElementById('grid');
     const scoreDisplay = document.getElementById('score');
     let width = 4;
+    let squares = [];
+    let score = 0;
+
+    // ゲームの初期化
+    function setupGame() {
+        gridDisplay.innerHTML = '';
+        squares = [];
+        score = 0;
+        scoreDisplay.innerHTML = score;
+        for (let i = 0; i < width * width; i++) {
+            let cell = document.createElement('div');
+            cell.classList.add('cell');
+            cell.innerHTML = '';
+            gridDisplay.appendChild(cell);
+            squares.push(cell);
+        }
+        generate();
+        generate();
+    }
+
+    // 空きマスに2か4を生成
+    function generate() {
+        const emptySquares = squares.filter(s => s.innerHTML === "");
+        if (emptySquares.length > 0) {
+            const randomSquare = emptySquares[Math.floor(Math.random() * emptySquares.length)];
+            randomSquare.innerHTML = Math.random() > 0.1 ? 2 : 4;
+            updateStyle();
+            checkGameOver();
+        }
+    }
+
+    // 数字に応じた色分け
+    function updateStyle() {
+        squares.forEach(square => {
+            square.className = 'cell';
+            if (square.innerHTML) {
+                square.classList.add('cell-' + square.innerHTML);
+            }
+        });
+    }
+
+    // 移動ロジック（右）
+    function moveRight() {
+        for (let i = 0; i < 16; i += 4) {
+            let row = [parseInt(squares[i].innerHTML) || 0, parseInt(squares[i+1].innerHTML) || 0, parseInt(squares[i+2].innerHTML) || 0, parseInt(squares[i+3].innerHTML) || 0];
+            let filteredRow = row.filter(num => num);
+            let zeros = Array(4 - filteredRow.length).fill(0);
+            let newRow = zeros.concat(filteredRow);
+            for (let j = 0; j < 4; j++) squares[i+j].innerHTML = newRow[j] || "";
+        }
+    }
+
+    function moveLeft() {
+        for (let i = 0; i < 16; i += 4) {
+            let row = [parseInt(squares[i].innerHTML) || 0, parseInt(squares[i+1].innerHTML) || 0, parseInt(squares[i+2].innerHTML) || 0, parseInt(squares[i+3].innerHTML) || 0];
+            let filteredRow = row.filter(num => num);
+            let zeros = Array(4 - filteredRow.length).fill(0);
+            let newRow = filteredRow.concat(zeros);
+            for (let j = 0; j < 4; j++) squares[i+j].innerHTML = newRow[j] || "";
+        }
+    }
+
+    function moveUp() {
+        for (let i = 0; i < 4; i++) {
+            let col = [parseInt(squares[i].innerHTML) || 0, parseInt(squares[i+width].innerHTML) || 0, parseInt(squares[i+width*2].innerHTML) || 0, parseInt(squares[i+width*3].innerHTML) || 0];
+            let filteredCol = col.filter(num => num);
+            let zeros = Array(4 - filteredCol.length).fill(0);
+            let newCol = filteredCol.concat(zeros);
+            for (let j = 0; j < 4; j++) squares[i+j*width].innerHTML = newCol[j] || "";
+        }
+    }
+
+    function moveDown() {
+        for (let i = 0; i < 4; i++) {
+            let col = [parseInt(squares[i].innerHTML) || 0, parseInt(squares[i+width].innerHTML) || 0, parseInt(squares[i+width*2].innerHTML) || 0, parseInt(squares[i+width*3].innerHTML) || 0];
+            let filteredCol = col.filter(num => num);
+            let zeros = Array(4 - filteredCol.length).fill(0);
+            let newCol = zeros.concat(filteredCol);
+            for (let j = 0; j < 4; j++) squares[i+j*width].innerHTML = newCol[j] || "";
+        }
+    }
+
+    // 合体ロジック
+    function combineRow(reverse = false) {
+        for (let i = 0; i < 16; i += 4) {
+            let indices = reverse ? [i+3, i+2, i+1, i] : [i, i+1, i+2, i+3];
+            for (let j = 0; j < 3; j++) {
+                let a = squares[indices[j]], b = squares[indices[j+1]];
+                if (a.innerHTML !== "" && a.innerHTML === b.innerHTML) {
+                    let val = parseInt(a.innerHTML) * 2;
+                    a.innerHTML = val;
+                    b.innerHTML = "";
+                    score += val;
+                    scoreDisplay.innerHTML = score;
+                }
+            }
+        }
+    }
+
+    function combineColumn(reverse = false) {
+        for (let i = 0; i < 4; i++) {
+            let indices = reverse ? [i+width*3, i+width*2, i+width, i] : [i, i+width, i+width*2, i+width*3];
+            for (let j = 0; j < 3; j++) {
+                let a = squares[indices[j]], b = squares[indices[j+1]];
+                if (a.innerHTML !== "" && a.innerHTML === b.innerHTML) {
+                    let val = parseInt(a.innerHTML) * 2;
+                    a.innerHTML = val;
+                    b.innerHTML = "";
+                    score += val;
+                    scoreDisplay.innerHTML = score;
+                }
+            }
+        }
+    }
+
+    // キーボード操作
+    function control(e) {
+        if (e.keyCode === 37) { moveLeft(); combineRow(false); moveLeft(); generate(); }
+        else if (e.keyCode === 38) { moveUp(); combineColumn(false); moveUp(); generate(); }
+        else if (e.keyCode === 39) { moveRight(); combineRow(true); moveRight(); generate(); }
+        else if (e.keyCode === 40) { moveDown(); combineColumn(true); moveDown(); generate(); }
+    }
+    document.addEventListener('keyup', control);
+
+    // スワイプ操作
+    let startX, startY;
+    document.addEventListener('touchstart', e => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; });
+    document.addEventListener('touchend', e => {
+        let diffX = e.changedTouches[0].clientX - startX, diffY = e.changedTouches[0].clientY - startY;
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+            if (diffX > 30) { moveRight(); combineRow(true); moveRight(); generate(); }
+            else if (diffX < -30) { moveLeft(); combineRow(false); moveLeft(); generate(); }
+        } else {
+            if (diffY > 30) { moveDown(); combineColumn(true); moveDown(); generate(); }
+            else if (diffY < -30) { moveUp(); combineColumn(false); moveUp(); generate(); }
+        }
+    });
+
+    function checkGameOver() {
+        if (!squares.some(s => s.innerHTML === "")) alert("Game Over!");
+    }
+
+    setupGame();
+</script>
+</body>
+</html>
