@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10秒チャレンジ</title>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background-color: #fff9e6; color: #333; }
+        .container { text-align: center; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); width: 90%; max-width: 400px; }
+        h1 { color: #ff9800; margin-bottom: 10px; }
+        #display { font-size: 80px; font-weight: bold; margin: 30px 0; font-family: monospace; }
+        .btn { background: #ff9800; color: white; border: none; padding: 20px 40px; font-size: 1.5rem; border-radius: 50px; cursor: pointer; transition: 0.2s; width: 100%; font-weight: bold; }
+        .btn:active { transform: scale(0.95); background: #e68a00; }
+        #message { font-size: 1.2rem; min-height: 1.5em; margin: 20px 0; font-weight: bold; }
+        .back-link { margin-top: 30px; display: block; color: #666; text-decoration: none; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>⏱ 10秒チャレンジ</h1>
+    <p>10.00秒ピッタリで止めろ！<br><small>※5秒過ぎると数字が消えるぞ</small></p>
+    
+    <div id="display">0.00</div>
+    <div id="message"></div>
+    <button id="mainBtn" class="btn">スタート</button>
+
+    <a href="index.html" class="back-link">← ゲーム一覧に戻る</a>
+</div>
+
+<script>
+    let startTime;
+    let timerId;
+    let isRunning = false;
+    const display = document.getElementById('display');
+    const mainBtn = document.getElementById('mainBtn');
+    const message = document.getElementById('message');
+
+    mainBtn.addEventListener('click', () => {
+        if (!isRunning) {
+            // スタート処理
+            isRunning = true;
+            mainBtn.textContent = 'ストップ！';
+            message.textContent = "";
+            startTime = Date.now();
+            timerId = setInterval(updateDisplay, 10);
+        } else {
+            // ストップ処理
+            isRunning = false;
+            mainBtn.textContent = 'もう一度';
+            clearInterval(timerId);
+            const result = (Date.now() - startTime) / 1000;
+            display.textContent = result.toFixed(2);
+            showResult(result);
+        }
+    });
+
+    function updateDisplay() {
+        const elapsed = (Date.now() - startTime) / 1000;
+        if (elapsed >= 5.0) {
+            display.textContent = "??.??"; // 5秒過ぎたら隠す
+            display.style.color = "#ff4444";
+        } else {
+            display.textContent = elapsed.toFixed(2);
+            display.style.color = "#333";
+        }
+    }
+
+    function showResult(time) {
+        const diff = Math.abs(10 - time);
+        if (diff === 0) {
+            message.textContent = "神業！ピッタリ10秒！✨";
+            message.style.color = "#ff0000";
+        } else if (diff <= 0.05) {
+            message.textContent = "惜しい！ほぼピッタリ！👏";
+            message.style.color = "#ff9800";
+        } else if (diff <= 0.5) {
+            message.textContent = "いい感じ！お見事！👍";
+            message.style.color = "#28a745";
+        } else {
+            message.textContent = "まだまだ修行が足りん！👊";
+            message.style.color = "#666";
+        }
+    }
+</script>
+
+</body>
+</html>
