@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>絵文字めくり</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f0f4f8; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding-top: 20px; }
+        h1 { color: #333; margin-bottom: 10px; }
+        .stats { margin-bottom: 15px; font-size: 1.1em; font-weight: bold; color: #555; }
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            max-width: 350px;
+            width: 95%;
+        }
+        .card {
+            aspect-ratio: 1 / 1;
+            background-color: #007bff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            color: transparent;
+            cursor: pointer;
+            transition: transform 0.3s, background-color 0.3s;
+            user-select: none;
+        }
+        .card.flipped {
+            background-color: #fff;
+            color: initial;
+            transform: rotateY(180deg);
+            border: 2px solid #007bff;
+        }
+        .card.matched {
+            background-color: #e0f0ff;
+            color: initial;
+            visibility: visible;
+            opacity: 0.6;
+            cursor: default;
+        }
+        #message { margin-top: 20px; font-weight: bold; color: #28a745; height: 1.5em; }
+        .btn { margin-top: 20px; padding: 10px 25px; font-size: 1em; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .back-link { margin-top: 20px; color: #666; text-decoration: none; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+    <h1>🧠 絵文字めくり</h1>
+    <div class="stats">ミス: <span id="miss-count">0</span></div>
+    
+    <div class="game-board" id="board"></div>
+    <div id="message"></div>
+
+    <button class="btn" onclick="initGame()">リセット</button>
+    <a href="/" class="back-link">← ゲーム一覧に戻る</a>
+
+<script>
+    const emojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼'];
+    let cards = [...emojis, ...emojis];
+    let flippedCards = [];
+    let matchedCount = 0;
+    let misses = 0;
+    let lockBoard = false;
+
+    function initGame() {
+        const board = document.getElementById('board');
+        board.innerHTML = '';
+        flippedCards = [];
+        matchedCount = 0;
+        misses = 0;
+        lockBoard = false;
+        document.getElementById('miss-count').textContent = misses;
+        document.getElementById('message').textContent = '';
+
+        // シャッフル
+        cards.sort(() => Math.random() - 0.5);
+
+        cards.forEach((emoji, index) => {
+            const card = document.createElement('div');
+            card.classList.add('card');
+            card.dataset.emoji = emoji;
+            card.addEventListener('click', flipCard);
+            board.appendChild(card);
+        });
+    }
+
+    function flipCard() {
+        if (lockBoard) return;
+        if (this === flippedCards[0]) return;
+        if (this.classList.contains('matched')) return;
+
+        this.classList.add('flipped');
+        this.textContent = this.dataset.emoji;
+        flippedCards.push(this);
+
+        if (flippedCards.length === 2) {
+            checkMatch();
+        }
+    }
+
+    function checkMatch() {
+        lockBoard = true;
+        const isMatch = flippedCards[0].dataset.emoji === flippedCards[1].dataset.emoji;
+
+        if (isMatch) {
+            flippedCards[0].classList.add('matched');
+            flippedCards[1].classList.add('matched');
+            matchedCount += 2;
+            resetTurn();
+            if (matchedCount === cards.length) {
+                document.getElementById('message').textContent = 'クリア！おめでとう！✨';
+            }
+        } else {
+            misses++;
+            document.getElementById('miss-count').textContent = misses;
+            setTimeout(() => {
+                flippedCards[0].classList.remove('flipped');
+                flippedCards[0].textContent = '';
+                flippedCards[1].classList.remove('flipped');
+                flippedCards[1].textContent = '';
+                resetTurn();
+            }, 1000);
+        }
+    }
+
+    function resetTurn() {
+        flippedCards = [];
+        lockBoard = false;
+    }
+
+    initGame();
+</script>
+</body>
+</html>
