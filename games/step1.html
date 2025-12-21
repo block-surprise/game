@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>スカイ・ステップ</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { margin: 0; background: #87ceeb; font-family: sans-serif; overflow: hidden; touch-action: none; text-align: center; }
+        #game-container { position: relative; width: 100vw; height: 100vh; background: linear-gradient(#1e90ff, #87ceeb); }
+        .stats { position: absolute; top: 20px; width: 100%; font-size: 2rem; font-weight: bold; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); pointer-events: none; z-index: 10; }
+        #player { position: absolute; width: 40px; height: 40px; background: #ff4757; border-radius: 8px; transition: 0.1s; z-index: 5; }
+        .step { position: absolute; width: 60px; height: 15px; background: white; border-radius: 10px; box-shadow: 0 4px 0 #ddd; }
+        .controls { position: absolute; bottom: 0; width: 100%; height: 50%; display: flex; z-index: 20; }
+        .ctrl-area { flex: 1; opacity: 0; }
+        #msg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 15px; z-index: 30; width: 80%; }
+        .btn { background: #ff4757; color: white; border: none; padding: 15px 30px; border-radius: 30px; font-size: 1.2rem; cursor: pointer; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div class="stats">SCORE: <span id="score">0</span></div>
+    
+    <div id="steps"></div>
+    <div id="player"></div>
+
+    <div id="msg">
+        <h1>SKY STEP</h1>
+        <p>左右の画面をタップして<br>階段を登り続けろ！</p>
+        <button class="btn" onclick="startGame()">スタート</button>
+        <br>
+        <a href="/" style="color: #666; text-decoration: none; font-size: 0.8rem; display: block; margin-top: 15px;">一覧に戻る</a>
+    </div>
+
+    <div class="controls">
+        <div class="ctrl-area" id="left-ctrl"></div>
+        <div class="ctrl-area" id="right-ctrl"></div>
+    </div>
+</div>
+
+<script>
+    let score = 0;
+    let isPlaying = false;
+    let currentStepIndex = 0;
+    let steps = [];
+    const playerEl = document.getElementById('player');
+    const stepsContainer = document.getElementById('steps');
+    const scoreDisp = document.getElementById('score');
+    const msg = document.getElementById('msg');
+
+    const STEP_X_OFFSET = 50; // 左右にずれる幅
+    const STEP_Y_GAP = 60;   // 階段の高さの差
+
+    function startGame() {
+        msg.style.display = 'none';
+        score = 0;
+        currentStepIndex = 0;
+        scoreDisp.innerText = score;
+        steps = [];
+        stepsContainer.innerHTML = '';
+        isPlaying = true;
+
+        // 初期の階段を作成
+        let lastX = window.innerWidth / 2;
+        let lastY = window.innerHeight - 150;
+
+        for (let i = 0; i < 15; i++) {
+            createStep(lastX, lastY);
+            lastX += (Math.random() > 0.5 ? STEP_X_OFFSET : -STEP_X_OFFSET);
+            lastY -= STEP_Y_GAP;
+        }
+        updatePlayerPos();
+    }
+
+    function createStep(x, y) {
+        const el = document.createElement('div');
+        el.className = 'step';
+        el.style.left = (x - 30) + 'px';
+        el.style.top = y + 'px';
+        stepsContainer.appendChild(el);
+        steps.push({ x, y, el });
+    }
+
+    function updatePlayerPos() {
+        const s = steps[currentStepIndex];
+        playerEl.style.left = (s.x - 20) + 'px';
+        playerEl.style.top = (s.y - 40) + 'px';
+    }
+
+    function move(dir) {
+        if (!isPlaying) return;
+
+        const nextStep = steps[currentStepIndex + 1];
+        const isRight = dir === 'right';
+        const currentX = steps[currentStepIndex].x;
+
+        // 正しい方向にステップがあるか判定
+        if ((isRight && nextStep.x > currentX) || (!isRight && nextStep.x < currentX)) {
+            currentStepIndex++;
+            score++;
+            scoreDisp.innerText = score;
+            
+            // 画面をスクロールさせる（階段を下げる）
+            const scrollY = STEP_Y_GAP;
+            steps.forEach(s => {
+                s.y += scrollY;
+                s.el.style.top = s.y + 'px';
+            });
+
+            // 新しい階段を追加
+            const lastStep = steps[steps.length - 1];
+            createStep(
+                lastStep.x + (Math.random() > 0.5 ? STEP_X_OFFSET : -STEP_X_OFFSET),
+                lastStep.y - STEP_Y_GAP
+            );
+
+            // 古い階段を削除（パフォーマンス対策）
+            if (steps.length > 20) {
+                steps[0].el.remove();
+                steps.shift();
+                currentStepIndex--;
+            }
+
+            updatePlayerPos();
+        } else {
+            gameOver();
+        }
+    }
+
+    function gameOver() {
+        isPlaying = false;
+        msg.style.display = 'block';
+        msg.querySelector('h1').innerText = "GAME OVER";
+        msg.querySelector('p').innerText = `記録: ${score}段`;
+    }
+
+    document.getElementById('left-ctrl').addEventListener('touchstart', (e) => { e.preventDefault(); move('left'); });
+    document.getElementById('right-ctrl').addEventListener('touchstart', (e) => { e.preventDefault(); move('right'); });
+    
+    // PCテスト用
+    document.addEventListener('keydown', (e) => {
+        if (e.key === "ArrowLeft") move('left');
+        if (e.key === "ArrowRight") move('right');
+    });
+
+</script>
+</body>
+</html>
