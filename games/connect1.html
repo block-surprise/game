@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>カラフル・コネクト</title>
+    <meta name="google-adsense-account" content="ca-pub-3571574988222927">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3571574988222927" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { margin: 0; background: #1a1a1a; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; height: 100vh; overflow: hidden; touch-action: none; }
+        #ui { padding: 20px; color: white; text-align: center; }
+        #grid-container { background: #333; border: 5px solid #444; border-radius: 10px; position: relative; }
+        canvas { display: block; cursor: crosshair; }
+        .controls { margin-top: 20px; display: flex; gap: 10px; }
+        .btn { padding: 10px 20px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; }
+        #reset-btn { background: #555; color: white; }
+        #next-btn { background: #2ecc71; color: white; display: none; }
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; flex-direction: column; align-items: center; justify-content: center; color: white; z-index: 100; }
+    </style>
+</head>
+<body>
+
+    <div id="ui">
+        <h1>LEVEL <span id="level-num">1</span></h1>
+        <p>同じ色のドットを繋ごう！</p>
+    </div>
+
+    <div id="grid-container">
+        <canvas id="gameCanvas"></canvas>
+    </div>
+
+    <div class="controls">
+        <button id="reset-btn" class="btn" onclick="resetLevel()">やり直し</button>
+        <button id="next-btn" class="btn" onclick="nextLevel()">次のレベルへ</button>
+    </div>
+
+    <div id="overlay">
+        <h2>CLEAR!</h2>
+        <button class="btn" style="background:#007bff; color:white;" onclick="nextLevel()">NEXT LEVEL</button>
+        <a href="/" style="color:#aaa; margin-top:20px; text-decoration:none;">一覧に戻る</a>
+    </div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const gridSize = 5;
+    const cellSize = 60;
+    canvas.width = gridSize * cellSize;
+    canvas.height = gridSize * cellSize;
+
+    let level = 1;
+    let dots = [
+        { color: '#e74c3c', p1: {x:0, y:0}, p2: {x:4, y:0} },
+        { color: '#3498db', p1: {x:0, y:1}, p2: {x:4, y:4} },
+        { color: '#2ecc71', p1: {x:1, y:1}, p2: {x:1, y:4} }
+    ];
+    let paths = [[], [], []];
+    let isDrawing = false;
+    let currentColorIndex = -1;
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // グリッド線
+        ctx.strokeStyle = '#444';
+        ctx.lineWidth = 1;
+        for(let i=0; i<=gridSize; i++) {
+            ctx.beginPath(); ctx.moveTo(i*cellSize, 0); ctx.lineTo(i*cellSize, canvas.height); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(0, i*cellSize); ctx.lineTo(canvas.width, i*cellSize); ctx.stroke();
+        }
+
+        // パスの描画
+        paths.forEach((path, idx) => {
+            if (path.length < 1) return;
+            ctx.strokeStyle = dots[idx].color;
+            ctx.lineWidth = 15;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            ctx.moveTo(path[0].x * cellSize + cellSize/2, path[0].y * cellSize + cellSize/2);
+            for(let i=1; i<path.length; i++) {
+                ctx.lineTo(path[i].x * cellSize + cellSize/2, path[i].y * cellSize + cellSize/2);
+            }
+            ctx.stroke();
+        });
+
+        // ドットの描画
+        dots.forEach(dot => {
+            ctx.fillStyle = dot.color;
+            [dot.p1, dot.p2].forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x * cellSize + cellSize/2, p.y * cellSize + cellSize/2, 20, 0, Math.PI*2);
+                ctx.fill();
+            });
+        });
+    }
+
+    function getMousePos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+            x: Math.floor((clientX - rect.left) / cellSize),
+            y: Math.floor((clientY - rect.top) / cellSize)
+        };
+    }
+
+    function start(e) {
+        const pos = getMousePos(e);
+        dots.forEach((dot, idx) => {
+            if ((pos.x === dot.p1.x && pos.y === dot.p1.y) || (pos.x === dot.p2.x && pos.y === dot.p2.y)) {
+                isDrawing = true;
+                currentColorIndex = idx;
+                paths[idx] = [pos];
+            }
+        });
+    }
+
+    function move(e) {
+        if (!isDrawing) return;
+        const pos = getMousePos(e);
+        const lastPos = paths[currentColorIndex][paths[currentColorIndex].length - 1];
+        
+        if (pos.x >= 0 && pos.x < gridSize && pos.y >= 0 && pos.y < gridSize) {
+            if (pos.x !== lastPos.x || pos.y !== lastPos.y) {
+                // 隣接チェック
+                if (Math.abs(pos.x - lastPos.x) + Math.abs(pos.y - lastPos.y) === 1) {
+                    paths[currentColorIndex].push(pos);
+                    draw();
+                    checkClear();
+                }
+            }
+        }
+    }
+
+    function end() { isDrawing = false; }
+
+    function checkClear() {
+        const cleared = dots.every((dot, idx) => {
+            const p = paths[idx];
+            if (p.length < 2) return false;
+            const start = p[0], end = p[p.length-1];
+            return (start.x === dot.p1.x && start.y === dot.p1.y && end.x === dot.p2.x && end.y === dot.p2.y) ||
+                   (start.x === dot.p2.x && start.y === dot.p2.y && end.x === dot.p1.x && end.y === dot.p1.y);
+        });
+        if (cleared) document.getElementById('overlay').style.display = 'flex';
+    }
+
+    function resetLevel() { paths = [[], [], []]; draw(); }
+    function nextLevel() { location.reload(); }
+
+    canvas.addEventListener('mousedown', start);
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', end);
+    canvas.addEventListener('touchstart', start);
+    window.addEventListener('touchmove', move);
+    window.addEventListener('touchend', end);
+
+    draw();
+</script>
+</body>
+</html>
