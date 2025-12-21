@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>瞬間！足し算ゲーム</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f8ff;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        .game-container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            max-width: 450px;
+            width: 100%;
+            border: 1px solid #e0e0e0;
+            position: relative;
+        }
+        h1 {
+            color: #007bff;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+            border-bottom: 2px solid #b8daff;
+            padding-bottom: 10px;
+        }
+        #question {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: #343a40;
+        }
+        #options-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .option-button {
+            background-color: #28a745;
+            color: white;
+            padding: 18px 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+        .option-button:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+        }
+        .option-button:active {
+            transform: translateY(0);
+        }
+        #score, #timer {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        #timer {
+            color: #dc3545;
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background-color: #ffebeb;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        #start-button, #restart-button {
+            background-color: #007bff;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.4em;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.2);
+        }
+        #start-button:hover, #restart-button:hover {
+            background-color: #0056b3;
+        }
+        #game-over-screen {
+            display: none; /* 初期状態では非表示 */
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #dc3545;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #final-score {
+            font-size: 2em;
+            color: #28a745;
+            margin-bottom: 20px;
+        }
+        #game-area {
+            display: none; /* ゲーム中は非表示 */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* スマホ向け調整 */
+        @media (max-width: 500px) {
+            .game-container {
+                padding: 20px;
+                margin: 10px;
+            }
+            h1 { font-size: 1.5em; }
+            #question { font-size: 2em; }
+            .option-button { padding: 15px 8px; font-size: 1.3em; }
+            #score, #timer { font-size: 1.1em; }
+            #start-button, #restart-button { font-size: 1.2em; padding: 12px 25px; }
+            #timer { top: 10px; right: 10px; font-size: 1.1em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🔢 瞬間！足し算ゲーム</h1>
+        
+        <div id="start-screen">
+            <p>表示される数字を素早く足して、正しい答えを選ぼう！</p>
+            <p>間違えるとゲームオーバー！</p>
+            <button id="start-button">ゲームスタート</button>
+        </div>
+
+        <div id="game-area">
+            <div id="timer">時間: 5</div>
+            <div id="score">スコア: 0</div>
+            <div id="question"></div>
+            <div id="options-container"></div>
+        </div>
+
+        <div id="game-over-screen">
+            <p>ゲームオーバー！</p>
+            <p id="final-score"></p>
+            <button id="restart-button">もう一度遊ぶ</button>
+        </div>
+    </div>
+
+    <script>
+        const questionElement = document.getElementById('question');
+        const optionsContainer = document.getElementById('options-container');
+        const scoreElement = document.getElementById('score');
+        const timerElement = document.getElementById('timer');
+        const startButton = document.getElementById('start-button');
+        const startScreen = document.getElementById('start-screen');
+        const gameArea = document.getElementById('game-area');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const finalScoreElement = document.getElementById('final-score');
+        const restartButton = document.getElementById('restart-button');
+
+        let score = 0;
+        let correctAnswer = 0;
+        let timeLeft = 5;
+        let timerInterval;
+        let gameActive = false;
+
+        function generateQuestion() {
+            const num1 = Math.floor(Math.random() * 20) + 1; // 1から20
+            const num2 = Math.floor(Math.random() * 20) + 1; // 1から20
+            correctAnswer = num1 + num2;
+
+            questionElement.textContent = `${num1} + ${num2} = ?`;
+
+            const options = [correctAnswer];
+            while (options.length < 3) {
+                let wrongAnswer = Math.floor(Math.random() * 40) + 2; // 2から40
+                if (wrongAnswer === correctAnswer || options.includes(wrongAnswer)) {
+                    continue;
+                }
+                options.push(wrongAnswer);
+            }
+            options.sort(() => Math.random() - 0.5); // 選択肢をシャッフル
+
+            optionsContainer.innerHTML = '';
+            options.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('option-button');
+                button.addEventListener('click', () => checkAnswer(option));
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function startTimer() {
+            timeLeft = 5;
+            timerElement.textContent = `時間: ${timeLeft}`;
+            clearInterval(timerInterval); // 前のタイマーをクリア
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerElement.textContent = `時間: ${timeLeft}`;
+                if (timeLeft <= 0) {
+                    gameOver();
+                }
+            }, 1000);
+        }
+
+        function checkAnswer(selectedAnswer) {
+            if (!gameActive) return;
+
+            if (selectedAnswer === correctAnswer) {
+                score++;
+                scoreElement.textContent = `スコア: ${score}`;
+                generateQuestion();
+                startTimer(); // 正解したらタイマーをリセット
+            } else {
+                gameOver();
+            }
+        }
+
+        function startGame() {
+            score = 0;
+            scoreElement.textContent = `スコア: ${score}`;
+            startScreen.style.display = 'none';
+            gameArea.style.display = 'flex';
+            gameOverScreen.style.display = 'none';
+            gameActive = true;
+            generateQuestion();
+            startTimer();
+        }
+
+        function gameOver() {
+            gameActive = false;
+            clearInterval(timerInterval);
+            gameArea.style.display = 'none';
+            gameOverScreen.style.display = 'flex';
+            finalScoreElement.textContent = `最終スコア: ${score}点`;
+        }
+
+        startButton.addEventListener('click', startGame);
+        restartButton.addEventListener('click', startGame);
+
+        // 初期表示
+        gameArea.style.display = 'none';
+        gameOverScreen.style.display = 'none';
+
+    </script>
+</body>
+</html>
