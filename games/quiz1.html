@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>瞬間！足し算ゲーム</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <meta name="google-adsense-account" content="ca-pub-3571574988222927">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3571574988222927"
      crossorigin="anonymous"></script>
@@ -22,6 +23,20 @@
             box-sizing: border-box;
             text-align: center;
         }
+        /* 左上の戻るリンク */
+        .top-nav {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+        }
+        .top-nav a {
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
         .game-container {
             background-color: #fff;
             padding: 30px;
@@ -83,23 +98,37 @@
             padding: 5px 10px;
             border-radius: 5px;
         }
-        #start-button, #restart-button {
-            background-color: #007bff;
+        /* ボタン共通スタイル */
+        .btn-common {
             color: white;
             padding: 15px 30px;
             border: none;
             border-radius: 10px;
-            font-size: 1.4em;
+            font-size: 1.2em;
             cursor: pointer;
-            transition: background-color 0.3s;
-            margin-top: 20px;
+            transition: 0.3s;
+            margin: 10px 5px;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+        }
+        #start-button, #restart-button {
+            background-color: #007bff;
             box-shadow: 0 4px 15px rgba(0, 123, 255, 0.2);
         }
         #start-button:hover, #restart-button:hover {
             background-color: #0056b3;
         }
+        /* 一覧に戻るボタン専用 */
+        .home-button {
+            background-color: #6c757d;
+        }
+        .home-button:hover {
+            background-color: #5a6268;
+        }
+
         #game-over-screen {
-            display: none; /* 初期状態では非表示 */
+            display: none;
             position: absolute;
             top: 0;
             left: 0;
@@ -110,48 +139,45 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            font-size: 1.5em;
-            font-weight: bold;
             color: #dc3545;
-            text-align: center;
             padding: 20px;
             box-sizing: border-box;
+            z-index: 10;
         }
         #final-score {
             font-size: 2em;
             color: #28a745;
             margin-bottom: 20px;
+            font-weight: bold;
         }
         #game-area {
-            display: none; /* ゲーム中は非表示 */
+            display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
         }
 
-        /* スマホ向け調整 */
         @media (max-width: 500px) {
-            .game-container {
-                padding: 20px;
-                margin: 10px;
-            }
+            .game-container { padding: 20px; margin: 10px; }
             h1 { font-size: 1.5em; }
             #question { font-size: 2em; }
             .option-button { padding: 15px 8px; font-size: 1.3em; }
-            #score, #timer { font-size: 1.1em; }
-            #start-button, #restart-button { font-size: 1.2em; padding: 12px 25px; }
-            #timer { top: 10px; right: 10px; font-size: 1.1em; }
+            .btn-common { font-size: 1em; padding: 12px 20px; }
         }
     </style>
 </head>
 <body>
+    <div class="top-nav">
+        <a href="index.html"><i class="fa-solid fa-arrow-left"></i> ゲーム一覧</a>
+    </div>
+
     <div class="game-container">
         <h1>🔢 瞬間！足し算ゲーム</h1>
         
         <div id="start-screen">
             <p>表示される数字を素早く足して、正しい答えを選ぼう！</p>
             <p>間違えるとゲームオーバー！</p>
-            <button id="start-button">ゲームスタート</button>
+            <button id="start-button" class="btn-common">ゲームスタート</button>
         </div>
 
         <div id="game-area">
@@ -162,9 +188,10 @@
         </div>
 
         <div id="game-over-screen">
-            <p>ゲームオーバー！</p>
-            <p id="final-score"></p>
-            <button id="restart-button">もう一度遊ぶ</button>
+            <p style="font-size: 1.5em; margin-bottom: 10px;">ゲームオーバー！</p>
+            <div id="final-score"></div>
+            <button id="restart-button" class="btn-common">もう一度遊ぶ</button>
+            <a href="/" class="btn-common home-button">一覧に戻る</a>
         </div>
     </div>
 
@@ -187,21 +214,21 @@
         let gameActive = false;
 
         function generateQuestion() {
-            const num1 = Math.floor(Math.random() * 20) + 1; // 1から20
-            const num2 = Math.floor(Math.random() * 20) + 1; // 1から20
+            const num1 = Math.floor(Math.random() * 20) + 1;
+            const num2 = Math.floor(Math.random() * 20) + 1;
             correctAnswer = num1 + num2;
 
             questionElement.textContent = `${num1} + ${num2} = ?`;
 
             const options = [correctAnswer];
             while (options.length < 3) {
-                let wrongAnswer = Math.floor(Math.random() * 40) + 2; // 2から40
+                let wrongAnswer = Math.floor(Math.random() * 40) + 2;
                 if (wrongAnswer === correctAnswer || options.includes(wrongAnswer)) {
                     continue;
                 }
                 options.push(wrongAnswer);
             }
-            options.sort(() => Math.random() - 0.5); // 選択肢をシャッフル
+            options.sort(() => Math.random() - 0.5);
 
             optionsContainer.innerHTML = '';
             options.forEach(option => {
@@ -216,7 +243,7 @@
         function startTimer() {
             timeLeft = 5;
             timerElement.textContent = `時間: ${timeLeft}`;
-            clearInterval(timerInterval); // 前のタイマーをクリア
+            clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 timeLeft--;
                 timerElement.textContent = `時間: ${timeLeft}`;
@@ -233,7 +260,7 @@
                 score++;
                 scoreElement.textContent = `スコア: ${score}`;
                 generateQuestion();
-                startTimer(); // 正解したらタイマーをリセット
+                startTimer();
             } else {
                 gameOver();
             }
@@ -261,10 +288,8 @@
         startButton.addEventListener('click', startGame);
         restartButton.addEventListener('click', startGame);
 
-        // 初期表示
         gameArea.style.display = 'none';
         gameOverScreen.style.display = 'none';
-
     </script>
 </body>
 </html>
