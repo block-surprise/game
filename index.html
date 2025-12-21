@@ -11,10 +11,33 @@
     
     <style>
         body { margin: 0; background-color: #f4f7f6; font-family: sans-serif; color: #333; line-height: 1.6; }
-        .container { max-width: 900px; margin: 20px auto; background-color: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .container { max-width: 900px; margin: 20px auto; background-color: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); position: relative; }
         h1 { text-align: center; color: #007bff; border-bottom: 3px solid #b8daff; padding-bottom: 10px; margin-bottom: 10px; }
         
-        /* ランク表示・おすすめボタンのスタイル */
+        /* --- 追加: 右上のログインカウンター --- */
+        .login-counter-nav {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background: white;
+            padding: 8px 15px;
+            border-radius: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            cursor: pointer;
+            border: 1px solid #007bff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+            text-decoration: none;
+            color: #333;
+            font-size: 0.85rem;
+        }
+        .login-counter-nav:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.15); }
+        .login-counter-nav i { color: #ffc107; font-size: 1.1rem; }
+        .login-days { font-weight: bold; color: #007bff; }
+
         .status-bar { text-align: center; margin-bottom: 20px; }
         .rank-display { font-size: 0.9rem; color: #666; margin-bottom: 15px; }
         .rank-name { color: #e91e63; font-weight: bold; background: #fff0f5; padding: 2px 10px; border-radius: 10px; }
@@ -35,51 +58,35 @@
         .filter-group { margin-bottom: 15px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         .filter-label { font-weight: bold; font-size: 0.85rem; color: #666; min-width: 70px; }
         .filter-btns { display: flex; gap: 8px; flex-wrap: wrap; }
-        
-        .filter-btn {
-            border: 1px solid #ddd; background: #fff; color: #555;
-            padding: 5px 15px; border-radius: 15px; cursor: pointer; font-size: 0.85rem; transition: 0.3s;
-        }
+        .filter-btn { border: 1px solid #ddd; background: #fff; color: #555; padding: 5px 15px; border-radius: 15px; cursor: pointer; font-size: 0.85rem; transition: 0.3s; }
         .filter-btn.active { background: #007bff; color: #fff; border-color: #007bff; }
 
-        /* グリッドレイアウト */
         .grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
         @media (min-width: 600px) { .grid { grid-template-columns: repeat(2, 1fr); } }
 
         .card-link { text-decoration: none; color: inherit; display: block; transition: 0.3s; }
         .card-link.hidden { display: none; }
-
-        .card {
-            background-color: #fff; border: 1px solid #e0e0e0; border-radius: 12px;
-            padding: 20px; transition: 0.3s; height: 100%; box-sizing: border-box;
-            display: flex; flex-direction: column; position: relative;
-        }
+        .card { background-color: #fff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 20px; transition: 0.3s; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; position: relative; }
         .card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); border-color: #007bff; }
         
-        /* おすすめ抽選時のハイライト演出 */
-        .highlight-card { 
-            animation: highlightEffect 1.2s ease-in-out 2; 
-            border: 3px solid #ffc107 !important;
-        }
-        @keyframes highlightEffect {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); box-shadow: 0 0 25px rgba(255, 193, 7, 0.5); }
-        }
+        .highlight-card { animation: highlightEffect 1.2s ease-in-out 2; border: 3px solid #ffc107 !important; }
+        @keyframes highlightEffect { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); box-shadow: 0 0 25px rgba(255, 193, 7, 0.5); } }
 
         .card h2 { margin: 0 0 10px 0; color: #007bff; font-size: 1.1em; display: flex; align-items: center; gap: 10px; }
         .card p { margin: 0; font-size: 0.85rem; color: #555; flex-grow: 1; }
         .platform-badge { font-size: 0.75em; margin-top: 10px; color: #888; }
-        .play-tag {
-            display: inline-block; margin-top: 12px; background-color: #ffc107;
-            padding: 4px 15px; border-radius: 20px; font-size: 0.75rem;
-            font-weight: bold; text-align: center; width: fit-content;
-        }
+        .play-tag { display: inline-block; margin-top: 12px; background-color: #ffc107; padding: 4px 15px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; text-align: center; width: fit-content; }
 
         .footer-nav { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; }
         .back-btn { color: #007bff; text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
+
+<a href="bonus.html" class="login-counter-nav">
+    <i class="fa-solid fa-fire"></i>
+    <span>連続 <span id="nav-login-days" class="login-days">0</span> 日</span>
+</a>
 
 <div class="container">
     <h1><i class="fa-solid fa-gamepad"></i>ミニゲームセンター</h1>
@@ -100,7 +107,6 @@
             <i class="fa-solid fa-magnifying-glass"></i>
             <input type="text" id="gameSearch" placeholder="ゲームを検索..." oninput="runFilter()">
         </div>
-
         <div class="filter-group">
             <span class="filter-label">ジャンル:</span>
             <div class="filter-btns">
@@ -111,7 +117,6 @@
                 <button class="filter-btn" onclick="setFilter('genre', 'typing', this)">タイピング</button>
             </div>
         </div>
-
         <div class="filter-group">
             <span class="filter-label">デバイス:</span>
             <div class="filter-btns">
@@ -151,15 +156,6 @@
                 <div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div>
             </div>
         </a>
-
-        <a href="games/line_def.html" class="card-link" data-genre="action" data-platform="all-device">
-    <div class="card">
-        <h2><i class="fa-solid fa-pen-nib"></i>ライン・ディフェンダー</h2>
-        <p>【全端末対応】線を引いてバリアを作れ！中央のコアを守り抜く、新感覚の一筆書き防衛アクション。</p>
-        <div class="platform-badge"><i class="fa-solid fa-mobile-screen"></i> <i class="fa-solid fa-desktop"></i> 全端末対応</div>
-        <div class="play-tag">あそぶ</div>
-    </div>
-</a>
         <a href="games/memory4.html" class="card-link" data-genre="brain" data-platform="all-device">
             <div class="card">
                 <h2><i class="fa-solid fa-table-cells"></i>メモリー・タイル</h2>
@@ -174,7 +170,6 @@
                 <div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div>
             </div>
         </a>
-
         <a href="games/merge1.html" class="card-link" data-genre="puzzle" data-platform="all-device">
             <div class="card">
                 <h2><i class="fa-solid fa-border-all"></i>ナンバーズ・マージ</h2>
@@ -192,11 +187,17 @@
         <a href="games/circle_merge.html" class="card-link" data-genre="puzzle" data-platform="all-device">
             <div class="card">
                 <h2><i class="fa-solid fa-circle-nodes"></i>マージ・サークル</h2>
-                <p>同じフルーツをくっつけて大きく！物理演算スイカ風ゲーム。</p>
+                <p>同じフルーツをくっつけて大きく！物理演算パズル。</p>
                 <div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div>
             </div>
         </a>
-
+        <a href="games/balance1.html" class="card-link" data-genre="puzzle" data-platform="all-device">
+            <div class="card">
+                <h2><i class="fa-solid fa-mountain"></i>パーフェクト・バランス</h2>
+                <p>不安定な土台の上にブロックを高く積み上げよう！物理パズル。</p>
+                <div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div>
+            </div>
+        </a>
         <a href="games/timer1" class="card-link" data-genre="action" data-platform="all-device">
             <div class="card">
                 <h2><i class="fa-solid fa-stopwatch"></i>10秒チャレンジ</h2>
@@ -221,7 +222,7 @@
         <a href="games/step1.html" class="card-link" data-genre="action" data-platform="mobile">
             <div class="card">
                 <h2><i class="fa-solid fa-stairs"></i>スカイ・ステップ</h2>
-                <p>リズムよく階段をのぼれ！左右タップの階段アクション。</p>
+                <p>リズムよく階段をのぼれ！左右タップアクション。</p>
                 <div class="platform-badge">スマホ推奨</div><div class="play-tag">あそぶ</div>
             </div>
         </a>
@@ -242,7 +243,7 @@
         <a href="games/bridge1.html" class="card-link" data-genre="action" data-platform="mobile">
             <div class="card">
                 <h2><i class="fa-solid fa-ruler-horizontal"></i>スティック・ブリッジ</h2>
-                <p>橋の長さを目測で決めろ！絶妙な操作が鍵のスマホアクション。</p>
+                <p>橋の長さを目測で決めろ！絶妙な操作が鍵のアクション。</p>
                 <div class="platform-badge">スマホ推奨</div><div class="play-tag">あそぶ</div>
             </div>
         </a>
@@ -253,6 +254,13 @@
                 <div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div>
             </div>
         </a>
+        <a href="games/line_def.html" class="card-link" data-genre="action" data-platform="all-device">
+            <div class="card">
+                <h2><i class="fa-solid fa-pen-nib"></i>ライン・ディフェンダー</h2>
+                <p>線を引いてバリアを作れ！中央のコアを守り抜くアクション。</p>
+                <div class="platform-badge">全端末</div><div class="play-tag">あそぶ</div>
+            </div>
+        </a>
         <a href="games/pc_mouse1.html" class="card-link" data-genre="action" data-platform="pc">
             <div class="card">
                 <h2><i class="fa-solid fa-mouse-pointer"></i>カーソル・サバイバル</h2>
@@ -260,11 +268,10 @@
                 <div class="platform-badge">PC専用</div><div class="play-tag">あそぶ</div>
             </div>
         </a>
-
         <a href="games/type1.html" class="card-link" data-genre="typing" data-platform="pc">
             <div class="card">
                 <h2><i class="fa-solid fa-keyboard"></i>タイプ・マスター</h2>
-                <p>正確さと速さを競う、PC専用の英単語タイピング練習。</p>
+                <p>正確さと速さを競う、PC専用のタイピング練習。</p>
                 <div class="platform-badge">PC専用</div><div class="play-tag">あそぶ</div>
             </div>
         </a>
@@ -275,15 +282,6 @@
                 <div class="platform-badge">PC専用</div><div class="play-tag">あそぶ</div>
             </div>
         </a>
-
-        <a href="games/balance1.html" class="card-link" data-genre="puzzle" data-platform="all-device">
-    <div class="card">
-        <h2><i class="fa-solid fa-mountain"></i>パーフェクト・バランス</h2>
-        <p>【全端末対応】不安定な土台の上にブロックを高く積み上げよう！物理演算を味方につけるバランスパズル。</p>
-        <div class="platform-badge"><i class="fa-solid fa-mobile-screen"></i> <i class="fa-solid fa-desktop"></i> 全端末対応</div>
-        <div class="play-tag">あそぶ</div>
-    </div>
-</a>
     </div>
 
     <div class="footer-nav">
@@ -295,12 +293,17 @@
     let activeGenre = 'all';
     let activeDevice = 'all';
 
-    // 称号システム
-    function updateRank() {
+    // 称号＆ログインカウンター更新
+    function updateStats() {
         let visits = localStorage.getItem('game_visits') || 0;
         visits = parseInt(visits) + 1;
         localStorage.setItem('game_visits', visits);
 
+        // 継続日数の取得
+        const streak = localStorage.getItem('login_streak') || 0;
+        document.getElementById('nav-login-days').innerText = streak;
+
+        // ランク判定
         let rank = "ビジター";
         if (visits > 50) rank = "伝説のゲーマー";
         else if (visits > 20) rank = "ゲームマスター";
@@ -309,19 +312,15 @@
         document.getElementById('userRank').innerText = rank;
     }
 
-    // ランダム抽選
     function pickRandomGame() {
         const visibleCards = Array.from(document.querySelectorAll('.card-link:not(.hidden)'));
         if (visibleCards.length === 0) return;
-
         visibleCards.forEach(c => c.querySelector('.card').classList.remove('highlight-card'));
         const target = visibleCards[Math.floor(Math.random() * visibleCards.length)];
-        
         target.scrollIntoView({ behavior: 'smooth', block: 'center' });
         target.querySelector('.card').classList.add('highlight-card');
-
         setTimeout(() => {
-            if(confirm("今日のおすすめは『" + target.querySelector('h2').innerText + "』です！遊びますか？")) {
+            if(confirm("おすすめ: 『" + target.querySelector('h2').innerText + "』で遊びますか？")) {
                 location.href = target.href;
             }
         }, 1200);
@@ -344,23 +343,17 @@
             const platform = card.getAttribute('data-platform');
             const title = card.querySelector('h2').innerText.toLowerCase();
             const desc = card.querySelector('p').innerText.toLowerCase();
-
             const matchGenre = (activeGenre === 'all' || genre === activeGenre);
             const matchDevice = (activeDevice === 'all' || platform === activeDevice || 
                                (activeDevice === 'mobile' && platform === 'all-device') || 
                                (activeDevice === 'pc' && platform === 'all-device'));
             const matchSearch = (title.includes(searchText) || desc.includes(searchText));
-
-            if (matchGenre && matchDevice && matchSearch) {
-                card.classList.remove('hidden');
-            } else {
-                card.classList.add('hidden');
-            }
+            if (matchGenre && matchDevice && matchSearch) card.classList.remove('hidden');
+            else card.classList.add('hidden');
         });
     }
 
-    // 初回実行
-    window.onload = updateRank;
+    window.onload = updateStats;
 </script>
 </body>
 </html>
