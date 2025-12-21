@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>プロフィール | ミニゲームセンター</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { margin: 0; background-color: #f4f7f6; font-family: sans-serif; color: #333; line-height: 1.6; }
+        .container { max-width: 500px; margin: 40px auto; background-color: #fff; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; }
+        
+        /* ユーザー情報ヘッダー */
+        .user-header { margin-bottom: 30px; }
+        .avatar-circle { width: 80px; height: 80px; background: #007bff; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 15px; box-shadow: 0 4px 10px rgba(0,123,255,0.3); }
+        .rank-name { font-size: 1.2rem; font-weight: bold; color: #e91e63; background: #fff0f5; padding: 5px 15px; border-radius: 20px; display: inline-block; }
+        
+        /* 統計グリッド */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
+        .stat-box { background: #f8f9fa; padding: 15px; border-radius: 15px; border: 1px solid #eee; }
+        .stat-val { display: block; font-size: 1.5rem; font-weight: bold; color: #007bff; }
+        .stat-label { font-size: 0.8rem; color: #888; }
+
+        /* お問い合わせセクション */
+        .info-section { text-align: left; background: #fff9e6; padding: 20px; border-radius: 15px; margin-bottom: 30px; border: 1px solid #ffeeba; }
+        .info-section h3 { margin-top: 0; font-size: 1rem; color: #856404; }
+        .info-item { font-size: 0.9rem; margin-bottom: 10px; color: #666; }
+        .info-item i { width: 20px; color: #f39c12; }
+
+        .btn-back { display: block; background: #007bff; color: white; text-decoration: none; padding: 12px; border-radius: 25px; font-weight: bold; transition: 0.3s; }
+        .btn-back:hover { background: #0056b3; transform: translateY(-2px); }
+
+        /* 虹色称号のスタイル（12日達成用） */
+        .rainbow-rank {
+            background: linear-gradient(to right, #ff2400, #e81d1d, #e8b71d, #1de840, #1ddde8, #2b1de8, #dd00f3);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rainbow 2s linear infinite;
+        }
+        @keyframes rainbow { to { background-position: 200% center; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="user-header">
+        <div class="avatar-circle"><i class="fa-solid fa-user-astronaut"></i></div>
+        <div id="userRank" class="rank-name">読み込み中...</div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-box">
+            <span id="streakDays" class="stat-val">0</span>
+            <span class="stat-label">連続ログイン</span>
+        </div>
+        <div class="stat-box">
+            <span id="totalVisits" class="stat-val">0</span>
+            <span class="stat-label">総プレイ回数</span>
+        </div>
+    </div>
+
+    <div class="info-section">
+        <h3><i class="fa-solid fa-circle-info"></i> サイト運営・サポート</h3>
+        <div class="info-item"><i class="fa-solid fa-envelope"></i> kakeradesign12@gmail.com</div>
+        <div class="info-item"><i class="fa-solid fa-shield-halved"></i> <a href="policy.html" style="color: inherit;">プライバシーポリシー</a></div>
+        <p style="font-size: 0.75rem; color: #999; margin-top: 10px;">不具合やご意見はお気軽にメールまで。Google AdSenseのポリシーに基づき適切に運営されています。</p>
+    </div>
+
+    <a href="/" class="btn-back">ホームに戻る</a>
+</div>
+
+<script>
+    function loadProfile() {
+        const visits = localStorage.getItem('game_visits') || 0;
+        const streak = localStorage.getItem('login_streak') || 0;
+        
+        document.getElementById('totalVisits').innerText = visits;
+        document.getElementById('streakDays').innerText = streak;
+
+        // 称号の決定
+        let rank = "ビジター";
+        if (visits > 50) rank = "伝説のゲーマー";
+        else if (visits > 20) rank = "ゲームマスター";
+        else if (visits > 10) rank = "常連さん";
+        else if (visits > 5) rank = "ルーキー";
+
+        const rankEl = document.getElementById('userRank');
+        rankEl.innerText = rank;
+
+        // 12日以上で虹色
+        if (parseInt(streak) >= 12) {
+            rankEl.classList.add('rainbow-rank');
+        }
+    }
+
+    window.onload = loadProfile;
+</script>
+</body>
+</html>
