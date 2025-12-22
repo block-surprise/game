@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>スカイ・ハイ・タワー</title>
+    <meta name="google-adsense-account" content="ca-pub-3571574988222927">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3571574988222927" crossorigin="anonymous"></script>
+
+    <style>
+        body { margin: 0; background: #222; font-family: 'Helvetica', sans-serif; overflow: hidden; touch-action: none; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: white; }
+        #ui { position: absolute; top: 50px; text-align: center; pointer-events: none; z-index: 10; }
+        #score { font-size: 4rem; font-weight: bold; opacity: 0.8; }
+        canvas { display: block; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 100; }
+        .btn { background: #007bff; color: white; border: none; padding: 15px 40px; border-radius: 30px; font-size: 1.2rem; cursor: pointer; margin-top: 20px; text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div id="ui">
+        <div id="score">0</div>
+        <div style="font-size: 0.9rem; letter-spacing: 2px;">CLICK TO STACK</div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <div id="overlay">
+        <h1 style="font-size: 3rem; margin-bottom: 0;">TOWER FELL</h1>
+        <p style="font-size: 1.5rem;">高さ: <span id="final-score">0</span> 階</p>
+        <button class="btn" onclick="location.reload()">再挑戦</button>
+        <a href="/" class="btn" style="background: #444;">ホームへ</a>
+    </div>
+
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = Math.min(window.innerWidth, 400);
+    canvas.height = Math.min(window.innerHeight, 600);
+
+    const BOX_HEIGHT = 40;
+    const INITIAL_WIDTH = 200;
+    let score = 0;
+    let isGameOver = false;
+    let cameraY = 0;
+
+    let blocks = [
+        { x: (canvas.width - INITIAL_WIDTH) / 2, y: canvas.height - BOX_HEIGHT, width: INITIAL_WIDTH, color: '#007bff' }
+    ];
+
+    let currentBlock = {
+        x: 0,
+        y: canvas.height - BOX_HEIGHT * 2,
+        width: INITIAL_WIDTH,
+        speed: 3,
+        direction: 1,
+        color: `hsl(${Math.random() * 360}, 70%, 60%)`
+    };
+
+    function update() {
+        if (isGameOver) return;
+
+        currentBlock.x += currentBlock.speed * currentBlock.direction;
+        if (currentBlock.x + currentBlock.width > canvas.width || currentBlock.x < 0) {
+            currentBlock.direction *= -1;
+        }
+
+        // カメラの追従
+        const targetCameraY = score * BOX_HEIGHT;
+        cameraY += (targetCameraY - cameraY) * 0.1;
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.translate(0, cameraY);
+
+        // 置かれたブロックの描画
+        blocks.forEach((b, i) => {
+            ctx.fillStyle = b.color;
+            ctx.fillRect(b.x, b.y, b.width, BOX_HEIGHT);
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+            ctx.strokeRect(b.x, b.y, b.width, BOX_HEIGHT);
+        });
+
+        // 動いているブロックの描画
+        if (!isGameOver) {
+            ctx.fillStyle = currentBlock.color;
+            ctx.fillRect(currentBlock.x, currentBlock.y, currentBlock.width, BOX_HEIGHT);
+        }
+
+        ctx.restore();
+        requestAnimationFrame(() => { update(); draw(); });
+    }
+
+    function placeBlock() {
+        if (isGameOver) return;
+
+        const lastBlock = blocks[blocks.length - 1];
+        const diff = currentBlock.x - lastBlock.x;
+        const overlap = currentBlock.width - Math.abs(diff);
+
+        if (overlap <= 0) {
+            isGameOver = true;
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('overlay').style.display = 'flex';
+            return;
+        }
+
+        // 重なっている部分だけ新しいブロックにする
+        const newWidth = overlap;
+        const newX = diff > 0 ? currentBlock.x : lastBlock.x;
+
+        blocks.push({
+            x: newX,
+            y: currentBlock.y,
+            width: newWidth,
+            color: currentBlock.color
+        });
+
+        score++;
+        document.getElementById('score').innerText = score;
+
+        // 次のブロックの準備
+        currentBlock = {
+            x: currentBlock.direction > 0 ? 0 : canvas.width - newWidth,
+            y: canvas.height - BOX_HEIGHT * (blocks.length + 1),
+            width: newWidth,
+            speed: 3 + score * 0.1, // 徐々に速く
+            direction: 1,
+            color: `hsl(${(score * 20) % 360}, 70%, 60%)`
+        };
+    }
+
+    window.addEventListener('mousedown', placeBlock);
+    window.addEventListener('touchstart', (e) => { e.preventDefault(); placeBlock(); });
+
+    draw();
+</script>
+</body>
+</html>
