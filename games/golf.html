@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>ミニミニ・パターゴルフ</title>
-    <meta name="google-adsense-account" content="ca-pub-3571574988222927">
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3571574988222927" crossorigin="anonymous"></script>
-
     <style>
         body { margin: 0; background: #2ecc71; font-family: sans-serif; overflow: hidden; touch-action: none; display: flex; flex-direction: column; align-items: center; }
         #game-header { color: white; padding: 10px; text-shadow: 1px 1px 3px rgba(0,0,0,0.3); text-align: center; }
@@ -18,17 +15,17 @@
 <body>
 
     <div id="game-header">
-        <div id="info">引っ張って離して打つ！</div>
-        <div style="font-size: 1.5rem; font-weight: bold;">打数: <span id="strokes">0</span></div>
+        <h2 id="level-display">LEVEL 1</h2>
+        <div style="font-size: 1.2rem;">今回の打数: <span id="strokes">0</span> / 合計: <span id="total-strokes">0</span></div>
     </div>
 
     <canvas id="canvas"></canvas>
 
     <div id="overlay">
-        <h1>HOLE IN ONE!</h1>
+        <h1 id="overlay-title">HOLE IN ONE!</h1>
         <p>合計打数: <span id="final-strokes">0</span></p>
-        <button class="btn" onclick="location.reload()">もう一度</button>
-        <a href="../index.html" class="btn" style="background: #ecf0f1;">一覧に戻る</a>
+        <button id="next-btn" class="btn" onclick="nextLevel()">次のホールへ</button>
+        <a href="/" class="btn" style="background: #ecf0f1;">一覧に戻る</a>
     </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
@@ -36,11 +33,11 @@
     const { Engine, Render, Runner, Bodies, Composite, Events, Body, Vector } = Matter;
 
     const engine = Engine.create();
-    engine.world.gravity.y = 0; // ゴルフなので上からの視点（重力なし）
+    engine.world.gravity.y = 0;
 
     const canvas = document.getElementById('canvas');
     const width = Math.min(window.innerWidth - 20, 400);
-    const height = Math.min(window.innerHeight - 120, 600);
+    const height = Math.min(window.innerHeight - 150, 600);
     canvas.width = width;
     canvas.height = height;
 
@@ -50,48 +47,70 @@
         options: { width: width, height: height, wireframes: false, background: '#27ae60' }
     });
 
-    // 壁の作成
-    const wallOptions = { isStatic: true, render: { fillStyle: '#1e8449' } };
-    const walls = [
-        Bodies.rectangle(width/2, 0, width, 20, wallOptions),
-        Bodies.rectangle(width/2, height, width, 20, wallOptions),
-        Bodies.rectangle(0, height/2, 20, height, wallOptions),
-        Bodies.rectangle(width, height/2, 20, height, wallOptions),
-        // 障害物（ランダムに1つ配置）
-        Bodies.rectangle(width/2, height/2, 100, 20, wallOptions)
-    ];
+    let currentLevel = 1;
+    let strokes = 0;
+    let totalStrokes = 0;
+    let ball, hole;
+    let isDragging = false;
+    let startPos = { x: 0, y: 0 };
 
-    // カップ（穴）
-    const hole = Bodies.circle(width/2, 80, 15, { isStatic: true, isSensor: true, render: { fillStyle: '#111' } });
-    
-    // ボール
-    const ball = Bodies.circle(width/2, height - 80, 8, {
-        restitution: 0.8, frictionAir: 0.03, render: { fillStyle: '#fff' }
-    });
+    // --- レベル設計 ---
+    function loadLevel(lv) {
+        Composite.clear(engine.world);
+        strokes = 0;
+        document.getElementById('strokes').innerText = strokes;
+        document.getElementById('level-display').innerText = "LEVEL " + lv;
+        document.getElementById('overlay').style.display = 'none';
 
-    Composite.add(engine.world, [...walls, hole, ball]);
+        const wallOptions = { isStatic: true, render: { fillStyle: '#1e8449' } };
+        
+        // 外枠
+        const walls = [
+            Bodies.rectangle(width/2, 0, width, 20, wallOptions),
+            Bodies.rectangle(width/2, height, width, 20, wallOptions),
+            Bodies.rectangle(0, height/2, 20, height, wallOptions),
+            Bodies.rectangle(width, height/2, 20, height, wallOptions)
+        ];
+
+        // 障害物の配置
+        if (lv === 1) {
+            walls.push(Bodies.rectangle(width/2, height/2, 150, 20, wallOptions));
+        } else if (lv === 2) {
+            walls.push(Bodies.rectangle(width/3, height/3, 20, 200, wallOptions));
+            walls.push(Bodies.rectangle(width*0.7, height*0.6, 20, 200, wallOptions));
+        } else if (lv === 3) {
+            walls.push(Bodies.rectangle(width/2, height/2, 200, 20, wallOptions));
+            walls.push(Bodies.rectangle(width/2, height/2 - 100, 20, 100, wallOptions));
+            walls.push(Bodies.rectangle(width/2, height/2 + 100, 20, 100, wallOptions));
+        }
+
+        hole = Bodies.circle(width/2, 80, 15, { isStatic: true, isSensor: true, render: { fillStyle: '#111' } });
+        ball = Bodies.circle(width/2, height - 80, 8, { restitution: 0.8, frictionAir: 0.03, render: { fillStyle: '#fff' } });
+
+        Composite.add(engine.world, [...walls, hole, ball]);
+    }
 
     Render.run(render);
     Runner.run(Runner.create(), engine);
 
-    let strokes = 0;
-    let isDragging = false;
-    let startPos = { x: 0, y: 0 };
-
-    // 操作
     const handleStart = (x, y) => {
         if (Vector.magnitude(ball.velocity) > 0.1) return;
         isDragging = true;
-        startPos = { x, y };
+        const rect = canvas.getBoundingClientRect();
+        startPos = { x: x - rect.left, y: y - rect.top };
     };
 
     const handleEnd = (x, y) => {
         if (!isDragging) return;
         isDragging = false;
-        const diff = Vector.sub(startPos, { x, y });
+        const rect = canvas.getBoundingClientRect();
+        const endPos = { x: x - rect.left, y: y - rect.top };
+        const diff = Vector.sub(startPos, endPos);
         Body.applyForce(ball, ball.position, Vector.mult(diff, 0.00005));
         strokes++;
+        totalStrokes++;
         document.getElementById('strokes').innerText = strokes;
+        document.getElementById('total-strokes').innerText = totalStrokes;
     };
 
     canvas.addEventListener('mousedown', e => handleStart(e.clientX, e.clientY));
@@ -99,18 +118,37 @@
     canvas.addEventListener('touchstart', e => handleStart(e.touches[0].clientX, e.touches[0].clientY));
     window.addEventListener('touchend', e => handleEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY));
 
-    // カップイン判定
     Events.on(engine, 'afterUpdate', () => {
+        if (!ball) return;
         const dist = Vector.magnitude(Vector.sub(ball.position, hole.position));
         if (dist < 15 && Vector.magnitude(ball.velocity) < 2) {
             Body.setVelocity(ball, { x: 0, y: 0 });
             ball.position = { x: hole.position.x, y: hole.position.y };
-            setTimeout(() => {
-                document.getElementById('final-strokes').innerText = strokes;
-                document.getElementById('overlay').style.display = 'flex';
-            }, 500);
+            showClearOverlay();
         }
     });
+
+    function showClearOverlay() {
+        document.getElementById('final-strokes').innerText = totalStrokes;
+        const overlay = document.getElementById('overlay');
+        const nextBtn = document.getElementById('next-btn');
+        if (currentLevel < 3) {
+            document.getElementById('overlay-title').innerText = "STAGE CLEAR!";
+            nextBtn.innerText = "次のホールへ";
+            nextBtn.style.display = "block";
+        } else {
+            document.getElementById('overlay-title').innerText = "ALL HOLES CLEAR!";
+            nextBtn.style.display = "none";
+        }
+        overlay.style.display = 'flex';
+    }
+
+    function nextLevel() {
+        currentLevel++;
+        loadLevel(currentLevel);
+    }
+
+    loadLevel(1);
 </script>
 </body>
 </html>
