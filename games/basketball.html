@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>フリースロー・スター</title>
+    <meta name="google-adsense-account" content="ca-pub-3571574988222927">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3571574988222927" crossorigin="anonymous"></script>
+
+    <style>
+        body { margin: 0; background: #87CEEB; font-family: sans-serif; overflow: hidden; touch-action: none; }
+        #game-ui { position: absolute; top: 20px; width: 100%; text-align: center; color: white; pointer-events: none; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        #score { font-size: 2rem; font-weight: bold; }
+        canvas { display: block; }
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; flex-direction: column; align-items: center; justify-content: center; color: white; }
+        .btn { background: #FF4500; color: white; border: none; padding: 12px 30px; border-radius: 25px; font-size: 1.2rem; cursor: pointer; margin-top: 15px; text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div id="game-ui">
+        <div id="score">SCORE: 0</div>
+        <div>ボールをドラッグしてシュート！</div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <div id="overlay">
+        <h1>TIME UP!</h1>
+        <p>最終スコア: <span id="final-score">0</span></p>
+        <button class="btn" onclick="location.reload()">もう一度</button>
+        <a href="../index.html" class="btn" style="background: #555;">一覧に戻る</a>
+    </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+<script>
+    const { Engine, Render, Runner, Bodies, Composite, MouseConstraint, Mouse, Events, Body } = Matter;
+
+    const engine = Engine.create();
+    const canvas = document.getElementById('canvas');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const render = Render.create({
+        canvas: canvas,
+        engine: engine,
+        options: { width: canvas.width, height: canvas.height, wireframes: false, background: '#87CEEB' }
+    });
+
+    // ゴール板とリング
+    const backboard = Bodies.rectangle(canvas.width - 50, canvas.height / 2 - 50, 10, 100, { isStatic: true, render: { fillStyle: '#fff' } });
+    const rimL = Bodies.circle(canvas.width - 110, canvas.height / 2, 5, { isStatic: true, render: { fillStyle: '#FF4500' } });
+    const rimR = Bodies.circle(canvas.width - 60, canvas.height / 2, 5, { isStatic: true, render: { fillStyle: '#FF4500' } });
+    
+    // 地面
+    const ground = Bodies.rectangle(canvas.width / 2, canvas.height + 25, canvas.width, 50, { isStatic: true, render: { fillStyle: '#333' } });
+
+    Composite.add(engine.world, [backboard, rimL, rimR, ground]);
+
+    Render.run(render);
+    Runner.run(Runner.create(), engine);
+
+    let score = 0;
+    let ball;
+    let isShooting = false;
+
+    function spawnBall() {
+        if (ball) Composite.remove(engine.world, ball);
+        ball = Bodies.circle(100, canvas.height - 100, 25, {
+            restitution: 0.8,
+            friction: 0.05,
+            render: { fillStyle: '#FFA500', strokeStyle: '#333', lineWidth: 2 }
+        });
+        ball.isScored = false;
+        Composite.add(engine.world, ball);
+        isShooting = false;
+    }
+
+    spawnBall();
+
+    // ドラッグ操作
+    let startX, startY;
+    window.addEventListener('mousedown', e => { startX = e.clientX; startY = e.clientY; });
+    window.addEventListener('mouseup', e => {
+        if (isShooting) return;
+        const diffX = e.clientX - startX;
+        const diffY = e.clientY - startY;
+        
+        if (diffX > 20 || diffY < -20) {
+            Body.applyForce(ball, ball.position, { x: diffX * 0.0002, y: diffY * 0.0005 });
+            isShooting = true;
+            setTimeout(spawnBall, 3000);
+        }
+    });
+
+    // スマホ操作
+    window.addEventListener('touchstart', e => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; });
+    window.addEventListener('touchend', e => {
+        if (isShooting) return;
+        const diffX = e.changedTouches[0].clientX - startX;
+        const diffY = e.changedTouches[0].clientY - startY;
+        if (diffX > 20 || diffY < -20) {
+            Body.applyForce(ball, ball.position, { x: diffX * 0.0002, y: diffY * 0.0005 });
+            isShooting = true;
+            setTimeout(spawnBall, 3000);
+        }
+    });
+
+    // スコア判定
+    Events.on(engine, 'afterUpdate', () => {
+        if (ball && !ball.isScored) {
+            if (ball.position.x > canvas.width - 110 && ball.position.x < canvas.width - 60 &&
+                ball.position.y > canvas.height / 2 && ball.position.y < canvas.height / 2 + 20) {
+                score++;
+                ball.isScored = true;
+                document.getElementById('score').innerText = "SCORE: " + score;
+            }
+        }
+    });
+
+    // 制限時間（60秒）
+    setTimeout(() => {
+        document.getElementById('final-score').innerText = score;
+        document.getElementById('overlay').style.display = 'flex';
+    }, 60000);
+</script>
+</body>
+</html>
