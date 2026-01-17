@@ -5,14 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>P2Pネオン・ピンポン</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: sans-serif; text-align: center; overflow: hidden; touch-action: none; }
         canvas { background: #111; border-top: 5px solid #ff4d4d; border-bottom: 5px solid #007bff; display: block; margin: 0 auto; }
-        .menu { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); padding: 20px; border-radius: 15px; border: 2px solid #007bff; width: 85%; max-width: 320px; z-index: 10; }
-        input { width: 80%; padding: 12px; margin: 10px 0; border-radius: 5px; border: 1px solid #444; background: #222; color: #fff; }
-        button { padding: 12px 24px; background: #007bff; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 5px; }
-        #status { position: fixed; top: 10px; width: 100%; font-size: 12px; color: #007bff; text-shadow: 0 0 5px #007bff; }
-        .mode-label { font-size: 0.8rem; color: #aaa; margin-bottom: 10px; }
+        .menu { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); padding: 20px; border-radius: 15px; border: 2px solid #007bff; width: 85%; max-width: 320px; z-index: 10; overflow-y: auto; max-height: 90vh; }
+        input { width: 80%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #444; background: #222; color: #fff; }
+        button { padding: 12px 20px; background: #007bff; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 5px; }
+        #status { position: fixed; top: 10px; width: 100%; font-size: 12px; color: #007bff; z-index: 5; }
+        #qrcode { background: white; padding: 10px; display: inline-block; margin-top: 10px; }
+        #qrcode img { width: 150px; height: 150px; }
+        .result-screen { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); padding: 30px; border-radius: 15px; display: none; z-index: 20; border: 2px solid #ffc107; }
     </style>
 </head>
 <body>
@@ -21,13 +24,20 @@
 
 <div id="menu" class="menu">
     <h2>ネオン・ピンポン</h2>
-    <div class="mode-label">友達と対戦するには接続してください</div>
-    <button onclick="startGameMode('solo')">今すぐ1人で遊ぶ</button>
-    <hr style="border: 0.5px solid #333; margin: 20px 0;">
-    <button onclick="createRoom()">部屋を作る</button>
+    <button onclick="startGameMode('solo')">1人で遊ぶ</button>
+    <hr style="border: 0.5px solid #333; margin: 15px 0;">
+    <button onclick="createRoom()">対戦URL・QRを発行</button>
+    <div id="shareArea" style="display:none;">
+        <div id="qrcode"></div>
+        <p style="font-size:10px;">相手にスキャンさせてください</p>
+    </div>
     <input type="text" id="peerIdInput" placeholder="相手のIDを入力">
-    <button onclick="joinRoom()" style="background: #28a745;">接続して対戦</button>
-    <p id="myIdDisplay" style="font-size: 10px; word-break: break-all; color: #888;"></p>
+    <button onclick="joinRoom()" style="background: #28a745;">接続する</button>
+</div>
+
+<div id="resultScreen" class="result-screen">
+    <h1 id="resultText">WIN</h1>
+    <button onclick="location.reload()">もう一度遊ぶ</button>
 </div>
 
 <canvas id="gameCanvas"></canvas>
@@ -37,13 +47,18 @@
     const ctx = canvas.getContext('2d');
     const statusDiv = document.getElementById('status');
     const menu = document.getElementById('menu');
+    const resultScreen = document.getElementById('resultScreen');
+    const resultText = document.getElementById('resultText');
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
     let peer, conn;
     let isConnected = false;
-    let isHost = true; // 1人プレイ時は自分がホスト扱い
+    let isHost = true;
+    let gameActive = true;
+    const WINNING_SCORE = 7;
+
     let gameState = {
         ball: { x: canvas.width/2, y: canvas.height/2, dx: 4, dy: 4 },
         p1: { x: canvas.width/2 - 40, y: canvas.height - 30, w: 80, h: 10 },
@@ -51,15 +66,21 @@
         score: { p1: 0, p2: 0 }
     };
 
-    // --- 通信設定 ---
-    peer = new Peer();
-    peer.on('open', (id) => {
-        document.getElementById('myIdDisplay').innerText = "あなたのID: " + id;
-    });
+    // URLからIDを自動取得
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('room')) {
+        document.getElementById('peerIdInput').value = urlParams.get('room');
+    }
 
+    peer = new Peer();
+    
     function createRoom() {
         isHost = true;
-        statusDiv.innerText = "接続待機中...";
+        const inviteUrl = window.location.origin + window.location.pathname + "?room=" + peer.id;
+        document.getElementById('shareArea').style.display = 'block';
+        document.getElementById('qrcode').innerHTML = ""; 
+        new QRCode(document.getElementById("qrcode"), { text: inviteUrl, width: 150, height: 150 });
+        
         peer.on('connection', (c) => {
             conn = c;
             setupConn();
@@ -79,128 +100,87 @@
             isConnected = true;
             menu.style.display = 'none';
             statusDiv.innerText = "モード：2人対戦中！";
-            
             conn.on('data', (data) => {
-                if (isHost) {
-                    gameState.p2.x = data.px;
-                } else {
-                    gameState = data;
-                }
+                if (isHost) gameState.p2.x = data.px;
+                else gameState = data;
             });
         });
     }
 
-    // --- ゲーム開始 ---
     function startGameMode(mode) {
-        if (mode === 'solo') {
-            menu.style.display = 'none';
-            statusDiv.innerText = "モード：1人プレイ (CPU対戦)";
-        }
+        menu.style.display = 'none';
         loop();
     }
 
     function loop() {
-        update();
-        draw();
+        if (gameActive) {
+            update();
+            draw();
+        }
         requestAnimationFrame(loop);
     }
 
     function update() {
-        if (isHost) {
-            // ボールの移動
-            let b = gameState.ball;
-            b.x += b.dx;
-            b.y += b.dy;
+        if (!isHost && isConnected) {
+            conn.send({ px: gameState.p1.x });
+            return;
+        }
 
-            // 壁バウンド
-            if (b.x < 10 || b.x > canvas.width - 10) b.dx *= -1;
+        // ボール計算 (Host or Solo)
+        let b = gameState.ball;
+        b.x += b.dx; b.y += b.dy;
+        if (b.x < 10 || b.x > canvas.width - 10) b.dx *= -1;
 
-            // CPU操作 (接続されていない時だけ)
-            if (!isConnected) {
-                let cpuSpeed = 3.5; // 少し弱めに設定
-                let targetX = b.x - gameState.p2.w / 2;
-                gameState.p2.x += (targetX - gameState.p2.x) * 0.1;
-            }
+        if (!isConnected) { // CPU
+            gameState.p2.x += (b.x - (gameState.p2.x + 40)) * 0.1;
+        }
 
-            // 衝突判定 (自分 P1)
-            if (b.y > gameState.p1.y - 10 && b.x > gameState.p1.x && b.x < gameState.p1.x + gameState.p1.w) {
-                if (b.dy > 0) {
-                    b.dy *= -1.05; // 徐々に速く
-                    b.y = gameState.p1.y - 10;
-                }
-            }
-            // 衝突判定 (相手/CPU P2)
-            if (b.y < gameState.p2.y + 20 && b.x > gameState.p2.x && b.x < gameState.p2.x + gameState.p2.w) {
-                if (b.dy < 0) {
-                    b.dy *= -1.05;
-                    b.y = gameState.p2.y + 20;
-                }
-            }
+        if (b.y > gameState.p1.y - 10 && b.x > gameState.p1.x && b.x < gameState.p1.x + gameState.p1.w) {
+            if (b.dy > 0) { b.dy *= -1.05; b.y = gameState.p1.y - 10; }
+        }
+        if (b.y < gameState.p2.y + 20 && b.x > gameState.p2.x && b.x < gameState.p2.x + gameState.p2.w) {
+            if (b.dy < 0) { b.dy *= -1.05; b.y = gameState.p2.y + 20; }
+        }
 
-            // 得点
-            if (b.y < 0) { resetBall(); gameState.score.p1++; }
-            if (b.y > canvas.height) { resetBall(); gameState.score.p2++; }
+        if (b.y < 0) { resetBall(); gameState.score.p1++; checkWin(); }
+        if (b.y > canvas.height) { resetBall(); gameState.score.p2++; checkWin(); }
 
-            if (isConnected) conn.send(gameState);
-        } else {
-            // ゲスト側は自分の位置を送るだけ
-            if (isConnected) conn.send({ px: gameState.p1.x });
+        if (isConnected) conn.send(gameState);
+    }
+
+    function checkWin() {
+        if (gameState.score.p1 >= WINNING_SCORE || gameState.score.p2 >= WINNING_SCORE) {
+            gameActive = false;
+            resultScreen.style.display = "block";
+            const iWon = gameState.score.p1 >= WINNING_SCORE;
+            resultText.innerText = iWon ? "YOU WIN!" : "GAME OVER";
+            resultText.style.color = iWon ? "#007bff" : "#ff4d4d";
         }
     }
 
     function resetBall() {
-        gameState.ball = { 
-            x: canvas.width/2, 
-            y: canvas.height/2, 
-            dx: (Math.random() - 0.5) * 8, 
-            dy: 4 * (Math.random() > 0.5 ? 1 : -1) 
-        };
+        gameState.ball = { x: canvas.width/2, y: canvas.height/2, dx: (Math.random()-0.5)*8, dy: 4 };
     }
 
-    // 操作設定
     const handleMove = (e) => {
-        let clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        gameState.p1.x = clientX - gameState.p1.w / 2;
-        // 画面外へ出ないように制限
-        if (gameState.p1.x < 0) gameState.p1.x = 0;
-        if (gameState.p1.x > canvas.width - gameState.p1.w) gameState.p1.x = canvas.width - gameState.p1.w;
+        let x = e.touches ? e.touches[0].clientX : e.clientX;
+        gameState.p1.x = x - 40;
     };
     window.addEventListener('touchmove', handleMove);
     window.addEventListener('mousemove', handleMove);
 
     function draw() {
-        ctx.fillStyle = '#111';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // センターライン
-        ctx.strokeStyle = '#333';
-        ctx.setLineDash([10, 10]);
-        ctx.beginPath();
-        ctx.moveTo(0, canvas.height/2);
-        ctx.lineTo(canvas.width, canvas.height/2);
-        ctx.stroke();
-
-        // ボール (光る演出)
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = '#fff';
-        ctx.fillStyle = '#fff';
-        ctx.beginPath();
-        ctx.arc(gameState.ball.x, gameState.ball.y, 8, 0, Math.PI*2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
-
-        // パドル
-        ctx.fillStyle = '#007bff'; // 自分
-        ctx.fillRect(gameState.p1.x, gameState.p1.y, gameState.p1.w, gameState.p1.h);
-        ctx.fillStyle = '#ff4d4d'; // 相手
-        ctx.fillRect(gameState.p2.x, gameState.p2.y, gameState.p2.w, gameState.p2.h);
-
-        // スコア表示
-        ctx.font = "bold 40px sans-serif";
-        ctx.fillStyle = "rgba(255,255,255,0.2)";
+        ctx.fillStyle = '#111'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(gameState.ball.x, gameState.ball.y, 8, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#007bff'; ctx.fillRect(gameState.p1.x, gameState.p1.y, 80, 10);
+        ctx.fillStyle = '#ff4d4d'; ctx.fillRect(gameState.p2.x, gameState.p2.y, 80, 10);
+        ctx.font = "bold 40px sans-serif"; ctx.fillStyle = "rgba(255,255,255,0.2)";
         ctx.fillText(gameState.score.p2, canvas.width/2 - 20, canvas.height/2 - 50);
         ctx.fillText(gameState.score.p1, canvas.width/2 - 20, canvas.height/2 + 80);
     }
+
+    // ゲーム開始を待機
+    loop();
 </script>
 </body>
 </html>
