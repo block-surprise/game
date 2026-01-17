@@ -8,8 +8,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: sans-serif; text-align: center; overflow: hidden; touch-action: none; }
-        canvas { background: #111; border-top: 5px solid #ff4d4d; border-bottom: 5px solid #007bff; display: block; margin: 0 auto; }
-        .menu { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); padding: 25px; border-radius: 15px; border: 2px solid #007bff; width: 85%; max-width: 320px; z-index: 10; }
+        canvas { background: #111; display: block; margin: 0 auto; width: 100vw; height: 100vh; object-fit: contain; }
+        .menu { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.95); padding: 25px; border-radius: 15px; border: 2px solid #007bff; width: 85%; max-width: 320px; z-index: 10; }
         input { width: 80%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #444; background: #222; color: #fff; }
         button { padding: 12px 20px; background: #007bff; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 5px; width: 90%; }
         #status { position: fixed; top: 10px; width: 100%; font-size: 12px; color: #007bff; z-index: 5; }
@@ -20,25 +20,24 @@
 </head>
 <body>
 
-<div id="status">対戦相手を待機中...</div>
+<div id="status">通信待機中...</div>
 
 <div id="menu" class="menu">
-    <h2 style="color:#007bff; text-shadow: 0 0 10px #007bff;">NEON PONG</h2>
-    <button onclick="startGameMode('solo')" style="background:#444;">1人で練習 (CPU戦)</button>
+    <h2 style="color:#007bff;">NEON PONG</h2>
+    <button onclick="startGameMode('solo')">1人で練習 (CPU戦)</button>
     <hr style="border: 0.5px solid #333; margin: 20px 0;">
     <button onclick="createRoom()">対戦URL・QRを発行</button>
     <div id="shareArea" style="display:none;">
         <div id="qrcode"></div>
-        <p style="font-size:10px; color:#aaa;">相手にスキャンさせてください</p>
     </div>
     <input type="text" id="peerIdInput" placeholder="相手のIDを入力">
     <button onclick="joinRoom()" style="background: #28a745;">接続して対戦</button>
 </div>
 
 <div id="resultScreen" class="result-screen">
-    <h1 id="resultText" style="font-size: 40px;">WIN</h1>
-    <p id="finalScore" style="font-size: 20px; color: #aaa;"></p>
-    <button onclick="location.reload()" style="background:#ffc107; color:#000;">メニューに戻る</button>
+    <h1 id="resultText">WIN</h1>
+    <p id="finalScore"></p>
+    <button onclick="location.reload()" style="background:#ffc107; color:#000;">メニューへ</button>
 </div>
 
 <canvas id="gameCanvas"></canvas>
@@ -46,185 +45,140 @@
 <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-    const statusDiv = document.getElementById('status');
     const menu = document.getElementById('menu');
-    const resultScreen = document.getElementById('resultScreen');
-    const resultText = document.getElementById('resultText');
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    // ★重要：論理サイズ（どんな端末でもこのサイズを基準に計算する）
+    const V_WIDTH = 360;
+    const V_HEIGHT = 640;
+    canvas.width = V_WIDTH;
+    canvas.height = V_HEIGHT;
 
-    let peer, conn;
-    let isConnected = false;
-    let isHost = true;
-    let gameActive = false; // 最初は動かさない
+    let peer, conn, isConnected = false, isHost = true, gameActive = false;
     const WINNING_SCORE = 7;
 
-    let gameState = {
-        ball: { x: canvas.width/2, y: canvas.height/2, dx: 0, dy: 0 }, // 速度0で待機
-        p1: { x: canvas.width/2 - 40, y: canvas.height - 30, w: 80, h: 10 },
-        p2: { x: canvas.width/2 - 40, y: 20, w: 80, h: 10 },
-        score: { p1: 0, p2: 0 }
+    let state = {
+        bx: V_WIDTH/2, by: V_HEIGHT/2,
+        bdx: 0, bdy: 0,
+        p1x: V_WIDTH/2 - 40, 
+        p2x: V_WIDTH/2 - 40,
+        s1: 0, s2: 0
     };
 
-    // URLからIDを自動入力
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('room')) {
-        document.getElementById('peerIdInput').value = urlParams.get('room');
-    }
-
     peer = new Peer();
-    
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('room')) document.getElementById('peerIdInput').value = urlParams.get('room');
+
     function createRoom() {
         isHost = true;
         const inviteUrl = window.location.origin + window.location.pathname + "?room=" + peer.id;
         document.getElementById('shareArea').style.display = 'block';
-        document.getElementById('qrcode').innerHTML = ""; 
         new QRCode(document.getElementById("qrcode"), { text: inviteUrl, width: 150, height: 150 });
-        statusDiv.innerText = "あなたのID: " + peer.id + " (待機中)";
-        
-        peer.on('connection', (c) => {
-            conn = c;
-            setupConn();
-        });
+        peer.on('connection', (c) => { conn = c; setupConn(); });
     }
 
     function joinRoom() {
-        const id = document.getElementById('peerIdInput').value;
-        if (!id) return alert("IDを入力してください");
         isHost = false;
-        conn = peer.connect(id);
+        conn = peer.connect(document.getElementById('peerIdInput').value);
         setupConn();
     }
 
     function setupConn() {
         conn.on('open', () => {
-            isConnected = true;
-            menu.style.display = 'none';
-            statusDiv.innerText = "VS プレイヤー (2人対戦)";
-            if(isHost) initBall(); // ホストがボールを動かし始める
-            gameActive = true;
+            isConnected = true; gameActive = true; menu.style.display = 'none';
+            if(isHost) { state.bdx = 4; state.bdy = 4; }
         });
         conn.on('data', (data) => {
-            if (isHost) gameState.p2.x = data.px;
-            else gameState = data;
+            if (isHost) {
+                state.p2x = V_WIDTH - data.px - 80; 
+            } else {
+                state = data;
+            }
         });
     }
 
     function startGameMode(mode) {
         if (mode === 'solo') {
-            isConnected = false;
-            isHost = true;
-            menu.style.display = 'none';
-            statusDiv.innerText = "VS CPU (練習モード)";
-            initBall();
-            gameActive = true;
+            isHost = true; isConnected = false; gameActive = true;
+            menu.style.display = 'none'; state.bdx = 4; state.bdy = 4;
         }
-    }
-
-    function initBall() {
-        gameState.ball.dx = (Math.random() > 0.5 ? 4 : -4);
-        gameState.ball.dy = 4;
     }
 
     function loop() {
-        if (gameActive) {
-            update();
-            draw();
-        } else {
-            draw(); // 停止中も描画だけはしておく
-        }
+        if (gameActive && isHost) update();
+        if (!isHost && isConnected) conn.send({ px: state.p1x });
+        draw();
         requestAnimationFrame(loop);
     }
 
     function update() {
-        if (!isHost && isConnected) {
-            conn.send({ px: gameState.p1.x });
-            return;
+        state.bx += state.bdx; state.by += state.bdy;
+        if (state.bx < 8 || state.bx > V_WIDTH - 8) state.bdx *= -1;
+
+        if (!isConnected) state.p2x += (state.bx - (state.p2x + 40)) * 0.15;
+
+        // 当たり判定（下パドル）
+        if (state.by > V_HEIGHT - 40 && state.bx > state.p1x && state.bx < state.p1x + 80) {
+            state.bdy = -Math.abs(state.bdy) * 1.05; state.by = V_HEIGHT - 40;
+        }
+        // 当たり判定（上パドル）
+        if (state.by < 40 && state.bx > state.p2x && state.bx < state.p2x + 80) {
+            state.bdy = Math.abs(state.bdy) * 1.05; state.by = 40;
         }
 
-        let b = gameState.ball;
-        b.x += b.dx; b.y += b.dy;
-        
-        // 壁バウンド
-        if (b.x < 10 || b.x > canvas.width - 10) b.dx *= -1;
-
-        // CPU操作
-        if (!isConnected) {
-            let targetX = b.x - 40;
-            gameState.p2.x += (targetX - gameState.p2.x) * 0.12;
-        }
-
-        // 当たり判定 (自分)
-        if (b.y > gameState.p1.y - 10 && b.x > gameState.p1.x && b.x < gameState.p1.x + 80) {
-            if (b.dy > 0) { b.dy *= -1.05; b.y = gameState.p1.y - 10; }
-        }
-        // 当たり判定 (相手/CPU)
-        if (b.y < gameState.p2.y + 20 && b.x > gameState.p2.x && b.x < gameState.p2.x + 80) {
-            if (b.dy < 0) { b.dy *= -1.05; b.y = gameState.p2.y + 20; }
-        }
-
-        // 得点判定
-        if (b.y < 0) { resetBallPos(); gameState.score.p1++; checkWin(); }
-        if (b.y > canvas.height) { resetBallPos(); gameState.score.p2++; checkWin(); }
-
-        if (isConnected) conn.send(gameState);
+        if (state.by < 0) { resetBall(); state.s1++; }
+        if (state.by > V_HEIGHT) { resetBall(); state.s2++; }
+        if (state.s1 >= WINNING_SCORE || state.s2 >= WINNING_SCORE) endGame();
+        if (isConnected) conn.send(state);
     }
 
-    function checkWin() {
-        if (gameState.score.p1 >= WINNING_SCORE || gameState.score.p2 >= WINNING_SCORE) {
-            gameActive = false;
-            resultScreen.style.display = "block";
-            const iWon = (isHost && gameState.score.p1 >= WINNING_SCORE) || (!isHost && gameState.score.p2 >= WINNING_SCORE);
-            resultText.innerText = iWon ? "VICTORY!" : "DEFEAT...";
-            resultText.style.color = iWon ? "#007bff" : "#ff4d4d";
-            document.getElementById('finalScore').innerText = `${gameState.score.p1} - ${gameState.score.p2}`;
-        }
+    function resetBall() {
+        state.bx = V_WIDTH/2; state.by = V_HEIGHT/2;
+        state.bdx = (Math.random()-0.5)*8; state.bdy = 4;
     }
 
-    function resetBallPos() {
-        gameState.ball.x = canvas.width/2;
-        gameState.ball.y = canvas.height/2;
-        gameState.ball.dx = (Math.random()-0.5)*8;
-        gameState.ball.dy = (gameState.ball.dy > 0 ? -4 : 4);
+    function endGame() {
+        gameActive = false;
+        document.getElementById('resultScreen').style.display = "block";
+        const win = isHost ? (state.s1 > state.s2) : (state.s2 > state.s1);
+        document.getElementById('resultText').innerText = win ? "VICTORY!" : "DEFEAT...";
+        document.getElementById('finalScore').innerText = `${state.s1} - ${state.s2}`;
     }
 
-    const handleMove = (e) => {
-        let clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        gameState.p1.x = clientX - 40;
-        if (gameState.p1.x < 0) gameState.p1.x = 0;
-        if (gameState.p1.x > canvas.width - 80) gameState.p1.x = canvas.width - 80;
-    };
+    // タッチ座標を論理座標に変換
+    function handleMove(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const scaleX = V_WIDTH / rect.width;
+        state.p1x = (clientX - rect.left) * scaleX - 40;
+    }
     window.addEventListener('touchmove', handleMove);
     window.addEventListener('mousemove', handleMove);
 
     function draw() {
-        ctx.fillStyle = '#111';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // センターライン
-        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-        ctx.setLineDash([5, 15]);
-        ctx.beginPath(); ctx.moveTo(0, canvas.height/2); ctx.lineTo(canvas.width, canvas.height/2); ctx.stroke();
+        ctx.fillStyle = '#111'; ctx.fillRect(0, 0, V_WIDTH, V_HEIGHT);
+        
+        ctx.save();
+        if (!isHost) {
+            ctx.translate(V_WIDTH, V_HEIGHT);
+            ctx.rotate(Math.PI);
+        }
 
         // ボール
-        ctx.shadowBlur = 10; ctx.shadowColor = '#fff';
-        ctx.fillStyle = '#fff';
-        ctx.beginPath(); ctx.arc(gameState.ball.x, gameState.ball.y, 8, 0, Math.PI*2); ctx.fill();
-        ctx.shadowBlur = 0;
-
+        ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(state.bx, state.by, 8, 0, Math.PI*2); ctx.fill();
         // パドル
-        ctx.fillStyle = '#007bff'; ctx.fillRect(gameState.p1.x, gameState.p1.y, 80, 10);
-        ctx.fillStyle = '#ff4d4d'; ctx.fillRect(gameState.p2.x, gameState.p2.y, 80, 10);
+        ctx.fillStyle = '#007bff'; ctx.fillRect(state.p1x, V_HEIGHT-30, 80, 10);
+        ctx.fillStyle = '#ff4d4d'; ctx.fillRect(state.p2x, 20, 80, 10);
+        
+        ctx.restore();
 
-        // スコア
-        ctx.font = "bold 60px sans-serif"; ctx.fillStyle = "rgba(255,255,255,0.1)";
+        // スコア表示
+        ctx.font = "bold 40px sans-serif"; ctx.fillStyle = "rgba(255,255,255,0.2)";
         ctx.textAlign = "center";
-        ctx.fillText(gameState.score.p2, canvas.width/2, canvas.height/2 - 40);
-        ctx.fillText(gameState.score.p1, canvas.width/2, canvas.height/2 + 100);
+        ctx.fillText(isHost?state.s2:state.s1, V_WIDTH/2, V_HEIGHT/2 - 50);
+        ctx.fillText(isHost?state.s1:state.s2, V_WIDTH/2, V_HEIGHT/2 + 80);
     }
 
-    loop(); // 描画ループは回すが、gameActiveがfalseならupdateしない
+    loop();
 </script>
 </body>
 </html>
