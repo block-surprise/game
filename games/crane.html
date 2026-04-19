@@ -2,132 +2,96 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>CRANE MASTER - PROTOTYPE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>SHOP TYCOON ALPHA</title>
     <style>
-        body { margin: 0; background: #0a0a0a; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-        canvas { background: #1a1a1a; border: 4px solid #333; border-radius: 10px; }
+        body { margin: 0; background: #1a1a1a; color: white; font-family: 'Courier New', Courier, monospace; overflow: hidden; touch-action: none; }
+        #game-container { position: relative; width: 100vw; height: 100vh; }
+        #header { padding: 20px; background: #333; display: flex; justify-content: space-between; font-size: 1.2rem; border-bottom: 4px solid #00ffcc; }
+        #store { position: relative; width: 100%; height: 60%; background: #222; border-bottom: 2px solid #444; }
+        #controls { padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn { background: #444; color: white; border: none; padding: 15px; border-radius: 8px; font-weight: bold; text-align: center; }
+        .btn:active { background: #00ffcc; color: #000; }
+        .customer { position: absolute; width: 30px; height: 30px; background: #ff4500; border-radius: 50%; transition: all 0.5s ease; }
+        .shelf { position: absolute; width: 80px; height: 40px; background: #555; border: 2px solid #888; text-align: center; line-height: 40px; font-size: 0.8rem; }
     </style>
 </head>
 <body>
-    <canvas id="craneGame"></canvas>
+    <div id="game-container">
+        <div id="header">
+            <div>MONEY: $<span id="money">0</span></div>
+            <div>LEVEL: <span id="level">1</span></div>
+        </div>
+        
+        <div id="store" id="store-area">
+            <div class="shelf" style="top: 150px; left: 50px;">SHELF A</div>
+            <div class="shelf" style="top: 150px; left: 250px;">SHELF B</div>
+            <div id="register" style="position:absolute; bottom:20px; left:50%; transform:translateX(-50%); width:60px; height:60px; background:#00ffcc; color:#000; display:flex; align-items:center; justify-content:center; font-weight:bold; border-radius:5px;">CASHIER</div>
+        </div>
 
-<script>
-const canvas = document.getElementById('craneGame');
-const ctx = canvas.getContext('2d');
-canvas.width = 400;
-canvas.height = 600;
+        <div id="controls">
+            <div class="btn" onclick="addCustomer()">客を呼ぶ</div>
+            <div class="btn" onclick="upgradeRegister()">レジ強化 ($100)</div>
+            <div class="btn" onclick="expandStore()">店を広げる ($500)</div>
+            <div class="btn" onclick="restock()">在庫補充</div>
+        </div>
+    </div>
 
-// ガチのパラメータ設定
-const crane = {
-    x: 50,
-    y: 50,
-    width: 60,
-    height: 40,
-    armL: 0.5, // アームの開き具合 (0: 閉じ, 1: 開き)
-    state: 'IDLE', // IDLE, MOVE_X, MOVE_Y, CLAW_CLOSE, RETRACT
-    speed: 3
-};
+    <script>
+        let money = 0;
+        let level = 1;
+        let cashierSpeed = 2000;
+        const store = document.getElementById('store');
+        const moneyEl = document.getElementById('money');
 
-const prize = { x: 200, y: 530, r: 25, grabbed: false };
+        function addCustomer() {
+            const customer = document.createElement('div');
+            customer.className = 'customer';
+            customer.style.left = Math.random() * (window.innerWidth - 30) + 'px';
+            customer.style.top = '0px';
+            store.appendChild(customer);
 
-function drawCrane() {
-    ctx.strokeStyle = '#ccc';
-    ctx.lineWidth = 4;
-
-    // 1. レールの描画
-    ctx.beginPath();
-    ctx.moveTo(0, 50); ctx.lineTo(canvas.width, 50);
-    ctx.stroke();
-
-    // 2. 紐（ワイヤー）
-    ctx.beginPath();
-    ctx.moveTo(crane.x + crane.width/2, 50);
-    ctx.lineTo(crane.x + crane.width/2, crane.y);
-    ctx.stroke();
-
-    // 3. クレーン本体
-    ctx.fillStyle = '#ff3e3e';
-    ctx.fillRect(crane.x, crane.y, crane.width, crane.height);
-
-    // 4. アーム（左右の爪）
-    ctx.save();
-    ctx.translate(crane.x + crane.width/2, crane.y + crane.height);
-    
-    const clawAngle = 0.3 + (crane.armL * 0.8); // アームの角度計算
-    
-    // 左の爪
-    ctx.rotate(clawAngle);
-    ctx.strokeRect(0, 0, 10, 40);
-    ctx.rotate(-clawAngle);
-    
-    // 右の爪
-    ctx.rotate(-clawAngle);
-    ctx.strokeRect(-10, 0, 10, 40);
-    
-    ctx.restore();
-}
-
-function drawPrize() {
-    ctx.fillStyle = prize.grabbed ? '#fff' : '#ffd700';
-    ctx.beginPath();
-    ctx.arc(prize.x, prize.y, prize.r, 0, Math.PI * 2);
-    ctx.fill();
-}
-
-function update() {
-    if (crane.state === 'MOVE_X') {
-        crane.x += crane.speed;
-        if (crane.x > canvas.width - crane.width) crane.state = 'IDLE';
-    } else if (crane.state === 'MOVE_Y') {
-        crane.y += crane.speed;
-        if (crane.y > 450) crane.state = 'CLAW_CLOSE';
-    } else if (crane.state === 'CLAW_CLOSE') {
-        crane.armL -= 0.02;
-        if (crane.armL <= 0) {
-            // 当たり判定（簡易）
-            const dx = (crane.x + crane.width/2) - prize.x;
-            const dy = (crane.y + crane.height + 20) - prize.y;
-            if (Math.abs(dx) < 30 && Math.abs(dy) < 30) prize.grabbed = true;
-            crane.state = 'RETRACT';
+            // 客が棚へ行く -> レジへ行く -> 消える という流れ
+            setTimeout(() => {
+                customer.style.top = '150px'; // 棚へ
+                setTimeout(() => {
+                    customer.style.top = (store.offsetHeight - 80) + 'px'; // レジへ
+                    customer.style.left = '50%';
+                    customer.style.transform = 'translateX(-50%)';
+                    
+                    setTimeout(() => {
+                        money += 10;
+                        updateUI();
+                        customer.style.opacity = '0';
+                        setTimeout(() => customer.remove(), 500);
+                    }, cashierSpeed); // レジの処理時間
+                }, 1000);
+            }, 500);
         }
-    } else if (crane.state === 'RETRACT') {
-        crane.y -= crane.speed;
-        if (prize.grabbed) {
-            prize.x = crane.x + crane.width/2;
-            prize.y = crane.y + crane.height + 20;
+
+        function upgradeRegister() {
+            if (money >= 100) {
+                money -= 100;
+                cashierSpeed *= 0.8; // 20%速くなる
+                alert("レジが速くなりました！");
+                updateUI();
+            }
         }
-        if (crane.y <= 50) {
-            crane.state = 'IDLE';
-            // ここで景品を落とす処理などを入れる
+
+        function expandStore() {
+            if (money >= 500) {
+                money -= 500;
+                level++;
+                document.getElementById('level').innerText = level;
+                store.style.background = level % 2 === 0 ? '#2a2a3a' : '#222';
+                updateUI();
+                alert("店が大きくなりました！");
+            }
         }
-    }
-}
 
-function loop() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    update();
-    drawPrize();
-    drawCrane();
-    requestAnimationFrame(loop);
-}
-
-// 操作系
-window.addEventListener('keydown', (e) => {
-    if (e.code === 'Space') {
-        if (crane.state === 'IDLE') {
-            crane.state = 'MOVE_X';
-            crane.armL = 1; // 最初に開く
+        function updateUI() {
+            moneyEl.innerText = money;
         }
-    }
-});
-
-window.addEventListener('keyup', (e) => {
-    if (e.code === 'Space') {
-        if (crane.state === 'MOVE_X') crane.state = 'MOVE_Y';
-    }
-});
-
-loop();
-</script>
+    </script>
 </body>
 </html>
