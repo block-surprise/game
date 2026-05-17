@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JUST JUMPER</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a1a;
+            color: #fff;
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* ─── 広告スペース（上部） ─── */
+        .ad-top {
+            width: 100%;
+            max-width: 400px;
+            height: 60px;
+            background-color: #333;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #888;
+            border: 1px dashed #555;
+        }
+
+        /* ゲーム画面 */
+        #gameCanvas {
+            background-color: #222;
+            border-bottom: 4px solid #fff;
+            max-width: 100%;
+        }
+
+        /* スコア表示 */
+        .score-board {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        /* ─── ゲームオーバー画面（ここに広告を仕込む） ─── */
+        #gameOverScreen {
+            display: none;
+            position: absolute;
+            top: 100px;
+            width: 320px;
+            background-color: rgba(0, 0, 0, 0.9);
+            border: 2px solid #ff4757;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        #gameOverScreen h2 {
+            color: #ff4757;
+            margin-top: 0;
+        }
+
+        .retry-btn {
+            background-color: #2ed573;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        .retry-btn:hover {
+            background-color: #26af5f;
+        }
+
+        /* ゲームオーバー画面の中の広告枠 */
+        .ad-gameover {
+            width: 100%;
+            height: 100px;
+            background-color: #222;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #888;
+            border: 1px dashed #555;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 上部広告枠（ゲームの邪魔にならない位置） -->
+    <div class="ad-top">【ここに広告コードを配置（横長バナー）】</div>
+
+    <div class="score-board">SCORE: <span id="score">0</span></div>
+    
+    <!-- ゲーム本体（タップかクリックでジャンプ） -->
+    <canvas id="gameCanvas" width="400" height="200"></canvas>
+
+    <!-- ゲームオーバー画面（リトライボタンのすぐ上に広告） -->
+    <div id="gameOverScreen" >
+        <h2>GAME OVER</h2>
+        <p>スコア: <span id="finalScore">0</span></p>
+        
+        <!-- ゲームオーバー時の一番クリックされやすい広告枠 -->
+        <div class="ad-gameover">【ここに広告コードを配置（レクタングル）】</div>
+        
+        <button class="retry-btn" onclick="resetGame()">もう一度挑戦！</button>
+    </div>
+
+    <p style="font-size: 12px; color: #aaa;">画面をタップ、またはスペースキーでジャンプ！</p>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+// ゲームの変数
+let player = { x: 50, y: 140, width: 20, height: 20, vy: 0, gravity: 0.6, jumpForce: -10, isGrounded: false };
+let obstacles = [];
+let score = 0;
+let gameOver = false;
+let gameSpeed = 4;
+let spawnTimer = 0;
+
+// キー＆タップ入力
+function jump() {
+    if (player.isGrounded && !gameOver) {
+        player.vy = player.jumpForce;
+        player.isGrounded = false;
+    }
+}
+window.addEventListener("keydown", (e) => { if (e.code === "Space") jump(); });
+canvas.addEventListener("touchstart", (e) => { e.preventDefault(); jump(); });
+canvas.addEventListener("mousedown", jump);
+
+// ゲームの更新ループ
+function update() {
+    if (gameOver) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // プレイヤーの物理挙動
+    player.vy += player.gravity;
+    player.y += player.vy;
+    if (player.y >= 140) {
+        player.y = 140;
+        player.vy = 0;
+        player.isGrounded = true;
+    }
+
+    // プレイヤー描画
+    ctx.fillStyle = "#00d2d3";
+    ctx.fillRect(player.x, player.y, player.width, player.height);
+
+    // 障害物の生成（だんだん早く、ランダムな間隔で）
+    spawnTimer++;
+    if (spawnTimer > Math.max(40, 90 - score * 2)) {
+        obstacles.push({ x: canvas.width, y: 140, width: 15, height: 20 });
+        spawnTimer = 0;
+    }
+
+    // 障害物の移動と描画
+    ctx.fillStyle = "#ff4757";
+    for (let i = obstacles.length - 1; i >= 0; i--) {
+        let obs = obstacles[i];
+        obs.x -= gameSpeed + (score * 0.1); // スコアが上がると加速
+
+        ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+
+        // 当たり判定
+        if (player.x < obs.x + obs.width &&
+            player.x + player.width > obs.x &&
+            player.y < obs.y + obs.height &&
+            player.y + player.height > obs.y) {
+            endGame();
+        }
+
+        // 画面外に出たらスコア加算して削除
+        if (obs.x + obs.width < 0) {
+            obstacles.splice(i, 1);
+            score++;
+            document.getElementById("score").innerText = score;
+        }
+    }
+
+    requestAnimationFrame(update);
+}
+
+function endGame() {
+    gameOver = true;
+    document.getElementById("finalScore").innerText = score;
+    document.getElementById("gameOverScreen").style.display = "block";
+}
+
+function resetGame() {
+    player.y = 140;
+    player.vy = 0;
+    player.isGrounded = true;
+    obstacles = [];
+    score = 0;
+    document.getElementById("score").innerText = "0";
+    document.getElementById("gameOverScreen").style.display = "none";
+    gameOver = false;
+    spawnTimer = 0;
+    update();
+}
+
+// ゲーム開始
+update();
+</script>
+</body>
+</html>
