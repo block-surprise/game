@@ -6,279 +6,108 @@
     <title>カラーマッチポップ</title>
     <style>
         body {
-            margin: 0;
-            padding: 0;
             background-color: #121212;
             color: #fff;
             font-family: sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            overflow: hidden;
+            text-align: center;
+            padding-top: 20px;
         }
-
-        /* ─── 広告スペース（上部） ─── */
+        /* 広告スペース（上部） */
         .ad-top {
-            width: 100%;
-            max-width: 360px;
+            width: 320px;
             height: 50px;
             background-color: #222;
-            margin: 5px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            margin: 10px auto;
+            line-height: 50px;
             font-size: 11px;
             color: #666;
             border: 1px dashed #444;
         }
-
-        .score-board {
-            font-size: 22px;
-            font-weight: bold;
-            margin: 5px 0;
-        }
-
-        /* パズル画面の枠 */
-        #gameContainer {
-            position: relative;
-            width: 300px;
-            height: 350px;
-            background-color: #1e1e1e;
-            border: 3px solid #333;
+        /* 次に押す色をデカデカと出すエリア */
+        #colorTarget {
+            width: 200px;
+            height: 100px;
+            margin: 20px auto;
             border-radius: 10px;
-            overflow: hidden;
-        }
-
-        /* 落ちてくるブロック */
-        .block {
-            position: absolute;
-            width: 80px;
-            height: 35px;
-            border-radius: 5px;
-            text-align: center;
-            line-height: 35px;
+            font-size: 40px;
+            line-height: 100px;
             font-weight: bold;
-            font-size: 14px;
-            left: 110px; /* 中央配置 */
+            box-shadow: 0 0 20px rgba(255,255,255,0.2);
         }
-
-        /* 色ごとのスタイル */
-        .color-red { background-color: #ff4757; color: white; }
-        .color-green { background-color: #2ed573; color: white; }
-        .color-yellow { background-color: #ffa502; color: white; }
-
-        /* 操作ボタン */
-        .button-container {
+        /* ボタン */
+        .btn-container {
             display: flex;
-            justify-content: space-between;
-            width: 300px;
-            margin-top: 15px;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
         }
-
         .game-btn {
             width: 90px;
-            height: 50px;
+            height: 60px;
             border: none;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: bold;
             color: white;
             cursor: pointer;
-            box-shadow: 0 4px #333;
         }
-        .game-btn:active {
-            transform: translateY(4px);
-            box-shadow: none;
-        }
-
-        /* ─── ゲームオーバー画面 ─── */
-        #gameOverScreen {
-            display: none;
-            position: absolute;
-            top: 30px;
-            left: 10px;
-            width: 280px;
-            background-color: rgba(0, 0, 0, 0.95);
-            border: 2px solid #ffa502;
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
-            box-sizing: border-box;
-            z-index: 999;
-        }
-
-        #gameOverScreen h2 {
-            color: #ffa502;
-            margin-top: 0;
-        }
-
-        /* ゲームオーバー広告枠 */
-        .ad-gameover {
-            width: 100%;
-            height: 120px;
-            background-color: #222;
-            margin: 15px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            color: #666;
-            border: 1px dashed #444;
-        }
-
-        .retry-btn {
-            background-color: #ffa502;
-            color: black;
-            border: none;
-            padding: 12px 0;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 5px;
-            cursor: pointer;
-            width: 100%;
-        }
+        .color-red { background-color: #ff4757; }
+        .color-green { background-color: #2ed573; }
+        .color-yellow { background-color: #ffa502; }
     </style>
 </head>
 <body>
 
     <div class="ad-top">【ここに広告バナー（320×50）】</div>
 
-    <div class="score-board">スコア: <span id="score">0</span></div>
+    <h2>スコア: <span id="scoreText">0</span></h2>
+    
+    <p>この色と同じボタンを叩け！</p>
+    
+    <!-- ここに「赤」「緑」「黄」のどれかが大きく表示される -->
+    <div id="colorTarget"></div>
 
-    <div id="gameContainer">
-        <!-- ここにブロックが生成される -->
-        
-        <!-- ゲームオーバー画面 -->
-        <div id="gameOverScreen">
-            <h2>ゲームオーバー</h2>
-            <p>最終スコア: <span id="finalScore">0</span></p>
-            
-            <div class="ad-gameover">【ここに広告枠（レクタングル大）】</div>
-            
-            <button class="retry-btn" id="retryBtn">もう一度遊ぶ！</button>
-        </div>
+    <div class="btn-container">
+        <button class="game-btn color-red" onclick="press('red')">赤</button>
+        <button class="game-btn color-green" onclick="press('green')">緑</button>
+        <button class="game-btn color-yellow" onclick="press('yellow')">黄</button>
     </div>
-
-    <!-- 色ボタン -->
-    <div class="button-container">
-        <button class="game-btn color-red" id="btnRed">赤</button>
-        <button class="game-btn color-green" id="btnGreen">緑</button>
-        <button class="game-btn color-yellow" id="btnYellow">黄</button>
-    </div>
-
-    <p style="font-size: 12px; color: #888; margin-top: 15px;">一番下のブロックと同じ色のボタンを押そう！</p>
 
 <script>
-const container = document.getElementById("gameContainer");
-let blocks = [];
 let score = 0;
-let gameOver = false;
-let spawnInterval = 1500;
-let gameLoop, spawnLoop;
-let currentSpeed = 2;
-
+let currentTargetColor = '';
 const colors = ['red', 'green', 'yellow'];
+const colorNames = { 'red': '赤', 'green': '緑', 'yellow': '黄' };
 
-// ブロックを作る
-function createBlock() {
-    if (gameOver) return;
+// お題の色をランダムに変える関数
+function nextColor() {
+    currentTargetColor = colors[Math.floor(Math.random() * colors.length)];
+    const targetDiv = document.getElementById('colorTarget');
     
-    const randomColor = colors[Math.floor(Math.random() * colors.length)];
-    const block = document.createElement("div");
-    block.className = `block color-${randomColor}`;
-    block.dataset.color = randomColor;
-    block.style.top = "0px";
-    block.innerText = "★";
+    // 背景色とお題の文字をセット
+    if (currentTargetColor === 'red') targetDiv.className = 'color-red';
+    if (currentTargetColor === 'green') targetDiv.className = 'color-green';
+    if (currentTargetColor === 'yellow') targetDiv.className = 'color-yellow';
     
-    container.appendChild(block);
-    blocks.push({ element: block, y: 0 });
+    targetDiv.innerText = colorNames[currentTargetColor];
 }
 
-// ゲームの画面更新
-function updateGame() {
-    if (gameOver) return;
-
-    for (let i = blocks.length - 1; i >= 0; i--) {
-        let b = blocks[i];
-        b.y += currentSpeed;
-        b.element.style.top = b.y + "px";
-
-        // 一番下のラインを超えたらゲームオーバー
-        if (b.y >= 315) {
-            endGame();
-            return;
-        }
-    }
-    gameLoop = requestAnimationFrame(updateGame);
-}
-
-// ボタンが押されたときの判定処理
-function pressButton(color) {
-    if (gameOver || blocks.length === 0) return;
-
-    let target = blocks[0];
-
-    if (target.dataset.color === color) {
-        // 正解
-        target.element.remove();
-        blocks.shift();
+// ボタンが押されたときの処理（さっきのポップアップと同じ確実な動かし方）
+function press(playerChoice) {
+    if (playerChoice === currentTargetColor) {
+        // 正解なら10点プラスしてお題をチェンジ
         score += 10;
-        document.getElementById("score").innerText = score;
-        
-        if (score % 50 === 0) {
-            currentSpeed += 0.3;
-        }
+        document.getElementById('scoreText').innerText = score;
+        nextColor();
     } else {
-        // お手付き（マイナス10点）
+        // 間違えたらマイナス10点
         score = Math.max(0, score - 10);
-        document.getElementById("score").innerText = score;
+        document.getElementById('scoreText').innerText = score;
     }
 }
 
-// ゲーム終了
-function endGame() {
-    gameOver = true;
-    cancelAnimationFrame(gameLoop);
-    clearInterval(spawnLoop);
-    document.getElementById("finalScore").innerText = score;
-    document.getElementById("gameOverScreen").style.display = "block";
-}
-
-// リセット処理
-function resetGame() {
-    const oldBlocks = container.querySelectorAll('.block');
-    oldBlocks.forEach(b => b.remove());
-    
-    blocks = [];
-    score = 0;
-    currentSpeed = 2;
-    document.getElementById("score").innerText = "0";
-    document.getElementById("gameOverScreen").style.display = "none";
-    gameOver = false;
-    
-    clearInterval(spawnLoop);
-    cancelAnimationFrame(gameLoop);
-    
-    gameLoop = requestAnimationFrame(updateGame);
-    spawnLoop = setInterval(createBlock, spawnInterval);
-}
-
-// ─── 確実に動かすためのイベント登録 ───
-// さっきのテスト用ポップアップと同じ方式でボタンの動きをキャッチするよ！
-document.getElementById("btnRed").addEventListener("click", function() { pressButton('red'); });
-document.getElementById("btnGreen").addEventListener("click", function() { pressButton('green'); });
-document.getElementById("btnYellow").addEventListener("click", function() { pressButton('yellow'); });
-document.getElementById("retryBtn").addEventListener("click", resetGame);
-
-// ゲーム開始
-function startGame() {
-    gameOver = false;
-    document.getElementById("gameOverScreen").style.display = "none";
-    gameLoop = requestAnimationFrame(updateGame);
-    spawnLoop = setInterval(createBlock, spawnInterval);
-}
-
-startGame();
+// 最初に1回お題を出す
+nextColor();
 </script>
 </body>
 </html>
