@@ -65,7 +65,7 @@
 
         /* 色ごとのスタイル */
         .color-red { background-color: #ff4757; color: white; }
-        .color-blue { background-color: #2ed573; color: white; } /* 緑っぽい青 */
+        .color-green { background-color: #2ed573; color: white; }
         .color-yellow { background-color: #ffa502; color: white; }
 
         /* 操作ボタン */
@@ -163,7 +163,7 @@
     <!-- 色ボタン -->
     <div class="button-container">
         <button class="game-btn color-red" onclick="pressButton('red')">赤</button>
-        <button class="game-btn color-blue" onclick="pressButton('blue')">緑</button>
+        <button class="game-btn color-green" onclick="pressButton('green')">緑</button>
         <button class="game-btn color-yellow" onclick="pressButton('yellow')">黄</button>
     </div>
 
@@ -178,19 +178,17 @@ let spawnInterval = 1500; // ブロックが出る間隔（ミリ秒）
 let gameLoop, spawnLoop;
 let currentSpeed = 2;
 
-const colors = ['red', 'blue', 'yellow'];
+// 色の定義をgreenに統一
+const colors = ['red', 'green', 'yellow'];
 
 function createBlock() {
     if (gameOver) return;
     
-    // ランダムな色を選ぶ
     const randomColor = colors[Math.floor(Math.random() * colors.length)];
     const block = document.createElement("div");
     block.className = `block color-${randomColor}`;
     block.dataset.color = randomColor;
     block.style.top = "0px";
-    
-    // 表示テキストを少し変える遊び心（脳をバグらせる用）
     block.innerText = "★";
     
     container.appendChild(block);
@@ -205,7 +203,7 @@ function updateGame() {
         b.y += currentSpeed;
         b.element.style.top = b.y + "px";
 
-        // デッドライン（下まで到達したらアウト）
+        // 下まで到達したらアウト
         if (b.y > 310) {
             endGame();
             return;
@@ -217,23 +215,25 @@ function updateGame() {
 function pressButton(color) {
     if (gameOver || blocks.length === 0) return;
 
-    // 一番下にあるブロック（配列の最初に入ったやつ）
     let target = blocks[0];
 
     if (target.dataset.color === color) {
-        // 正解！ブロックを消す
+        // 正解！ブロックを消去
         target.element.remove();
         blocks.shift();
         score += 10;
         document.getElementById("score").innerText = score;
         
-        // スコアが上がるとちょっとずつ難易度アップ
+        // スコアに応じてスピードアップ
         if (score % 50 === 0) {
             currentSpeed += 0.3;
         }
     } else {
-        // お手付き、即ゲームオーバーにするか減点にするか。今回はスリル重視で即アウト！
-        endGame();
+        // お手付き：即終了ではなく減点にする（ただし0点未満にはならない）
+        score = Math.max(0, score - 10);
+        document.getElementById("score").innerText = score;
+        
+        // 間違えたことが分かるように、ちょっとしたエフェクトとしてターゲットを点滅させても面白いよ
     }
 }
 
@@ -246,7 +246,6 @@ function endGame() {
 }
 
 function resetGame() {
-    // 古いブロックを全部消去
     blocks.forEach(b => b.element.remove());
     blocks = [];
     score = 0;
@@ -255,7 +254,6 @@ function resetGame() {
     document.getElementById("gameOverScreen").style.display = "none";
     gameOver = false;
     
-    // 再スタート
     gameLoop = requestAnimationFrame(updateGame);
     spawnLoop = setInterval(createBlock, spawnInterval);
 }
