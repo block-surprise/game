@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>COLOR MATCH POP</title>
+    <title>カラーマッチポップ</title>
     <style>
         body {
             margin: 0;
@@ -60,7 +60,6 @@
             font-weight: bold;
             font-size: 14px;
             left: 110px; /* 中央配置 */
-            transition: transform 0.1s linear;
         }
 
         /* 色ごとのスタイル */
@@ -92,11 +91,12 @@
             box-shadow: none;
         }
 
-        /* ─── ゲームオーバー画面（広告最大スペース） ─── */
+        /* ─── ゲームオーバー画面 ─── */
         #gameOverScreen {
-            display: none;
+            display: none; /* 最初は絶対に非表示 */
             position: absolute;
-            top: 60px;
+            top: 30px;
+            left: 10px;
             width: 280px;
             background-color: rgba(0, 0, 0, 0.95);
             border: 2px solid #ffa502;
@@ -104,7 +104,7 @@
             padding: 20px;
             text-align: center;
             box-sizing: border-box;
-            z-index: 10;
+            z-index: 999; /* 一番手前に来るように修正 */
         }
 
         #gameOverScreen h2 {
@@ -143,17 +143,16 @@
 
     <div class="ad-top">【ここに広告バナー（320×50）】</div>
 
-    <div class="score-board">SCORE: <span id="score">0</span></div>
+    <div class="score-board">スコア: <span id="score">0</span></div>
 
     <div id="gameContainer">
-        <!-- ここにJavaScriptでブロックが生成される -->
+        <!-- ここにブロックが生成される -->
         
         <!-- ゲームオーバー画面 -->
         <div id="gameOverScreen">
-            <h2>GAME OVER</h2>
-            <p>スコア: <span id="finalScore">0</span></p>
+            <h2>ゲームオーバー</h2>
+            <p>最終スコア: <span id="finalScore">0</span></p>
             
-            <!-- リトライさせる前に見せる広告 -->
             <div class="ad-gameover">【ここに広告枠（レクタングル大）】</div>
             
             <button class="retry-btn" onclick="resetGame()">もう一度遊ぶ！</button>
@@ -167,18 +166,17 @@
         <button class="game-btn color-yellow" onclick="pressButton('yellow')">黄</button>
     </div>
 
-    <p style="font-size: 12px; color: #888; margin-top: 15px;">一番下のブロックと同じ色のボタンを叩け！</p>
+    <p style="font-size: 12px; color: #888; margin-top: 15px;">一番下のブロックと同じ色のボタンを押そう！</p>
 
 <script>
 const container = document.getElementById("gameContainer");
 let blocks = [];
 let score = 0;
 let gameOver = false;
-let spawnInterval = 1500; // ブロックが出る間隔（ミリ秒）
+let spawnInterval = 1500;
 let gameLoop, spawnLoop;
 let currentSpeed = 2;
 
-// 色の定義をgreenに統一
 const colors = ['red', 'green', 'yellow'];
 
 function createBlock() {
@@ -192,6 +190,7 @@ function createBlock() {
     block.innerText = "★";
     
     container.appendChild(block);
+    // 生成時は y: 0 から確実にスタートさせる
     blocks.push({ element: block, y: 0 });
 }
 
@@ -203,8 +202,8 @@ function updateGame() {
         b.y += currentSpeed;
         b.element.style.top = b.y + "px";
 
-        // 下まで到達したらアウト
-        if (b.y > 310) {
+        // デッドライン判定を310pxから「315px以上」に少し余裕を持たせる修正
+        if (b.y >= 315) {
             endGame();
             return;
         }
@@ -213,27 +212,25 @@ function updateGame() {
 }
 
 function pressButton(color) {
+    // ゲームオーバー中、またはブロックが画面に一つもない時は処理しない
     if (gameOver || blocks.length === 0) return;
 
     let target = blocks[0];
 
     if (target.dataset.color === color) {
-        // 正解！ブロックを消去
+        // 正解時の処理
         target.element.remove();
         blocks.shift();
         score += 10;
         document.getElementById("score").innerText = score;
         
-        // スコアに応じてスピードアップ
         if (score % 50 === 0) {
             currentSpeed += 0.3;
         }
     } else {
-        // お手付き：即終了ではなく減点にする（ただし0点未満にはならない）
+        // お手付き時はマイナス10点（0点未満にはならない）
         score = Math.max(0, score - 10);
         document.getElementById("score").innerText = score;
-        
-        // 間違えたことが分かるように、ちょっとしたエフェクトとしてターゲットを点滅させても面白いよ
     }
 }
 
@@ -246,7 +243,10 @@ function endGame() {
 }
 
 function resetGame() {
-    blocks.forEach(b => b.element.remove());
+    // 画面に残っているブロックを完全に削除
+    const oldBlocks = container.querySelectorAll('.block');
+    oldBlocks.forEach(b => b.remove());
+    
     blocks = [];
     score = 0;
     currentSpeed = 2;
@@ -254,13 +254,24 @@ function resetGame() {
     document.getElementById("gameOverScreen").style.display = "none";
     gameOver = false;
     
+    // タイマーとループを完全にリセットして再始動
+    clearInterval(spawnLoop);
+    cancelAnimationFrame(gameLoop);
+    
     gameLoop = requestAnimationFrame(updateGame);
     spawnLoop = setInterval(createBlock, spawnInterval);
 }
 
-// 初回スタート
-gameLoop = requestAnimationFrame(updateGame);
-spawnLoop = setInterval(createBlock, spawnInterval);
+// 初回スタート時の安全な呼び出し
+function startGame() {
+    gameOver = false;
+    document.getElementById("gameOverScreen").style.display = "none";
+    gameLoop = requestAnimationFrame(updateGame);
+    spawnLoop = setInterval(createBlock, spawnInterval);
+}
+
+// 起動
+startGame();
 </script>
 </body>
 </html>
