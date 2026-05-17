@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INCREMENTAL DUNGEON</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #1c1a27;
+            color: #fff;
+            font-family: 'Courier New', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            user-select: none;
+        }
+
+        /* 全体コンテナ */
+        .game-window {
+            width: 100%;
+            max-width: 400px;
+            background-color: #252335;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            padding: 15px;
+        }
+
+        /* ステータス画面 */
+        .header {
+            text-align: center;
+            border-bottom: 2px dashed #4e4b66;
+            padding-bottom: 10px;
+        }
+        .gold-display {
+            font-size: 28px;
+            color: #ffd700;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        /* モンスターエリア（タップ場所） */
+        .monster-box {
+            background-color: #13111c;
+            border: 3px solid #ff4757;
+            border-radius: 10px;
+            height: 180px;
+            margin: 15px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+        }
+        .monster-box:active {
+            transform: scale(0.98);
+        }
+        #monsterHpBar {
+            width: 80%;
+            height: 12px;
+            background-color: #444;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        #monsterHpFill {
+            width: 100%;
+            height: 100%;
+            background-color: #ff4757;
+            transition: width 0.1s ease;
+        }
+
+        /* 強化・ショップエリア */
+        .shop-section {
+            flex-grow: 1;
+        }
+        .shop-item {
+            background-color: #34314c;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .shop-btn {
+            background-color: #2ed573;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .shop-btn:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+
+        /* セーブ通知 */
+        #saveNotice {
+            position: fixed;
+            top: 10px;
+            background-color: #2ed573;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: none;
+        }
+
+        /* ─── 広告枠（ゲーム画面に溶け込む配置） ─── */
+        .ad-banner {
+            width: 100%;
+            height: 60px;
+            background-color: #13111c;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            color: #555;
+            border: 1px dashed #4e4b66;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="saveNotice">自動セーブされました</div>
+
+    <div class="game-window">
+        <!-- ヘッダー情報 -->
+        <div class="header">
+            <div id="stageDisplay">STAGE: 1</div>
+            <div class="gold-display"><span id="goldCount">0</span> G</div>
+            <div style="font-size: 12px; color: #aaa;">
+                タップ威力: <span id="clickDmg">1</span> | 自動秒間ダメ: <span id="dpsCount">0</span>
+            </div>
+        </div>
+
+        <!-- 敵の出現エリア（ここを連打！） -->
+        <div class="monster-box" onclick="damageMonster()">
+            <h2 id="monsterName" style="margin: 0; color: #ff6b6b;">スライム</h2>
+            <div id="monsterHpText">HP: 10 / 10</div>
+            <div id="monsterHpBar"><div id="monsterHpFill"></div></div>
+        </div>
+
+        <!-- コンテンツの合間の広告（一番視線が通る場所） -->
+        <div class="ad-banner">【ここに広告：モンスターとショップの間（インフィード風）】</div>
+
+        <!-- 強化ショップ -->
+        <div class="shop-section">
+            <h3 style="margin: 5px 0 10px 0; border-left: 4px solid #ffd700; padding-left: 5px;">ギルド補給所</h3>
+            
+            <!-- 強化1 -->
+            <div class="shop-item">
+                <div>
+                    <div style="font-weight: bold;">自身の剣を鍛える</div>
+                    <div style="font-size: 12px; color: #ccc;">タップダメージ +1</div>
+                </div>
+                <button class="shop-btn" id="upgBtn1" onclick="buyUpgrade('click')">Lv<span id="clickLv">1</span> (<span id="clickCost">10</span>G)</button>
+            </div>
+
+            <!-- 強化2（自動攻撃してくれる仲間） -->
+            <div class="shop-item">
+                <div>
+                    <div style="font-weight: bold;">新米魔術師を雇う</div>
+                    <div style="font-size: 12px; color: #ccc;">自動で毎秒 1 ダメージ</div>
+                </div>
+                <button class="shop-btn" id="upgBtn2" onclick="buyUpgrade('dps')">雇う:<span id="dpsLv">0</span>人 (<span id="dpsCost">50</span>G)</button>
+            </div>
+        </div>
+
+        <!-- データリセットボタン（テスト用） -->
+        <button onclick="resetData()" style="background: none; border: none; color: #555; font-size: 10px; cursor: pointer; margin-top: 10px;">データを初期化する</button>
+
+        <!-- 最下部の固定広告枠 -->
+        <div class="ad-banner" style="margin-top: auto;">【ここに画面最下部固定バナー（320×50）】</div>
+    </div>
+
+<script>
+// ゲームの基本データ（セーブ対象）
+let gameState = {
+    gold: 0,
+    stage: 1,
+    clickLevel: 1,
+    dpsLevel: 0,
+    monsterHp: 10,
+    monsterMaxHp: 10
+};
+
+// モンスターの名前リスト（ステージごとにランダムに変わる用）
+const monsterNames = ["スライム", "ゴブリン", "オーク", "スケルトン", "ゴーレム", "デーモン", "ドラゴン"];
+
+// ロード処理
+function loadGame() {
+    const savedData = localStorage.getItem("incremental_dungeon_save");
+    if (savedData) {
+        gameState = JSON.parse(savedData);
+    }
+    updateUI();
+}
+
+// セーブ処理
+function saveGame() {
+    localStorage.setItem("incremental_dungeon_save", JSON.stringify(gameState));
+    const notice = document.getElementById("saveNotice");
+    notice.style.display = "block";
+    setTimeout(() => { notice.style.display = "none"; }, 1500);
+}
+
+// 画面表示を最新にする
+function updateUI() {
+    document.getElementById("goldCount").innerText = Math.floor(gameState.gold);
+    document.getElementById("stageDisplay").innerText = "STAGE: " + gameState.stage;
+    document.getElementById("clickDmg").innerText = gameState.clickLevel;
+    document.getElementById("dpsCount").innerText = gameState.dpsLevel;
+    
+    // モンスター情報
+    document.getElementById("monsterHpText").innerText = `HP: ${gameState.monsterHp} / ${gameState.monsterMaxHp}`;
+    const hpPercent = (gameState.monsterHp / gameState.monsterMaxHp) * 100;
+    document.getElementById("monsterHpFill").style.width = hpPercent + "%";
+    
+    // ステージごとのモンスター名決定
+    const nameIndex = (gameState.stage - 1) % monsterNames.length;
+    // 10ステージごとのボス判定
+    if (gameState.stage % 10 === 0) {
+        document.getElementById("monsterName").innerText = "👑 BOSS " + monsterNames[nameIndex];
+    } else {
+        document.getElementById("monsterName").innerText = monsterNames[nameIndex];
+    }
+
+    // ボタンのコスト計算
+    const clickCost = Math.floor(10 * Math.pow(1.5, gameState.clickLevel - 1));
+    const dpsCost = Math.floor(50 * Math.pow(1.4, gameState.dpsLevel));
+
+    document.getElementById("clickLv").innerText = gameState.clickLevel;
+    document.getElementById("clickCost").innerText = clickCost;
+    document.getElementById("dpsLv").innerText = gameState.dpsLevel;
+    document.getElementById("dpsCost").innerText = dpsCost;
+
+    // ボタンの有効・無効化
+    document.getElementById("upgBtn1").disabled = (gameState.gold < clickCost);
+    document.getElementById("upgBtn2").disabled = (gameState.gold < dpsCost);
+}
+
+// モンスターにダメージを与える（クリック）
+function damageMonster() {
+    gameState.monsterHp -= gameState.clickLevel;
+    if (gameState.monsterHp <= 0) {
+        monsterDefeated();
+    }
+    updateUI();
+}
+
+// モンスターを倒した時の処理
+function monsterDefeated() {
+    // 報酬ゴールド（ステージが進むほど多くなる）
+    let reward = gameState.stage * 3;
+    if (gameState.stage % 10 === 0) reward *= 5; // ボスは5倍！
+    
+    gameState.gold += reward;
+    gameState.stage++;
+    
+    // 次のモンスターのHP設定
+    gameState.monsterMaxHp = Math.floor(10 * Math.pow(1.25, gameState.stage - 1));
+    if (gameState.stage % 10 === 0) gameState.monsterMaxHp *= 2; // ボスはHP2倍
+    
+    gameState.monsterHp = gameState.monsterMaxHp;
+    
+    // ステージクリアごとにセーブ
+    saveGame();
+}
+
+// 強化を買う
+function buyUpgrade(type) {
+    if (type === 'click') {
+        const cost = Math.floor(10 * Math.pow(1.5, gameState.clickLevel - 1));
+        if (gameState.gold >= cost) {
+            gameState.gold -= cost;
+            gameState.clickLevel++;
+        }
+    } else if (type === 'dps') {
+        const cost = Math.floor(50 * Math.pow(1.4, gameState.dpsLevel));
+        if (gameState.gold >= cost) {
+            gameState.gold -= cost;
+            gameState.dpsLevel++;
+        }
+    }
+    updateUI();
+    saveGame();
+}
+
+// 自動攻撃ループ（DPS）
+setInterval(() => {
+    if (gameState.dpsLevel > 0) {
+        // 1秒に1回動くので、10分割して0.1秒ごとに滑らかに削る（100ms周期）
+        gameState.monsterHp -= (gameState.dpsLevel / 10);
+        gameState.gold += (gameState.dpsLevel / 10) * 0.1; // 放置中も少しずつゴールドが入る仕組み
+        
+        if (gameState.monsterHp <= 0) {
+            monsterDefeated();
+        }
+        updateUI();
+    }
+}, 100);
+
+// 定期自動セーブ（30秒ごと）
+setInterval(saveGame, 30000);
+
+// データ初期化
+function resetData() {
+    if(confirm("最初からやり直しますか？")) {
+        localStorage.removeItem("incremental_dungeon_save");
+        location.reload();
+    }
+}
+
+// 起動時にロード
+loadGame();
+</script>
+</body>
+</html>
