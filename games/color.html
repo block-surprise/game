@@ -11,8 +11,10 @@
             font-family: sans-serif;
             text-align: center;
             padding-top: 20px;
+            margin: 0;
         }
-        /* 広告スペース（上部） */
+
+        /* ─── 広告スペース（上部） ─── */
         .ad-top {
             width: 320px;
             height: 50px;
@@ -23,24 +25,68 @@
             color: #666;
             border: 1px dashed #444;
         }
-        /* 次に押す色をデカデカと出すエリア */
-        #colorTarget {
-            width: 200px;
-            height: 100px;
-            margin: 20px auto;
-            border-radius: 10px;
-            font-size: 40px;
-            line-height: 100px;
+
+        .score-board {
+            font-size: 24px;
             font-weight: bold;
-            box-shadow: 0 0 20px rgba(255,255,255,0.2);
+            margin: 5px 0;
+            color: #ffd700;
         }
-        /* ボタン */
+
+        /* 時間表示の文字 */
+        #timeText {
+            font-size: 18px;
+            color: #ff4757;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        /* 時間ゲージの見た目 */
+        .timer-bar-container {
+            width: 280px;
+            height: 10px;
+            background-color: #333;
+            margin: 0 auto 15px auto;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        #timerBarFill {
+            width: 100%;
+            height: 100%;
+            background-color: #ff4757;
+            transition: width 0.1s linear; /* ゲージを滑らかに縮める */
+        }
+
+        /* お題を出すメインの箱 */
+        #gameBox {
+            position: relative;
+            width: 280px;
+            height: 180px;
+            margin: 0 auto 20px auto;
+            border-radius: 15px;
+            border: 3px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        /* 中の文字 */
+        #textTarget {
+            font-size: 48px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        /* ボタンのエリア */
         .btn-container {
             display: flex;
             justify-content: center;
             gap: 15px;
-            margin-top: 30px;
+            margin-top: 25px;
         }
+
         .game-btn {
             width: 90px;
             height: 60px;
@@ -50,64 +96,186 @@
             font-weight: bold;
             color: white;
             cursor: pointer;
+            box-shadow: 0 4px #000;
         }
-        .color-red { background-color: #ff4757; }
-        .color-green { background-color: #2ed573; }
-        .color-yellow { background-color: #ffa502; }
+        .game-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px #000;
+        }
+
+        /* 各色の設定 */
+        .bg-red { background-color: #ff4757; }
+        .bg-green { background-color: #2ed573; }
+        .bg-yellow { background-color: #ffa502; }
+        .bg-normal { background-color: #1e1e1e; }
+
+        /* ─── ゲームオーバー画面 ─── */
+        #gameOverScreen {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(18, 18, 18, 0.95);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        #gameOverScreen h2 {
+            color: #ff4757;
+            font-size: 32px;
+            margin: 0 0 10px 0;
+        }
+
+        .ad-gameover {
+            width: 300px;
+            height: 120px;
+            background-color: #222;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #666;
+            border: 1px dashed #444;
+        }
+
+        .retry-btn {
+            background-color: #ffd700;
+            color: black;
+            border: none;
+            padding: 12px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
     <div class="ad-top">【ここに広告バナー（320×50）】</div>
 
-    <h2>スコア: <span id="scoreText">0</span></h2>
+    <div class="score-board">スコア: <span id="scoreText">0</span></div>
     
-    <p>この色と同じボタンを叩け！</p>
+    <!-- タイムカウントとゲージを追加 -->
+    <div id="timeText">残り時間: <span id="timeLeft">15.0</span>秒</div>
+    <div class="timer-bar-container">
+        <div id="timerBarFill"></div>
+    </div>
     
-    <!-- ここに「赤」「緑」「黄」のどれかが大きく表示される -->
-    <div id="colorTarget"></div>
+    <p style="font-size: 14px; margin: 5px 0;">騙されるな！「文字の意味（言葉）」と同じボタンを押せ！</p>
+    
+    <div id="gameBox" class="bg-normal">
+        <div id="textTarget">スタート</div>
+
+        <div id="gameOverScreen">
+            <h2>ゲームオーバー</h2>
+            <p id="gameOverReason">時間切れ！</p>
+            <p>最終スコア: <span id="finalScore">0</span></p>
+            <div class="ad-gameover">【ここに広告枠（レクタングル大）】</div>
+            <button class="retry-btn" onclick="resetGame()">もう一度遊ぶ</button>
+        </div>
+    </div>
 
     <div class="btn-container">
-        <button class="game-btn color-red" onclick="press('red')">赤</button>
-        <button class="game-btn color-green" onclick="press('green')">緑</button>
-        <button class="game-btn color-yellow" onclick="press('yellow')">黄</button>
+        <button class="game-btn bg-red" onclick="press('red')">赤</button>
+        <button class="game-btn bg-green" onclick="press('green')">緑</button>
+        <button class="game-btn bg-yellow" onclick="press('yellow')">黄</button>
     </div>
 
 <script>
 let score = 0;
-let currentTargetColor = '';
+let currentCorrectColor = '';
+let timeLeft = 15.0; // 残り時間（秒）
+const maxTime = 15.0; // 最大時間
+let timerInterval = null; // タイマーを管理する変数
 const colors = ['red', 'green', 'yellow'];
-const colorNames = { 'red': '赤', 'green': '緑', 'yellow': '黄' };
 
-// お題の色をランダムに変える関数
-function nextColor() {
-    currentTargetColor = colors[Math.floor(Math.random() * colors.length)];
-    const targetDiv = document.getElementById('colorTarget');
-    
-    // 背景色とお題の文字をセット
-    if (currentTargetColor === 'red') targetDiv.className = 'color-red';
-    if (currentTargetColor === 'green') targetDiv.className = 'color-green';
-    if (currentTargetColor === 'yellow') targetDiv.className = 'color-yellow';
-    
-    targetDiv.innerText = colorNames[currentTargetColor];
-}
+const colorData = {
+    'red': { name: '赤', code: '#ff4757', bgClass: 'bg-red' },
+    'green': { name: '緑', code: '#2ed573', bgClass: 'bg-green' },
+    'yellow': { name: '黄', code: '#ffa502', bgClass: 'bg-yellow' }
+};
 
-// ボタンが押されたときの処理（さっきのポップアップと同じ確実な動かし方）
-function press(playerChoice) {
-    if (playerChoice === currentTargetColor) {
-        // 正解なら10点プラスしてお題をチェンジ
-        score += 10;
-        document.getElementById('scoreText').innerText = score;
-        nextColor();
-    } else {
-        // 間違えたらマイナス10点
-        score = Math.max(0, score - 10);
-        document.getElementById('scoreText').innerText = score;
+// お題作成
+function nextQuestion() {
+    const box = document.getElementById('gameBox');
+    const textDiv = document.getElementById('textTarget');
+
+    currentCorrectColor = colors[Math.floor(Math.random() * colors.length)];
+    textDiv.innerText = colorData[currentCorrectColor].name;
+
+    const textColorKey = colors[Math.floor(Math.random() * colors.length)];
+    textDiv.style.color = colorData[textColorKey].code;
+
+    box.className = 'bg-normal';
+    if (score >= 30) {
+        const bgColorKey = colors[Math.floor(Math.random() * colors.length)];
+        box.classList.add(colorData[bgColorKey].bgClass);
     }
 }
 
-// 最初に1回お題を出す
-nextColor();
+// タイマーを動かす関数（100ミリ秒ごとに残り時間を減らす）
+function startTimer() {
+    // 古いタイマーを念のためクリア
+    clearInterval(timerInterval);
+    
+    timerInterval = setInterval(() => {
+        timeLeft -= 0.1;
+        if (timeLeft <= 0) {
+            timeLeft = 0;
+            endGame('時間切れ！');
+        }
+        
+        // 画面の数字とゲージを更新
+        document.getElementById('timeLeft').innerText = timeLeft.toFixed(1);
+        const barPercent = (timeLeft / maxTime) * 100;
+        document.getElementById('timerBarFill').style.width = barPercent + '%';
+    }, 100);
+}
+
+// ボタンが押されたとき
+function press(playerChoice) {
+    if (document.getElementById('gameOverScreen').style.display === 'flex') return;
+
+    if (playerChoice === currentCorrectColor) {
+        score += 10;
+        document.getElementById('scoreText').innerText = score;
+        
+        // 正解したら時間を2秒回復（最大15秒を超えないようにする）
+        timeLeft = Math.min(maxTime, timeLeft + 2.0);
+        
+        nextQuestion();
+    } else {
+        endGame('お手付きミス！');
+    }
+}
+
+// ゲームオーバー
+function endGame(reason) {
+    clearInterval(timerInterval); // タイマー停止
+    document.getElementById('gameOverReason').innerText = reason;
+    document.getElementById('finalScore').innerText = score;
+    document.getElementById('gameOverScreen').style.display = 'flex';
+}
+
+// リセット
+function resetGame() {
+    score = 0;
+    timeLeft = maxTime;
+    document.getElementById('scoreText').innerText = score;
+    document.getElementById('gameOverScreen').style.display = 'none';
+    nextQuestion();
+    startTimer(); // タイマー再始動
+}
+
+// ゲーム起動
+nextQuestion();
+startTimer();
 </script>
 </body>
 </html>
