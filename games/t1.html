@@ -2,370 +2,1848 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tetris</title>
+<meta name="viewport"
+content="width=device-width,
+initial-scale=1.0,
+maximum-scale=1.0,
+user-scalable=no">
+
+<title>Tetris99 Style</title>
 
 <style>
-body{
+
+*{
+    box-sizing:border-box;
     margin:0;
+    padding:0;
+}
+
+body{
     background:#111;
     color:white;
     font-family:sans-serif;
+    overflow:hidden;
+}
+
+#container{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    width:100vw;
+    height:100vh;
+}
+
+#leftPanel,
+#rightPanel{
+    width:90px;
     text-align:center;
 }
 
-h1{
-    margin:10px 0;
+#leftPanel h3,
+#rightPanel h3{
+    margin-bottom:8px;
 }
 
-canvas{
+#holdCanvas,
+.nextCanvas{
+    background:#222;
+    border:2px solid #555;
+}
+
+#gameArea{
+    margin:0 10px;
+}
+
+#board{
     background:black;
-    border:2px solid #666;
-    width:min(95vw,360px);
-    height:auto;
+    border:3px solid #666;
 }
 
-.controls{
-    width:min(95vw,360px);
-    margin:10px auto;
+#stats{
+    margin-top:8px;
+    text-align:center;
+}
+
+#controls{
+    position:fixed;
+    bottom:10px;
+    left:50%;
+    transform:translateX(-50%);
+    width:min(95vw,420px);
+
     display:grid;
-    grid-template-columns:repeat(4,1fr);
+    grid-template-columns:
+        repeat(4,1fr);
+
     gap:8px;
 }
 
-button{
+#controls button{
+
+    height:60px;
     font-size:22px;
-    padding:15px;
+
     border:none;
-    border-radius:10px;
+    border-radius:12px;
+
     background:#333;
     color:white;
 }
 
-button:active{
-    transform:scale(0.95);
+#controls button:active{
+    transform:scale(.95);
 }
 
 .wide{
     grid-column:span 2;
 }
+
 </style>
 </head>
 
 <body>
 
-<h1>TETRIS</h1>
+<div id="container">
 
-<canvas id="game" width="300" height="600"></canvas>
+<div id="leftPanel">
 
-<div class="controls">
-    <button onclick="move(-1)">⬅️</button>
-    <button onclick="rotatePiece()">🔄</button>
-    <button onclick="move(1)">➡️</button>
-    <button onclick="softDrop()">⬇️</button>
+<h3>HOLD</h3>
 
-    <button class="wide" onclick="hardDrop()">⤓ ハードドロップ</button>
-    <button class="wide" onclick="rotatePiece()">回転</button>
+<canvas
+id="holdCanvas"
+width="80"
+height="80">
+</canvas>
+
+</div>
+
+<div id="gameArea">
+
+<canvas
+id="board"
+width="300"
+height="600">
+</canvas>
+
+<div id="stats">
+
+<div>
+Score:
+<span id="score">
+0
+</span>
+</div>
+
+<div>
+Level:
+<span id="level">
+1
+</span>
+</div>
+
+<div>
+Lines:
+<span id="lines">
+0
+</span>
+</div>
+
+</div>
+
+</div>
+
+<div id="rightPanel">
+
+<h3>NEXT</h3>
+
+<canvas
+class="nextCanvas"
+id="next0"
+width="80"
+height="80">
+</canvas>
+
+<canvas
+class="nextCanvas"
+id="next1"
+width="80"
+height="80">
+</canvas>
+
+<canvas
+class="nextCanvas"
+id="next2"
+width="80"
+height="80">
+</canvas>
+
+<canvas
+class="nextCanvas"
+id="next3"
+width="80"
+height="80">
+</canvas>
+
+<canvas
+class="nextCanvas"
+id="next4"
+width="80"
+height="80">
+</canvas>
+
+</div>
+
+</div>
+
+<div id="controls">
+
+<button id="leftBtn">
+◀
+</button>
+
+<button id="rotateBtn">
+↻
+</button>
+
+<button id="rightBtn">
+▶
+</button>
+
+<button id="softBtn">
+▼
+</button>
+
+<button
+class="wide"
+id="holdBtn">
+
+HOLD
+
+</button>
+
+<button
+class="wide"
+id="hardBtn">
+
+DROP
+
+</button>
+
 </div>
 
 <script>
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
+
+/*************************************************
+ *
+ * SETTINGS
+ *
+ *************************************************/
 
 const COLS = 10;
 const ROWS = 20;
-const SIZE = 30;
+const BLOCK = 30;
 
-const COLORS = [
- null,
- "#00FFFF",
- "#0000FF",
- "#FF8800",
- "#FFFF00",
- "#00FF00",
- "#AA00FF",
- "#FF0000"
-];
+const boardCanvas =
+document.getElementById(
+"board"
+);
 
-const PIECES = [
- [],
- [[1,1,1,1]],
+const ctx =
+boardCanvas.getContext(
+"2d"
+);
 
- [[2,0,0],
-  [2,2,2]],
-
- [[0,0,3],
-  [3,3,3]],
-
- [[4,4],
-  [4,4]],
-
- [[0,5,5],
-  [5,5,0]],
-
- [[0,6,0],
-  [6,6,6]],
-
- [[7,7,0],
-  [0,7,7]]
-];
+/*************************************************
+ *
+ * GAME STATE
+ *
+ *************************************************/
 
 let board =
-Array.from({length:ROWS},
-()=>Array(COLS).fill(0));
+Array.from(
+{length:ROWS},
+()=>Array(COLS).fill(0)
+);
 
-function newPiece(){
-    const id =
-    Math.floor(Math.random()*7)+1;
+let currentPiece = null;
 
-    return{
-        x:3,
-        y:0,
-        shape:PIECES[id].map(r=>[...r])
-    };
-}
+let holdPiece = null;
 
-let piece = newPiece();
+let holdUsed = false;
 
-function drawCell(x,y,color){
-    ctx.fillStyle=COLORS[color];
-    ctx.fillRect(
-        x*SIZE,
-        y*SIZE,
-        SIZE,
-        SIZE
-    );
+let score = 0;
 
-    ctx.strokeStyle="#222";
-    ctx.strokeRect(
-        x*SIZE,
-        y*SIZE,
-        SIZE,
-        SIZE
-    );
-}
+let level = 1;
 
-function draw(){
+let lines = 0;
 
-    ctx.clearRect(
-        0,0,
-        canvas.width,
-        canvas.height
-    );
+let combo = -1;
 
-    for(let y=0;y<ROWS;y++){
-        for(let x=0;x<COLS;x++){
+let backToBack = false;
 
-            if(board[y][x]){
-                drawCell(
-                    x,
-                    y,
-                    board[y][x]
-                );
-            }
-        }
-    }
+/*************************************************
+ *
+ * BAG SYSTEM
+ *
+ *************************************************/
 
-    piece.shape.forEach((row,y)=>{
-        row.forEach((value,x)=>{
+let bag = [];
 
-            if(value){
-                drawCell(
-                    piece.x+x,
-                    piece.y+y,
-                    value
-                );
-            }
-        });
-    });
-}
+let nextQueue = [];
 
-function collide(
-    nx=piece.x,
-    ny=piece.y,
-    shape=piece.shape
+function shuffle(arr){
+
+for(
+let i=arr.length-1;
+i>0;
+i--
 ){
 
-    for(let y=0;y<shape.length;y++){
+const j =
+Math.floor(
+Math.random()*(i+1)
+);
 
-        for(let x=0;x<shape[y].length;x++){
-
-            if(!shape[y][x]) continue;
-
-            const px=nx+x;
-            const py=ny+y;
-
-            if(
-                px<0 ||
-                px>=COLS ||
-                py>=ROWS
-            ){
-                return true;
-            }
-
-            if(
-                py>=0 &&
-                board[py][px]
-            ){
-                return true;
-            }
-        }
-    }
-
-    return false;
+[arr[i],arr[j]] =
+[arr[j],arr[i]];
 }
 
-function merge(){
-
-    piece.shape.forEach((row,y)=>{
-        row.forEach((value,x)=>{
-
-            if(value){
-                board[piece.y+y]
-                [piece.x+x]=value;
-            }
-
-        });
-    });
-
-    clearLines();
-
-    piece=newPiece();
-
-    if(collide()){
-
-        alert("GAME OVER");
-
-        board=
-        Array.from(
-            {length:ROWS},
-            ()=>Array(COLS).fill(0)
-        );
-    }
+return arr;
 }
 
-function clearLines(){
+function refillBag(){
 
-    for(
-        let y=ROWS-1;
-        y>=0;
-        y--
-    ){
+bag =
+shuffle([
+"I",
+"O",
+"T",
+"S",
+"Z",
+"J",
+"L"
+]);
 
-        if(
-            board[y].every(
-                v=>v!==0
-            )
-        ){
-
-            board.splice(y,1);
-
-            board.unshift(
-                Array(COLS).fill(0)
-            );
-
-            y++;
-        }
-    }
 }
 
-function move(dir){
+function getNextType(){
 
-    if(
-        !collide(
-            piece.x+dir,
-            piece.y
-        )
-    ){
-        piece.x+=dir;
-    }
-
-    draw();
+if(
+bag.length===0
+){
+refillBag();
 }
+
+return bag.pop();
+}
+
+/*************************************************
+ *
+ * NEXT QUEUE
+ *
+ *************************************************/
+
+function fillNextQueue(){
+
+while(
+nextQueue.length<5
+){
+
+nextQueue.push(
+getNextType()
+);
+
+}
+
+}
+
+/*************************************************
+ *
+ * PIECE DATA
+ *
+ *************************************************/
+
+const PIECES = {
+
+I:[
+[
+[0,0,0,0],
+[1,1,1,1],
+[0,0,0,0],
+[0,0,0,0]
+]
+],
+
+O:[
+[
+[2,2],
+[2,2]
+]
+],
+
+T:[
+[
+[0,3,0],
+[3,3,3],
+[0,0,0]
+]
+],
+
+S:[
+[
+[0,4,4],
+[4,4,0],
+[0,0,0]
+]
+],
+
+Z:[
+[
+[5,5,0],
+[0,5,5],
+[0,0,0]
+]
+],
+
+J:[
+[
+[6,0,0],
+[6,6,6],
+[0,0,0]
+]
+],
+
+L:[
+[
+[0,0,7],
+[7,7,7],
+[0,0,0]
+]
+]
+
+};
+
+const COLORS = {
+
+1:"#00FFFF",
+2:"#FFFF00",
+3:"#AA00FF",
+4:"#00FF00",
+5:"#FF0000",
+6:"#0000FF",
+7:"#FF8800"
+
+};
+
+/*************************************************
+ *
+ * PIECE OBJECT
+ *
+ *************************************************/
+
+class Piece{
+
+constructor(type){
+
+this.type = type;
+
+this.rotation = 0;
+
+this.matrix =
+JSON.parse(
+JSON.stringify(
+PIECES[type][0]
+)
+);
+
+this.x = 3;
+
+this.y = 0;
+
+}
+
+}
+/*************************************************
+ *
+ * SRS WALL KICK
+ *
+ *************************************************/
+
+// J L S T Z
+
+const JLSTZ_KICKS = {
+
+"0>1":[
+[0,0],
+[-1,0],
+[-1,1],
+[0,-2],
+[-1,-2]
+],
+
+"1>0":[
+[0,0],
+[1,0],
+[1,-1],
+[0,2],
+[1,2]
+],
+
+"1>2":[
+[0,0],
+[1,0],
+[1,-1],
+[0,2],
+[1,2]
+],
+
+"2>1":[
+[0,0],
+[-1,0],
+[-1,1],
+[0,-2],
+[-1,-2]
+],
+
+"2>3":[
+[0,0],
+[1,0],
+[1,1],
+[0,-2],
+[1,-2]
+],
+
+"3>2":[
+[0,0],
+[-1,0],
+[-1,-1],
+[0,2],
+[-1,2]
+],
+
+"3>0":[
+[0,0],
+[-1,0],
+[-1,-1],
+[0,2],
+[-1,2]
+],
+
+"0>3":[
+[0,0],
+[1,0],
+[1,1],
+[0,-2],
+[1,-2]
+]
+
+};
+
+// I PIECE
+
+const I_KICKS = {
+
+"0>1":[
+[0,0],
+[-2,0],
+[1,0],
+[-2,-1],
+[1,2]
+],
+
+"1>0":[
+[0,0],
+[2,0],
+[-1,0],
+[2,1],
+[-1,-2]
+],
+
+"1>2":[
+[0,0],
+[-1,0],
+[2,0],
+[-1,2],
+[2,-1]
+],
+
+"2>1":[
+[0,0],
+[1,0],
+[-2,0],
+[1,-2],
+[-2,1]
+],
+
+"2>3":[
+[0,0],
+[2,0],
+[-1,0],
+[2,1],
+[-1,-2]
+],
+
+"3>2":[
+[0,0],
+[-2,0],
+[1,0],
+[-2,-1],
+[1,2]
+],
+
+"3>0":[
+[0,0],
+[1,0],
+[-2,0],
+[1,-2],
+[-2,1]
+],
+
+"0>3":[
+[0,0],
+[-1,0],
+[2,0],
+[-1,2],
+[2,-1]
+]
+
+};
+
+/*************************************************
+ *
+ * ROTATION
+ *
+ *************************************************/
+
+function rotateMatrix(matrix){
+
+const N = matrix.length;
+
+const result =
+Array.from(
+{length:N},
+()=>Array(N).fill(0)
+);
+
+for(let y=0;y<N;y++){
+
+for(let x=0;x<N;x++){
+
+result[x][N-1-y] =
+matrix[y][x];
+
+}
+
+}
+
+return result;
+
+}
+
+/*************************************************
+ *
+ * COLLISION
+ *
+ *************************************************/
+
+function collision(
+matrix,
+offsetX,
+offsetY
+){
+
+for(
+let y=0;
+y<matrix.length;
+y++
+){
+
+for(
+let x=0;
+x<matrix[y].length;
+x++
+){
+
+if(
+!matrix[y][x]
+) continue;
+
+const px =
+offsetX + x;
+
+const py =
+offsetY + y;
+
+if(
+px < 0 ||
+px >= COLS ||
+py >= ROWS
+){
+return true;
+}
+
+if(
+py >= 0 &&
+board[py][px]
+){
+return true;
+}
+
+}
+
+}
+
+return false;
+
+}
+
+/*************************************************
+ *
+ * MOVE
+ *
+ *************************************************/
+
+function movePiece(dir){
+
+if(
+!collision(
+currentPiece.matrix,
+currentPiece.x + dir,
+currentPiece.y
+)
+){
+currentPiece.x += dir;
+}
+
+}
+
+/*************************************************
+ *
+ * ROTATE SRS
+ *
+ *************************************************/
 
 function rotatePiece(){
 
-    const rotated =
-    piece.shape[0].map(
-        (_,i)=>
-        piece.shape
-        .map(row=>row[i])
-        .reverse()
-    );
+const oldRot =
+currentPiece.rotation;
 
-    if(
-        !collide(
-            piece.x,
-            piece.y,
-            rotated
-        )
-    ){
-        piece.shape=rotated;
-    }
+const newRot =
+(oldRot + 1) % 4;
 
-    draw();
+const rotated =
+rotateMatrix(
+currentPiece.matrix
+);
+
+let kicks;
+
+if(
+currentPiece.type === "I"
+){
+
+kicks =
+I_KICKS[
+`${oldRot}>${newRot}`
+];
+
 }
+else if(
+currentPiece.type === "O"
+){
+
+kicks =
+[[0,0]];
+
+}
+else{
+
+kicks =
+JLSTZ_KICKS[
+`${oldRot}>${newRot}`
+];
+
+}
+
+for(
+const [kx,ky]
+of kicks
+){
+
+const nx =
+currentPiece.x + kx;
+
+const ny =
+currentPiece.y - ky;
+
+if(
+!collision(
+rotated,
+nx,
+ny
+)
+){
+
+currentPiece.matrix =
+rotated;
+
+currentPiece.x =
+nx;
+
+currentPiece.y =
+ny;
+
+currentPiece.rotation =
+newRot;
+
+return true;
+
+}
+
+}
+
+return false;
+
+}
+
+/*************************************************
+ *
+ * SOFT DROP
+ *
+ *************************************************/
 
 function softDrop(){
-    update();
+
+if(
+!collision(
+currentPiece.matrix,
+currentPiece.x,
+currentPiece.y+1
+)
+){
+
+currentPiece.y++;
+
 }
+else{
+
+lockPiece();
+
+}
+
+}
+
+/*************************************************
+ *
+ * HARD DROP
+ *
+ *************************************************/
 
 function hardDrop(){
 
-    while(
-        !collide(
-            piece.x,
-            piece.y+1
-        )
-    ){
-        piece.y++;
-    }
+while(
+!collision(
+currentPiece.matrix,
+currentPiece.x,
+currentPiece.y+1
+)
+){
 
-    merge();
-    draw();
+currentPiece.y++;
+
 }
 
-function update(){
+lockPiece();
 
-    if(
-        !collide(
-            piece.x,
-            piece.y+1
-        )
-    ){
-        piece.y++;
-    }
-    else{
-        merge();
-    }
-
-    draw();
 }
+    /*************************************************
+ *
+ * SPAWN
+ *
+ *************************************************/
+
+function spawnPiece(){
+
+fillNextQueue();
+
+const type =
+nextQueue.shift();
+
+nextQueue.push(
+getNextType()
+);
+
+currentPiece =
+new Piece(type);
+
+holdUsed = false;
+
+if(
+collision(
+currentPiece.matrix,
+currentPiece.x,
+currentPiece.y
+)
+){
+
+gameOver();
+
+}
+
+drawNext();
+
+drawHold();
+
+}
+
+/*************************************************
+ *
+ * HOLD
+ *
+ *************************************************/
+
+function holdCurrent(){
+
+if(
+holdUsed
+) return;
+
+if(
+holdPiece === null
+){
+
+holdPiece =
+currentPiece.type;
+
+spawnPiece();
+
+}
+else{
+
+const temp =
+holdPiece;
+
+holdPiece =
+currentPiece.type;
+
+currentPiece =
+new Piece(temp);
+
+}
+
+holdUsed = true;
+
+drawHold();
+
+}
+
+/*************************************************
+ *
+ * LOCK
+ *
+ *************************************************/
+
+function lockPiece(){
+
+const matrix =
+currentPiece.matrix;
+
+for(
+let y=0;
+y<matrix.length;
+y++
+){
+
+for(
+let x=0;
+x<matrix[y].length;
+x++
+){
+
+if(
+!matrix[y][x]
+) continue;
+
+const px =
+currentPiece.x + x;
+
+const py =
+currentPiece.y + y;
+
+if(
+py >= 0
+){
+
+board[py][px] =
+matrix[y][x];
+
+}
+
+}
+
+}
+
+clearLines();
+
+spawnPiece();
+
+}
+
+/*************************************************
+ *
+ * LINE CLEAR
+ *
+ *************************************************/
+
+function clearLines(){
+
+let cleared = 0;
+
+for(
+let y=ROWS-1;
+y>=0;
+y--
+){
+
+if(
+board[y].every(
+v => v !== 0
+)
+){
+
+board.splice(y,1);
+
+board.unshift(
+Array(COLS).fill(0)
+);
+
+cleared++;
+
+y++;
+
+}
+
+}
+
+if(
+cleared > 0
+){
+
+lines += cleared;
+
+combo++;
+
+updateScore(
+cleared
+);
+
+document.getElementById(
+"lines"
+).textContent = lines;
+
+}
+
+else{
+
+combo = -1;
+
+}
+
+}
+
+/*************************************************
+ *
+ * GHOST
+ *
+ *************************************************/
+
+function getGhostY(){
+
+let ghostY =
+currentPiece.y;
+
+while(
+!collision(
+currentPiece.matrix,
+currentPiece.x,
+ghostY + 1
+)
+){
+
+ghostY++;
+
+}
+
+return ghostY;
+
+}
+
+/*************************************************
+ *
+ * DRAW BOARD
+ *
+ *************************************************/
+
+function drawBoard(){
+
+ctx.clearRect(
+0,
+0,
+boardCanvas.width,
+boardCanvas.height
+);
+
+for(
+let y=0;
+y<ROWS;
+y++
+){
+
+for(
+let x=0;
+x<COLS;
+x++
+){
+
+const cell =
+board[y][x];
+
+if(cell){
+
+drawBlock(
+x,
+y,
+COLORS[cell]
+);
+
+}
+
+}
+
+}
+
+}
+
+/*************************************************
+ *
+ * DRAW BLOCK
+ *
+ *************************************************/
+
+function drawBlock(
+x,
+y,
+color
+){
+
+ctx.fillStyle =
+color;
+
+ctx.fillRect(
+x*BLOCK,
+y*BLOCK,
+BLOCK,
+BLOCK
+);
+
+ctx.strokeStyle =
+"#111";
+
+ctx.strokeRect(
+x*BLOCK,
+y*BLOCK,
+BLOCK,
+BLOCK
+);
+
+}
+
+/*************************************************
+ *
+ * DRAW GHOST
+ *
+ *************************************************/
+
+function drawGhost(){
+
+const gy =
+getGhostY();
+
+const matrix =
+currentPiece.matrix;
+
+for(
+let y=0;
+y<matrix.length;
+y++
+){
+
+for(
+let x=0;
+x<matrix[y].length;
+x++
+){
+
+if(
+!matrix[y][x]
+) continue;
+
+ctx.globalAlpha =
+0.25;
+
+drawBlock(
+currentPiece.x+x,
+gy+y,
+COLORS[
+matrix[y][x]
+]
+);
+
+ctx.globalAlpha =
+1;
+
+}
+
+}
+
+}
+
+/*************************************************
+ *
+ * DRAW CURRENT
+ *
+ *************************************************/
+
+function drawCurrent(){
+
+const matrix =
+currentPiece.matrix;
+
+for(
+let y=0;
+y<matrix.length;
+y++
+){
+
+for(
+let x=0;
+x<matrix[y].length;
+x++
+){
+
+if(
+!matrix[y][x]
+) continue;
+
+drawBlock(
+currentPiece.x+x,
+currentPiece.y+y,
+COLORS[
+matrix[y][x]
+]
+);
+
+}
+
+}
+
+}
+
+/*************************************************
+ *
+ * MAIN DRAW
+ *
+ *************************************************/
+
+function draw(){
+
+drawBoard();
+
+drawGhost();
+
+drawCurrent();
+
+}
+
+/*************************************************
+ *
+ * DRAW MINI PIECE
+ *
+ *************************************************/
+
+function drawMiniPiece(
+canvas,
+type
+){
+
+const c =
+canvas.getContext("2d");
+
+c.clearRect(
+0,
+0,
+80,
+80
+);
+
+const shape =
+PIECES[type][0];
+
+for(
+let y=0;
+y<shape.length;
+y++
+){
+
+for(
+let x=0;
+x<shape[y].length;
+x++
+){
+
+if(
+!shape[y][x]
+) continue;
+
+c.fillStyle =
+COLORS[
+shape[y][x]
+];
+
+c.fillRect(
+20+x*15,
+20+y*15,
+15,
+15
+);
+
+}
+
+}
+
+}
+
+/*************************************************
+ *
+ * NEXT
+ *
+ *************************************************/
+
+function drawNext(){
+
+for(
+let i=0;
+i<5;
+i++
+){
+
+const canvas =
+document.getElementById(
+"next"+i
+);
+
+drawMiniPiece(
+canvas,
+nextQueue[i]
+);
+
+}
+
+}
+
+/*************************************************
+ *
+ * HOLD
+ *
+ *************************************************/
+
+function drawHold(){
+
+const canvas =
+document.getElementById(
+"holdCanvas"
+);
+
+const c =
+canvas.getContext("2d");
+
+c.clearRect(
+0,
+0,
+80,
+80
+);
+
+if(
+holdPiece
+){
+
+drawMiniPiece(
+canvas,
+holdPiece
+);
+
+}
+
+}
+
+/*************************************************
+ *
+ * GAME OVER
+ *
+ *************************************************/
+
+function gameOver(){
+
+alert(
+"GAME OVER"
+);
+
+board =
+Array.from(
+{length:ROWS},
+()=>Array(COLS).fill(0)
+);
+
+score = 0;
+level = 1;
+lines = 0;
+
+spawnPiece();
+
+}
+
+/*************************************************
+ *
+ * START
+ *
+ *************************************************/
+
+fillNextQueue();
+
+spawnPiece();
+
+draw();
+    /*************************************************
+ *
+ * SCORE SYSTEM
+ *
+ *************************************************/
+
+let dropInterval = 1000;
+let lastDropTime = 0;
+
+function updateLevel(){
+
+level =
+Math.floor(lines / 10) + 1;
+
+dropInterval =
+Math.max(
+100,
+1000 - (level - 1) * 75
+);
+
+document.getElementById(
+"level"
+).textContent = level;
+
+}
+
+function updateScore(cleared){
+
+let add = 0;
+
+switch(cleared){
+
+case 1:
+add = 100 * level;
+break;
+
+case 2:
+add = 300 * level;
+break;
+
+case 3:
+add = 500 * level;
+break;
+
+case 4:
+
+if(backToBack){
+add = 1200 * level;
+}
+else{
+add = 800 * level;
+}
+
+backToBack = true;
+
+break;
+
+}
+
+if(cleared !== 4){
+
+backToBack = false;
+
+}
+
+if(combo > 0){
+
+add += combo * 50 * level;
+
+}
+
+score += add;
+
+document.getElementById(
+"score"
+).textContent =
+score;
+
+updateLevel();
+
+}
+
+/*************************************************
+ *
+ * T-SPIN DETECTION
+ *
+ *************************************************/
+
+let lastActionRotate = false;
+
+const oldRotatePiece =
+rotatePiece;
+
+rotatePiece = function(){
+
+const result =
+oldRotatePiece();
+
+if(result){
+
+lastActionRotate = true;
+
+}
+
+return result;
+
+};
+
+function isTSpin(){
+
+if(
+currentPiece.type !== "T"
+){
+return false;
+}
+
+if(
+!lastActionRotate
+){
+return false;
+}
+
+const cx =
+currentPiece.x + 1;
+
+const cy =
+currentPiece.y + 1;
+
+let occupied = 0;
+
+const corners = [
+
+[cx-1, cy-1],
+[cx+1, cy-1],
+[cx-1, cy+1],
+[cx+1, cy+1]
+
+];
+
+for(
+const [x,y]
+of corners
+){
+
+if(
+x < 0 ||
+x >= COLS ||
+y >= ROWS
+){
+
+occupied++;
+
+continue;
+
+}
+
+if(
+y >= 0 &&
+board[y][x]
+){
+
+occupied++;
+
+}
+
+}
+
+return occupied >= 3;
+
+}
+
+/*************************************************
+ *
+ * OVERRIDE LOCK
+ *
+ *************************************************/
+
+const originalLockPiece =
+lockPiece;
+
+lockPiece = function(){
+
+const tspin =
+isTSpin();
+
+if(tspin){
+
+score +=
+400 * level;
+
+document.getElementById(
+"score"
+).textContent =
+score;
+
+}
+
+lastActionRotate =
+false;
+
+originalLockPiece();
+
+};
+
+/*************************************************
+ *
+ * GAME LOOP
+ *
+ *************************************************/
+
+function update(time){
+
+if(
+!lastDropTime
+){
+lastDropTime = time;
+}
+
+const delta =
+time - lastDropTime;
+
+if(
+delta >= dropInterval
+){
+
+softDrop();
+
+lastDropTime =
+time;
+
+}
+
+draw();
+
+requestAnimationFrame(
+update
+);
+
+}
+
+/*************************************************
+ *
+ * BUTTON EVENTS
+ *
+ *************************************************/
+
+document
+.getElementById(
+"leftBtn"
+)
+.addEventListener(
+"click",
+()=>movePiece(-1)
+);
+
+document
+.getElementById(
+"rightBtn"
+)
+.addEventListener(
+"click",
+()=>movePiece(1)
+);
+
+document
+.getElementById(
+"rotateBtn"
+)
+.addEventListener(
+"click",
+()=>rotatePiece()
+);
+
+document
+.getElementById(
+"softBtn"
+)
+.addEventListener(
+"click",
+()=>softDrop()
+);
+
+document
+.getElementById(
+"hardBtn"
+)
+.addEventListener(
+"click",
+()=>hardDrop()
+);
+
+document
+.getElementById(
+"holdBtn"
+)
+.addEventListener(
+"click",
+()=>holdCurrent()
+);
+
+/*************************************************
+ *
+ * KEYBOARD
+ *
+ *************************************************/
 
 document.addEventListener(
 "keydown",
 e=>{
 
-    if(e.key==="ArrowLeft")
-        move(-1);
+switch(e.code){
 
-    if(e.key==="ArrowRight")
-        move(1);
+case "ArrowLeft":
+movePiece(-1);
+break;
 
-    if(e.key==="ArrowDown")
-        softDrop();
+case "ArrowRight":
+movePiece(1);
+break;
 
-    if(e.key==="ArrowUp")
-        rotatePiece();
+case "ArrowDown":
+softDrop();
+break;
 
-    if(e.code==="Space")
-        hardDrop();
-});
+case "ArrowUp":
+rotatePiece();
+break;
 
-setInterval(update,500);
+case "Space":
+hardDrop();
+break;
 
-draw();
+case "ShiftLeft":
+case "KeyC":
+holdCurrent();
+break;
+
+}
+
+}
+);
+
+/*************************************************
+ *
+ * TOUCH SWIPE
+ *
+ *************************************************/
+
+let touchX = 0;
+let touchY = 0;
+
+boardCanvas.addEventListener(
+"touchstart",
+e=>{
+
+touchX =
+e.touches[0].clientX;
+
+touchY =
+e.touches[0].clientY;
+
+}
+);
+
+boardCanvas.addEventListener(
+"touchend",
+e=>{
+
+const dx =
+e.changedTouches[0].clientX
+- touchX;
+
+const dy =
+e.changedTouches[0].clientY
+- touchY;
+
+if(
+Math.abs(dx) >
+Math.abs(dy)
+){
+
+if(dx > 30){
+
+movePiece(1);
+
+}
+else if(dx < -30){
+
+movePiece(-1);
+
+}
+
+}
+else{
+
+if(dy > 30){
+
+softDrop();
+
+}
+else if(dy < -30){
+
+rotatePiece();
+
+}
+
+}
+
+}
+);
+
+/*************************************************
+ *
+ * START LOOP
+ *
+ *************************************************/
+
+requestAnimationFrame(
+update
+);
 </script>
-
 </body>
 </html>
