@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+
+<title>UNO風ゲーム</title>
+
+<style>
+body{
+    margin:0;
+    background:#1b1b1b;
+    color:white;
+    font-family:sans-serif;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+
+h1{
+    margin:10px;
+}
+
+#table{
+    width:100%;
+    max-width:900px;
+    padding:10px;
+}
+
+.playerRow{
+    margin:10px 0;
+    text-align:center;
+}
+
+.cardCount{
+    display:inline-block;
+    padding:8px 12px;
+    background:#333;
+    border-radius:10px;
+}
+
+#center{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:20px;
+    margin:20px 0;
+}
+
+.card{
+    width:70px;
+    height:100px;
+    border-radius:10px;
+    border:2px solid white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-weight:bold;
+    font-size:20px;
+}
+
+.red{background:#d33;}
+.blue{background:#36c;}
+.green{background:#2a4;}
+.yellow{background:#db3;color:black;}
+.black{background:#222;}
+
+#hand{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:6px;
+}
+
+.handCard{
+    cursor:pointer;
+}
+
+button{
+    margin-top:10px;
+    padding:10px 18px;
+    font-size:16px;
+}
+</style>
+</head>
+<body>
+
+<h1>UNO</h1>
+
+<div id="table">
+
+<div class="playerRow">
+CPU1:
+<span id="cpu1" class="cardCount">7枚</span>
+</div>
+
+<div class="playerRow">
+CPU2:
+<span id="cpu2" class="cardCount">7枚</span>
+</div>
+
+<div class="playerRow">
+CPU3:
+<span id="cpu3" class="cardCount">7枚</span>
+</div>
+
+<div id="center">
+
+<div id="deck" class="card black">
+山札
+</div>
+
+<div id="discard" class="card red">
+0
+</div>
+
+</div>
+
+<div class="playerRow">
+あなた
+</div>
+
+<div id="hand"></div>
+
+<button id="drawBtn">
+カードを引く
+</button>
+
+</div>
+
+<script>
+
+const COLORS = [
+"red",
+"blue",
+"green",
+"yellow"
+];
+
+let deck = [];
+let discard = [];
+
+let players = [
+[],
+[],
+[],
+[]
+];
+
+let currentPlayer = 0;
+
+function createDeck(){
+
+deck = [];
+
+for(const color of COLORS){
+
+deck.push({
+color,
+value:0
+});
+
+for(let i=1;i<=9;i++){
+
+deck.push({
+color,
+value:i
+});
+
+deck.push({
+color,
+value:i
+});
+
+}
+
+for(let i=0;i<2;i++){
+
+deck.push({
+color,
+value:"skip"
+});
+
+deck.push({
+color,
+value:"reverse"
+});
+
+deck.push({
+color,
+value:"+2"
+});
+
+}
+
+}
+
+for(let i=0;i<4;i++){
+
+deck.push({
+color:"black",
+value:"wild"
+});
+
+deck.push({
+color:"black",
+value:"+4"
+});
+
+}
+
+}
+
+function shuffle(arr){
+
+for(
+let i=arr.length-1;
+i>0;
+i--
+){
+
+const j =
+Math.floor(
+Math.random()*(i+1)
+);
+
+[arr[i],arr[j]]
+=
+[arr[j],arr[i]];
+
+}
+
+}
+/****************************************
+ *
+ * START GAME
+ *
+ ****************************************/
+
+function startGame(){
+
+createDeck();
+
+shuffle(deck);
+
+players = [
+[],
+[],
+[],
+[]
+];
+
+for(
+let p=0;
+p<4;
+p++
+){
+
+for(
+let i=0;
+i<7;
+i++
+){
+
+players[p].push(
+deck.pop()
+);
+
+}
+
+}
+
+/* 最初の場札 */
+
+let first;
+
+do{
+
+first = deck.pop();
+
+}
+while(
+first.color === "black"
+);
+
+discard = [first];
+
+updateDiscard();
+updateCounts();
+renderHand();
+
+}
+
+/****************************************
+ *
+ * DISCARD
+ *
+ ****************************************/
+
+function topCard(){
+
+return discard[
+discard.length-1
+];
+
+}
+
+function updateDiscard(){
+
+const card =
+topCard();
+
+const el =
+document.getElementById(
+"discard"
+);
+
+el.className =
+"card " +
+card.color;
+
+el.textContent =
+card.value;
+
+}
+
+/****************************************
+ *
+ * CPU COUNT
+ *
+ ****************************************/
+
+function updateCounts(){
+
+document
+.getElementById("cpu1")
+.textContent =
+players[1].length +
+"枚";
+
+document
+.getElementById("cpu2")
+.textContent =
+players[2].length +
+"枚";
+
+document
+.getElementById("cpu3")
+.textContent =
+players[3].length +
+"枚";
+
+}
+
+/****************************************
+ *
+ * PLAYABLE
+ *
+ ****************************************/
+
+function canPlay(card){
+
+const top =
+topCard();
+
+if(
+card.color === "black"
+){
+return true;
+}
+
+if(
+card.color === top.color
+){
+return true;
+}
+
+if(
+card.value === top.value
+){
+return true;
+}
+
+return false;
+
+}
+
+/****************************************
+ *
+ * CARD HTML
+ *
+ ****************************************/
+
+function createCardElement(
+card,
+index
+){
+
+const div =
+document.createElement(
+"div"
+);
+
+div.className =
+"card handCard " +
+card.color;
+
+div.textContent =
+card.value;
+
+div.onclick =
+()=>{
+
+playCard(index);
+
+};
+
+return div;
+
+}
+
+/****************************************
+ *
+ * RENDER HAND
+ *
+ ****************************************/
+
+function renderHand(){
+
+const hand =
+document.getElementById(
+"hand"
+);
+
+hand.innerHTML = "";
+
+players[0]
+.forEach(
+(card,index)=>{
+
+const el =
+createCardElement(
+card,
+index
+);
+
+if(
+!canPlay(card)
+){
+
+el.style.opacity =
+".45";
+
+}
+
+hand.appendChild(el);
+
+}
+);
+
+}
+
+/****************************************
+ *
+ * DRAW CARD
+ *
+ ****************************************/
+
+function drawCard(player){
+
+if(
+deck.length === 0
+){
+
+const keep =
+discard.pop();
+
+deck =
+discard;
+
+discard =
+[keep];
+
+shuffle(deck);
+
+}
+
+players[player].push(
+deck.pop()
+);
+
+}
+
+/****************************************
+ *
+ * PLAYER DRAW
+ *
+ ****************************************/
+
+document
+.getElementById(
+"drawBtn"
+)
+.onclick = ()=>{
+
+if(
+currentPlayer !== 0
+){
+return;
+}
+
+drawCard(0);
+
+renderHand();
+
+};
+
+/****************************************
+ *
+ * NEXT TURN
+ *
+ ****************************************/
+
+function nextTurn(){
+
+currentPlayer++;
+
+if(
+currentPlayer >= 4
+){
+
+currentPlayer = 0;
+
+}
+
+updateCounts();
+
+renderHand();
+
+}
+
+/****************************************
+ *
+ * PLAY CARD
+ *
+ ****************************************/
+
+function playCard(index){
+
+if(
+currentPlayer !== 0
+){
+return;
+}
+
+const card =
+players[0][index];
+
+if(
+!canPlay(card)
+){
+return;
+}
+
+players[0].splice(
+index,
+1
+);
+
+discard.push(card);
+
+updateDiscard();
+
+checkWin(0);
+
+nextTurn();
+
+}
+
+/****************************************
+ *
+ * WIN
+ *
+ ****************************************/
+
+function checkWin(player){
+
+if(
+players[player]
+.length === 0
+){
+
+alert(
+player === 0
+?
+"あなたの勝ち！"
+:
+"CPU" +
+player +
+"の勝ち！"
+);
+
+startGame();
+
+return true;
+
+}
+
+return false;
+
+}
+
+/****************************************
+ *
+ * START
+ *
+ ****************************************/
+
+startGame();
+/****************************************
+ *
+ * CPU PLAY
+ *
+ ****************************************/
+
+function cpuChooseCard(player){
+
+for(
+let i=0;
+i<players[player].length;
+i++
+){
+
+if(
+canPlay(
+players[player][i]
+)
+){
+
+return i;
+
+}
+
+}
+
+return -1;
+
+}
+
+/****************************************
+ *
+ * CPU TURN
+ *
+ ****************************************/
+
+function cpuTurn(player){
+
+const cardIndex =
+cpuChooseCard(player);
+
+if(
+cardIndex >= 0
+){
+
+const card =
+players[player][cardIndex];
+
+players[player].splice(
+cardIndex,
+1
+);
+
+discard.push(card);
+
+updateDiscard();
+
+if(
+checkWin(player)
+){
+return;
+}
+
+}
+else{
+
+drawCard(player);
+
+}
+
+updateCounts();
+
+nextTurn();
+
+}
+
+/****************************************
+ *
+ * CPU LOOP
+ *
+ ****************************************/
+
+function runCpuTurns(){
+
+if(
+currentPlayer === 0
+){
+return;
+}
+
+setTimeout(()=>{
+
+cpuTurn(
+currentPlayer
+);
+
+runCpuTurns();
+
+},700);
+
+}
+
+/****************************************
+ *
+ * OVERRIDE NEXT TURN
+ *
+ ****************************************/
+
+const originalNextTurn =
+nextTurn;
+
+nextTurn = function(){
+
+currentPlayer++;
+
+if(
+currentPlayer >= 4
+){
+
+currentPlayer = 0;
+
+}
+
+updateCounts();
+
+renderHand();
+
+if(
+currentPlayer !== 0
+){
+
+runCpuTurns();
+
+}
+
+};
+
+/****************************************
+ *
+ * TURN DISPLAY
+ *
+ ****************************************/
+
+const turnLabel =
+document.createElement(
+"div"
+);
+
+turnLabel.id =
+"turnLabel";
+
+turnLabel.style.margin =
+"10px";
+
+document
+.getElementById("table")
+.prepend(
+turnLabel
+);
+
+function updateTurnLabel(){
+
+if(
+currentPlayer === 0
+){
+
+turnLabel.textContent =
+"あなたのターン";
+
+}
+else{
+
+turnLabel.textContent =
+"CPU" +
+currentPlayer +
+"のターン";
+
+}
+
+}
+
+/****************************************
+ *
+ * OVERRIDE AGAIN
+ *
+ ****************************************/
+
+const oldRenderHand =
+renderHand;
+
+renderHand = function(){
+
+oldRenderHand();
+
+updateTurnLabel();
+
+};
+
+/****************************************
+ *
+ * START LABEL
+ *
+ ****************************************/
+
+updateTurnLabel();
+/****************************************
+ *
+ * DIRECTION
+ *
+ ****************************************/
+
+let direction = 1;
+
+/****************************************
+ *
+ * COLOR CHOICE
+ *
+ ****************************************/
+
+function chooseColor(){
+
+const colors = [
+"red",
+"blue",
+"green",
+"yellow"
+];
+
+return colors[
+Math.floor(
+Math.random()*4
+)
+];
+
+}
+
+/****************************************
+ *
+ * NEXT PLAYER
+ *
+ ****************************************/
+
+function advanceTurn(step=1){
+
+currentPlayer =
+(
+currentPlayer +
+(direction * step)
++
+4*10
+) % 4;
+
+updateCounts();
+renderHand();
+
+if(
+currentPlayer !== 0
+){
+
+runCpuTurns();
+
+}
+
+}
+
+/****************************************
+ *
+ * SPECIAL CARD
+ *
+ ****************************************/
+
+function applyCardEffect(
+card,
+playedBy
+){
+
+switch(card.value){
+
+case "skip":
+
+advanceTurn(2);
+return true;
+
+case "reverse":
+
+direction *= -1;
+
+/* 2人用UNO互換処理ではない */
+
+advanceTurn(1);
+return true;
+
+case "+2":
+
+const target =
+(
+playedBy +
+direction +
+4
+) % 4;
+
+drawCard(target);
+drawCard(target);
+
+advanceTurn(2);
+return true;
+
+case "wild":
+
+card.color =
+chooseColor();
+
+updateDiscard();
+
+advanceTurn(1);
+return true;
+
+case "+4":
+
+card.color =
+chooseColor();
+
+updateDiscard();
+
+const victim =
+(
+playedBy +
+direction +
+4
+) % 4;
+
+for(
+let i=0;
+i<4;
+i++
+){
+
+drawCard(victim);
+
+}
+
+advanceTurn(2);
+return true;
+
+}
+
+return false;
+
+}
+
+/****************************************
+ *
+ * OVERRIDE PLAYER PLAY
+ *
+ ****************************************/
+
+playCard = function(index){
+
+if(
+currentPlayer !== 0
+){
+return;
+}
+
+const card =
+players[0][index];
+
+if(
+!canPlay(card)
+){
+return;
+}
+
+players[0].splice(
+index,
+1
+);
+
+discard.push(card);
+
+updateDiscard();
+
+if(
+checkWin(0)
+){
+return;
+}
+
+const handled =
+applyCardEffect(
+card,
+0
+);
+
+if(
+!handled
+){
+
+advanceTurn(1);
+
+}
+
+};
+
+/****************************************
+ *
+ * OVERRIDE CPU TURN
+ *
+ ****************************************/
+
+cpuTurn = function(player){
+
+const cardIndex =
+cpuChooseCard(player);
+
+if(
+cardIndex >= 0
+){
+
+const card =
+players[player][cardIndex];
+
+players[player].splice(
+cardIndex,
+1
+);
+
+discard.push(card);
+
+updateDiscard();
+
+if(
+checkWin(player)
+){
+return;
+}
+
+const handled =
+applyCardEffect(
+card,
+player
+);
+
+if(
+!handled
+){
+
+advanceTurn(1);
+
+}
+
+}
+else{
+
+drawCard(player);
+
+advanceTurn(1);
+
+}
+
+};
+
+/****************************************
+ *
+ * WILD DISPLAY
+ *
+ ****************************************/
+
+const oldUpdateDiscard =
+updateDiscard;
+
+updateDiscard = function(){
+
+oldUpdateDiscard();
+
+const card =
+topCard();
+
+if(
+card.color === "black"
+){
+
+document
+.getElementById(
+"discard"
+)
+.className =
+"card black";
+
+}
+
+};
+
+/****************************************
+ *
+ * COLOR MEMORY
+ *
+ ****************************************/
+
+const oldCanPlay =
+canPlay;
+
+canPlay = function(card){
+
+const top =
+topCard();
+
+if(
+card.color === "black"
+){
+return true;
+}
+
+if(
+top.color &&
+card.color === top.color
+){
+return true;
+}
+
+if(
+card.value === top.value
+){
+return true;
+}
+
+return false;
+
+};
+/****************************************
+ *
+ * UNO STATE
+ *
+ ****************************************/
+
+let unoDeclared = false;
+
+/****************************************
+ *
+ * UNO BUTTON
+ *
+ ****************************************/
+
+const unoBtn =
+document.createElement("button");
+
+unoBtn.textContent = "UNO!";
+
+unoBtn.style.margin = "10px";
+
+document
+.getElementById("table")
+.appendChild(unoBtn);
+
+unoBtn.onclick = ()=>{
+
+if(
+currentPlayer === 0 &&
+players[0].length === 2
+){
+
+unoDeclared = true;
+
+alert("UNO!");
+
+}
+
+};
+
+/****************************************
+ *
+ * UNO PENALTY
+ *
+ ****************************************/
+
+function checkUnoPenalty(){
+
+if(
+players[0].length === 1 &&
+!unoDeclared
+){
+
+drawCard(0);
+drawCard(0);
+
+alert(
+"UNOを言い忘れた！+2枚"
+);
+
+renderHand();
+
+}
+
+}
+
+/****************************************
+ *
+ * CPU UNO
+ *
+ ****************************************/
+
+function cpuUno(player){
+
+if(
+players[player].length === 1
+){
+
+console.log(
+"CPU" +
+player +
+" UNO!"
+);
+
+}
+
+}
+
+/****************************************
+ *
+ * OVERRIDE PLAYER PLAY
+ *
+ ****************************************/
+
+const oldPlayCard =
+playCard;
+
+playCard = function(index){
+
+oldPlayCard(index);
+
+checkUnoPenalty();
+
+if(
+players[0].length !== 1
+){
+
+unoDeclared = false;
+
+}
+
+};
+
+/****************************************
+ *
+ * OVERRIDE CPU TURN
+ *
+ ****************************************/
+
+const oldCpuTurn =
+cpuTurn;
+
+cpuTurn = function(player){
+
+oldCpuTurn(player);
+
+cpuUno(player);
+
+};
+
+/****************************************
+ *
+ * HAND COUNT WARNING
+ *
+ ****************************************/
+
+function updateHandWarning(){
+
+let label =
+document.getElementById(
+"unoWarning"
+);
+
+if(!label){
+
+label =
+document.createElement(
+"div"
+);
+
+label.id =
+"unoWarning";
+
+label.style.fontSize =
+"24px";
+
+label.style.margin =
+"10px";
+
+document
+.getElementById("table")
+.appendChild(label);
+
+}
+
+if(
+players[0].length === 2
+){
+
+label.textContent =
+"UNOを押そう！";
+
+}
+else{
+
+label.textContent =
+"";
+
+}
+
+}
+
+/****************************************
+ *
+ * OVERRIDE RENDER
+ *
+ ****************************************/
+
+const oldRender =
+renderHand;
+
+renderHand = function(){
+
+oldRender();
+
+updateHandWarning();
+
+};
+
+/****************************************
+ *
+ * MOBILE FIX
+ *
+ ****************************************/
+
+document.body.style.userSelect =
+"none";
+
+document.body.style.webkitUserSelect =
+"none";
+
+document.body.style.touchAction =
+"manipulation";
+
+/****************************************
+ *
+ * TURN HIGHLIGHT
+ *
+ ****************************************/
+
+const oldUpdateTurn =
+updateTurnLabel;
+
+updateTurnLabel = function(){
+
+oldUpdateTurn();
+
+if(
+currentPlayer === 0
+){
+
+turnLabel.style.color =
+"#66ff66";
+
+}
+else{
+
+turnLabel.style.color =
+"#ffffff";
+
+}
+
+};
+
+/****************************************
+ *
+ * RESTART BUTTON
+ *
+ ****************************************/
+
+const restartBtn =
+document.createElement(
+"button"
+);
+
+restartBtn.textContent =
+"新しいゲーム";
+
+restartBtn.style.margin =
+"10px";
+
+document
+.getElementById("table")
+.appendChild(
+restartBtn
+);
+
+restartBtn.onclick =
+()=>{
+
+direction = 1;
+
+unoDeclared = false;
+
+startGame();
+
+};
+
+/****************************************
+ *
+ * INITIAL REFRESH
+ *
+ ****************************************/
+
+renderHand();
+updateCounts();
+updateTurnLabel();
+
+console.log(
+"UNO 完成版"
+);
+
+</script>
+
+</body>
+</html>
