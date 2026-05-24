@@ -1,0 +1,1801 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width,
+initial-scale=1,
+maximum-scale=1,
+user-scalable=no">
+
+<title>ぷよぷよ通風</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html,body{
+    width:100%;
+    height:100%;
+    background:#111;
+    color:white;
+    font-family:sans-serif;
+    touch-action:manipulation;
+    overflow:hidden;
+}
+
+body{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+
+h1{
+    margin:10px 0;
+}
+
+#gameWrapper{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+}
+
+#field{
+    background:#000;
+    border:3px solid #666;
+}
+
+#side{
+    width:110px;
+}
+
+.panel{
+    margin-bottom:12px;
+}
+
+.panel h3{
+    margin-bottom:5px;
+    font-size:14px;
+}
+
+#nextCanvas{
+    background:#222;
+    border:2px solid #555;
+}
+
+#scoreBox{
+    padding:8px;
+    background:#222;
+    border:2px solid #555;
+}
+
+#controls{
+    margin-top:10px;
+    width:min(95vw,420px);
+
+    display:grid;
+    grid-template-columns:
+    repeat(4,1fr);
+
+    gap:8px;
+}
+
+#controls button{
+    height:70px;
+    font-size:26px;
+    border:none;
+    border-radius:12px;
+    background:#333;
+    color:white;
+}
+
+#controls button:active{
+    transform:scale(.95);
+}
+
+.wide{
+    grid-column:span 2;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>ぷよぷよ通風</h1>
+
+<div id="gameWrapper">
+
+<canvas
+id="field"
+width="192"
+height="384">
+</canvas>
+
+<div id="side">
+
+<div class="panel">
+
+<h3>NEXT</h3>
+
+<canvas
+id="nextCanvas"
+width="96"
+height="160">
+</canvas>
+
+</div>
+
+<div
+class="panel"
+id="scoreBox">
+
+<div>
+Score:
+<span id="score">
+0
+</span>
+</div>
+
+<div>
+Chain:
+<span id="chain">
+0
+</span>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div id="controls">
+
+<button id="leftBtn">
+◀
+</button>
+
+<button id="rotateBtn">
+↻
+</button>
+
+<button id="rightBtn">
+▶
+</button>
+
+<button id="downBtn">
+▼
+</button>
+
+<button
+class="wide"
+id="dropBtn">
+
+落下
+
+</button>
+
+<button
+class="wide"
+id="restartBtn">
+
+リセット
+
+</button>
+
+</div>
+
+<script>
+
+/****************************************
+ *
+ * CONSTANTS
+ *
+ ****************************************/
+
+const COLS = 6;
+const ROWS = 12;
+const CELL = 32;
+
+const EMPTY = 0;
+
+const RED = 1;
+const BLUE = 2;
+const GREEN = 3;
+const YELLOW = 4;
+const PURPLE = 5;
+
+const COLORS = {
+1:"#ff4444",
+2:"#4488ff",
+3:"#44dd44",
+4:"#ffee44",
+5:"#bb55ff"
+};
+
+/****************************************
+ *
+ * CANVAS
+ *
+ ****************************************/
+
+const canvas =
+document.getElementById(
+"field"
+);
+
+const ctx =
+canvas.getContext(
+"2d"
+);
+
+const nextCanvas =
+document.getElementById(
+"nextCanvas"
+);
+
+const nextCtx =
+nextCanvas.getContext(
+"2d"
+);
+
+/****************************************
+ *
+ * FIELD
+ *
+ ****************************************/
+
+let field =
+Array.from(
+{length:ROWS},
+()=>Array(COLS).fill(0)
+);
+
+/****************************************
+ *
+ * SCORE
+ *
+ ****************************************/
+
+let score = 0;
+let chain = 0;
+
+/****************************************
+ *
+ * PUYO PAIR
+ *
+ ****************************************/
+
+class Pair{
+
+constructor(){
+
+this.x = 2;
+this.y = 1;
+
+this.rotation = 0;
+
+this.main =
+randomColor();
+
+this.sub =
+randomColor();
+
+}
+
+}
+
+/****************************************
+ *
+ * RANDOM COLOR
+ *
+ ****************************************/
+
+function randomColor(){
+
+return (
+Math.floor(
+Math.random()*5
+)+1
+);
+
+}
+
+/****************************************
+ *
+ * CURRENT
+ *
+ ****************************************/
+
+let current =
+new Pair();
+
+let nextPair =
+new Pair();
+
+/****************************************
+ *
+ * DRAW SINGLE PUYO
+ *
+ ****************************************/
+
+function drawPuyo(
+x,
+y,
+color
+){
+
+ctx.fillStyle =
+COLORS[color];
+
+ctx.beginPath();
+
+ctx.arc(
+x*CELL + CELL/2,
+y*CELL + CELL/2,
+CELL/2 - 2,
+0,
+Math.PI*2
+);
+
+ctx.fill();
+
+}
+
+/****************************************
+ *
+ * DRAW FIELD
+ *
+ ****************************************/
+
+function drawField(){
+
+ctx.clearRect(
+0,
+0,
+canvas.width,
+canvas.height
+);
+
+for(
+let y=0;
+y<ROWS;
+y++
+){
+
+for(
+let x=0;
+x<COLS;
+x++
+){
+
+if(
+field[y][x]
+){
+
+drawPuyo(
+x,
+y,
+field[y][x]
+);
+
+}
+
+}
+
+}
+
+}
+
+/****************************************
+ *
+ * DRAW NEXT
+ *
+ ****************************************/
+
+function drawNext(){
+
+nextCtx.clearRect(
+0,
+0,
+96,
+160
+);
+
+nextCtx.fillStyle =
+COLORS[nextPair.main];
+
+nextCtx.beginPath();
+
+nextCtx.arc(
+48,
+40,
+14,
+0,
+Math.PI*2
+);
+
+nextCtx.fill();
+
+nextCtx.fillStyle =
+COLORS[nextPair.sub];
+
+nextCtx.beginPath();
+
+nextCtx.arc(
+48,
+75,
+14,
+0,
+Math.PI*2
+);
+
+nextCtx.fill();
+
+}
+
+/****************************************
+ *
+ * UPDATE SCORE
+ *
+ ****************************************/
+
+function updateInfo(){
+
+document.getElementById(
+"score"
+).textContent =
+score;
+
+document.getElementById(
+"chain"
+).textContent =
+chain;
+
+}
+
+/****************************************
+ *
+ * INITIAL DRAW
+ *
+ ****************************************/
+
+drawField();
+drawNext();
+updateInfo();
+/****************************************
+ *
+ * PAIR POSITION
+ *
+ ****************************************/
+
+function getSubPosition(pair){
+
+switch(pair.rotation){
+
+case 0:
+return {
+x:pair.x,
+y:pair.y-1
+};
+
+case 1:
+return {
+x:pair.x+1,
+y:pair.y
+};
+
+case 2:
+return {
+x:pair.x,
+y:pair.y+1
+};
+
+case 3:
+return {
+x:pair.x-1,
+y:pair.y
+};
+
+}
+
+}
+
+/****************************************
+ *
+ * COLLISION
+ *
+ ****************************************/
+
+function isBlocked(x,y){
+
+if(
+x < 0 ||
+x >= COLS ||
+y >= ROWS
+){
+return true;
+}
+
+if(y < 0){
+return false;
+}
+
+return field[y][x] !== EMPTY;
+
+}
+
+function pairCollision(
+nx,
+ny,
+rotation
+){
+
+const temp = {
+x:nx,
+y:ny,
+rotation
+};
+
+const sub =
+getSubPosition(temp);
+
+if(
+isBlocked(
+nx,
+ny
+)
+){
+return true;
+}
+
+if(
+isBlocked(
+sub.x,
+sub.y
+)
+){
+return true;
+}
+
+return false;
+
+}
+
+/****************************************
+ *
+ * DRAW CURRENT PAIR
+ *
+ ****************************************/
+
+const oldDrawField =
+drawField;
+
+drawField = function(){
+
+oldDrawField();
+
+drawPuyo(
+current.x,
+current.y,
+current.main
+);
+
+const sub =
+getSubPosition(
+current
+);
+
+drawPuyo(
+sub.x,
+sub.y,
+current.sub
+);
+
+};
+
+/****************************************
+ *
+ * MOVE
+ *
+ ****************************************/
+
+function moveLeft(){
+
+if(
+!pairCollision(
+current.x-1,
+current.y,
+current.rotation
+)
+){
+
+current.x--;
+
+}
+
+}
+
+function moveRight(){
+
+if(
+!pairCollision(
+current.x+1,
+current.y,
+current.rotation
+)
+){
+
+current.x++;
+
+}
+
+}
+
+/****************************************
+ *
+ * ROTATE
+ *
+ ****************************************/
+
+function rotate(){
+
+let nextRot =
+(current.rotation + 1) % 4;
+
+if(
+!pairCollision(
+current.x,
+current.y,
+nextRot
+)
+){
+
+current.rotation =
+nextRot;
+
+return;
+
+}
+
+/* クイックターン簡易 */
+
+if(
+!pairCollision(
+current.x-1,
+current.y,
+nextRot
+)
+){
+
+current.x--;
+
+current.rotation =
+nextRot;
+
+return;
+
+}
+
+if(
+!pairCollision(
+current.x+1,
+current.y,
+nextRot
+)
+){
+
+current.x++;
+
+current.rotation =
+nextRot;
+
+}
+
+}
+
+/****************************************
+ *
+ * FIX PAIR
+ *
+ ****************************************/
+
+function lockPair(){
+
+const sub =
+getSubPosition(
+current
+);
+
+if(
+current.y >= 0
+){
+
+field[
+current.y
+][
+current.x
+] =
+current.main;
+
+}
+
+if(
+sub.y >= 0
+){
+
+field[
+sub.y
+][
+sub.x
+] =
+current.sub;
+
+}
+
+/* 次ぷよ生成 */
+
+current =
+nextPair;
+
+nextPair =
+new Pair();
+
+drawNext();
+
+/* Game Over */
+
+if(
+pairCollision(
+current.x,
+current.y,
+current.rotation
+)
+){
+
+alert(
+"GAME OVER"
+);
+
+field =
+Array.from(
+{length:ROWS},
+()=>Array(COLS).fill(0)
+);
+
+score = 0;
+chain = 0;
+
+updateInfo();
+
+}
+
+}
+
+/****************************************
+ *
+ * FALL
+ *
+ ****************************************/
+
+function fall(){
+
+if(
+!pairCollision(
+current.x,
+current.y+1,
+current.rotation
+)
+){
+
+current.y++;
+
+}
+else{
+
+lockPair();
+
+}
+
+}
+
+/****************************************
+ *
+ * HARD DROP
+ *
+ ****************************************/
+
+function hardDrop(){
+
+while(
+!pairCollision(
+current.x,
+current.y+1,
+current.rotation
+)
+){
+
+current.y++;
+
+}
+
+lockPair();
+
+}
+
+/****************************************
+ *
+ * LOOP
+ *
+ ****************************************/
+
+let lastTime = 0;
+let fallInterval = 800;
+
+function gameLoop(time){
+
+if(
+!lastTime
+){
+lastTime = time;
+}
+
+const delta =
+time - lastTime;
+
+if(
+delta >= fallInterval
+){
+
+fall();
+
+lastTime = time;
+
+}
+
+drawField();
+
+requestAnimationFrame(
+gameLoop
+);
+
+}
+
+/****************************************
+ *
+ * BUTTONS
+ *
+ ****************************************/
+
+document
+.getElementById(
+"leftBtn"
+)
+.onclick = ()=>{
+
+moveLeft();
+
+};
+
+document
+.getElementById(
+"rightBtn"
+)
+.onclick = ()=>{
+
+moveRight();
+
+};
+
+document
+.getElementById(
+"rotateBtn"
+)
+.onclick = ()=>{
+
+rotate();
+
+};
+
+document
+.getElementById(
+"downBtn"
+)
+.onclick = ()=>{
+
+fall();
+
+};
+
+document
+.getElementById(
+"dropBtn"
+)
+.onclick = ()=>{
+
+hardDrop();
+
+};
+
+document
+.getElementById(
+"restartBtn"
+)
+.onclick = ()=>{
+
+field =
+Array.from(
+{length:ROWS},
+()=>Array(COLS).fill(0)
+);
+
+score = 0;
+chain = 0;
+
+current =
+new Pair();
+
+nextPair =
+new Pair();
+
+updateInfo();
+
+};
+
+/****************************************
+ *
+ * KEYBOARD
+ *
+ ****************************************/
+
+document.addEventListener(
+"keydown",
+e=>{
+
+switch(e.code){
+
+case "ArrowLeft":
+moveLeft();
+break;
+
+case "ArrowRight":
+moveRight();
+break;
+
+case "ArrowUp":
+rotate();
+break;
+
+case "ArrowDown":
+fall();
+break;
+
+case "Space":
+hardDrop();
+break;
+
+}
+
+}
+);
+
+/****************************************
+ *
+ * START
+ *
+ ****************************************/
+
+requestAnimationFrame(
+gameLoop
+);
+/****************************************
+ *
+ * DIRECTIONS
+ *
+ ****************************************/
+
+const DIRS = [
+[1,0],
+[-1,0],
+[0,1],
+[0,-1]
+];
+
+/****************************************
+ *
+ * FLOOD FILL
+ *
+ ****************************************/
+
+function findGroup(
+startX,
+startY,
+visited
+){
+
+const color =
+field[startY][startX];
+
+if(
+color === EMPTY
+){
+return [];
+}
+
+const stack = [
+[startX,startY]
+];
+
+const group = [];
+
+visited[startY][startX] = true;
+
+while(
+stack.length
+){
+
+const [x,y] =
+stack.pop();
+
+group.push([x,y]);
+
+for(
+const [dx,dy]
+of DIRS
+){
+
+const nx = x+dx;
+const ny = y+dy;
+
+if(
+nx < 0 ||
+nx >= COLS ||
+ny < 0 ||
+ny >= ROWS
+){
+continue;
+}
+
+if(
+visited[ny][nx]
+){
+continue;
+}
+
+if(
+field[ny][nx]
+!== color
+){
+continue;
+}
+
+visited[ny][nx] =
+true;
+
+stack.push(
+[nx,ny]
+);
+
+}
+
+}
+
+return group;
+
+}
+
+/****************************************
+ *
+ * FIND ERASABLE
+ *
+ ****************************************/
+
+function findEraseGroups(){
+
+const visited =
+Array.from(
+{length:ROWS},
+()=>Array(COLS).fill(false)
+);
+
+const eraseList = [];
+
+for(
+let y=0;
+y<ROWS;
+y++
+){
+
+for(
+let x=0;
+x<COLS;
+x++
+){
+
+if(
+field[y][x] === EMPTY
+){
+continue;
+}
+
+if(
+visited[y][x]
+){
+continue;
+}
+
+const group =
+findGroup(
+x,
+y,
+visited
+);
+
+if(
+group.length >= 4
+){
+
+eraseList.push(
+...group
+);
+
+}
+
+}
+
+}
+
+return eraseList;
+
+}
+
+/****************************************
+ *
+ * ERASE
+ *
+ ****************************************/
+
+function erasePuyos(list){
+
+for(
+const [x,y]
+of list
+){
+
+field[y][x] =
+EMPTY;
+
+}
+
+}
+
+/****************************************
+ *
+ * GRAVITY
+ *
+ ****************************************/
+
+function applyGravity(){
+
+let moved = false;
+
+for(
+let x=0;
+x<COLS;
+x++
+){
+
+let writeY =
+ROWS-1;
+
+for(
+let y=ROWS-1;
+y>=0;
+y--
+){
+
+if(
+field[y][x]
+!== EMPTY
+){
+
+const value =
+field[y][x];
+
+field[y][x] =
+EMPTY;
+
+field[writeY][x] =
+value;
+
+if(
+writeY !== y
+){
+moved = true;
+}
+
+writeY--;
+
+}
+
+}
+
+}
+
+return moved;
+
+}
+
+/****************************************
+ *
+ * SCORE
+ *
+ ****************************************/
+
+function addChainScore(
+chainCount,
+erasedCount
+){
+
+const base =
+erasedCount * 10;
+
+const chainBonus =
+Math.max(
+1,
+chainCount * 8
+);
+
+score +=
+base *
+chainBonus;
+
+updateInfo();
+
+}
+
+/****************************************
+ *
+ * CHAIN
+ *
+ ****************************************/
+
+function resolveChains(){
+
+chain = 0;
+
+while(true){
+
+const eraseList =
+findEraseGroups();
+
+if(
+eraseList.length === 0
+){
+break;
+}
+
+chain++;
+
+erasePuyos(
+eraseList
+);
+
+addChainScore(
+chain,
+eraseList.length
+);
+
+applyGravity();
+
+}
+
+updateInfo();
+
+}
+
+/****************************************
+ *
+ * OVERRIDE LOCK
+ *
+ ****************************************/
+
+const oldLockPair =
+lockPair;
+
+lockPair = function(){
+
+const sub =
+getSubPosition(
+current
+);
+
+if(
+current.y >= 0
+){
+
+field[
+current.y
+][
+current.x
+] =
+current.main;
+
+}
+
+if(
+sub.y >= 0
+){
+
+field[
+sub.y
+][
+sub.x
+] =
+current.sub;
+
+}
+
+resolveChains();
+
+current =
+nextPair;
+
+nextPair =
+new Pair();
+
+drawNext();
+
+if(
+pairCollision(
+current.x,
+current.y,
+current.rotation
+)
+){
+
+alert(
+"GAME OVER"
+);
+
+field =
+Array.from(
+{length:ROWS},
+()=>Array(COLS).fill(0)
+);
+
+score = 0;
+chain = 0;
+
+updateInfo();
+
+}
+
+};
+/****************************************
+ *
+ * NEXT 2
+ *
+ ****************************************/
+
+let nextPair2 =
+new Pair();
+
+const oldDrawNext =
+drawNext;
+
+drawNext = function(){
+
+nextCtx.clearRect(
+0,
+0,
+96,
+160
+);
+
+/* NEXT1 */
+
+nextCtx.fillStyle =
+COLORS[nextPair.main];
+
+nextCtx.beginPath();
+
+nextCtx.arc(
+48,
+35,
+14,
+0,
+Math.PI*2
+);
+
+nextCtx.fill();
+
+nextCtx.fillStyle =
+COLORS[nextPair.sub];
+
+nextCtx.beginPath();
+
+nextCtx.arc(
+48,
+70,
+14,
+0,
+Math.PI*2
+);
+
+nextCtx.fill();
+
+/* NEXT2 */
+
+nextCtx.fillStyle =
+COLORS[nextPair2.main];
+
+nextCtx.beginPath();
+
+nextCtx.arc(
+48,
+105,
+14,
+0,
+Math.PI*2
+);
+
+nextCtx.fill();
+
+nextCtx.fillStyle =
+COLORS[nextPair2.sub];
+
+nextCtx.beginPath();
+
+nextCtx.arc(
+48,
+140,
+14,
+0,
+Math.PI*2
+);
+
+nextCtx.fill();
+
+};
+
+/****************************************
+ *
+ * ALL CLEAR
+ *
+ ****************************************/
+
+function isAllClear(){
+
+for(
+let y=0;
+y<ROWS;
+y++
+){
+
+for(
+let x=0;
+x<COLS;
+x++
+){
+
+if(
+field[y][x] !== EMPTY
+){
+return false;
+}
+
+}
+
+}
+
+return true;
+
+}
+
+/****************************************
+ *
+ * BONUS
+ *
+ ****************************************/
+
+function applyAllClearBonus(){
+
+if(
+isAllClear()
+){
+
+score += 2100;
+
+updateInfo();
+
+}
+
+}
+
+/****************************************
+ *
+ * FALL SPEED
+ *
+ ****************************************/
+
+function updateSpeed(){
+
+const speed =
+Math.floor(
+score / 5000
+);
+
+fallInterval =
+Math.max(
+150,
+800 - speed * 50
+);
+
+}
+
+/****************************************
+ *
+ * OVERRIDE SCORE
+ *
+ ****************************************/
+
+const oldAddChainScore =
+addChainScore;
+
+addChainScore =
+function(
+chainCount,
+erasedCount
+){
+
+oldAddChainScore(
+chainCount,
+erasedCount
+);
+
+updateSpeed();
+
+};
+
+/****************************************
+ *
+ * OVERRIDE CHAIN
+ *
+ ****************************************/
+
+const oldResolveChains =
+resolveChains;
+
+resolveChains =
+function(){
+
+oldResolveChains();
+
+applyAllClearBonus();
+
+};
+
+/****************************************
+ *
+ * OVERRIDE LOCK
+ *
+ ****************************************/
+
+lockPair =
+function(){
+
+const sub =
+getSubPosition(
+current
+);
+
+if(
+current.y >= 0
+){
+
+field[
+current.y
+][
+current.x
+] =
+current.main;
+
+}
+
+if(
+sub.y >= 0
+){
+
+field[
+sub.y
+][
+sub.x
+] =
+current.sub;
+
+}
+
+resolveChains();
+
+current =
+nextPair;
+
+nextPair =
+nextPair2;
+
+nextPair2 =
+new Pair();
+
+drawNext();
+
+if(
+pairCollision(
+current.x,
+current.y,
+current.rotation
+)
+){
+
+alert(
+"GAME OVER");
+
+field =
+Array.from(
+{length:ROWS},
+()=>Array(COLS).fill(0)
+);
+
+score = 0;
+chain = 0;
+
+current =
+new Pair();
+
+nextPair =
+new Pair();
+
+nextPair2 =
+new Pair();
+
+updateInfo();
+
+}
+
+};
+
+/****************************************
+ *
+ * TOUCH
+ *
+ ****************************************/
+
+let touchStartX = 0;
+let touchStartY = 0;
+
+canvas.addEventListener(
+"touchstart",
+e=>{
+
+touchStartX =
+e.touches[0].clientX;
+
+touchStartY =
+e.touches[0].clientY;
+
+},
+{passive:true}
+);
+
+canvas.addEventListener(
+"touchend",
+e=>{
+
+const dx =
+e.changedTouches[0].clientX
+- touchStartX;
+
+const dy =
+e.changedTouches[0].clientY
+- touchStartY;
+
+if(
+Math.abs(dx)
+>
+Math.abs(dy)
+){
+
+if(dx > 25){
+
+moveRight();
+
+}
+else if(dx < -25){
+
+moveLeft();
+
+}
+
+}
+else{
+
+if(dy > 25){
+
+fall();
+
+}
+else if(dy < -25){
+
+rotate();
+
+}
+
+}
+
+},
+{passive:true}
+);
+
+/****************************************
+ *
+ * DOUBLE TAP
+ *
+ ****************************************/
+
+let lastTap = 0;
+
+canvas.addEventListener(
+"touchend",
+()=>{
+
+const now =
+Date.now();
+
+if(
+now - lastTap
+< 250
+){
+
+hardDrop();
+
+}
+
+lastTap = now;
+
+}
+);
+
+/****************************************
+ *
+ * MOBILE FIX
+ *
+ ****************************************/
+
+document.body.style.userSelect =
+"none";
+
+document.body.style.webkitUserSelect =
+"none";
+
+/****************************************
+ *
+ * INITIALIZE
+ *
+ ****************************************/
+
+drawNext();
+updateInfo();
+drawField();
+
+console.log(
+"ぷよぷよ通風 完成"
+);
+</script>
+
+</body>
+</html>
