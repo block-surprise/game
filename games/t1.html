@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport"
 content="width=device-width,
-initial-scale=1.0,
-maximum-scale=1.0,
+initial-scale=1,
+maximum-scale=1,
 user-scalable=no">
 
 <title>Tetris99 Style</title>
@@ -19,10 +19,9 @@ user-scalable=no">
 }
 
 body{
-    background:#111;
-    color:white;
-    font-family:sans-serif;
-    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
 }
 
 #container{
@@ -63,19 +62,9 @@ body{
     margin-top:8px;
     text-align:center;
 }
-
 #controls{
-    position:fixed;
-    bottom:10px;
-    left:50%;
-    transform:translateX(-50%);
-    width:min(95vw,420px);
-
-    display:grid;
-    grid-template-columns:
-        repeat(4,1fr);
-
-    gap:8px;
+    position:static;
+    margin-top:10px;
 }
 
 #controls button{
@@ -97,7 +86,17 @@ body{
 .wide{
     grid-column:span 2;
 }
-
+    html, body{
+    touch-action: manipulation;
+    overscroll-behavior: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+    
+button{
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
 </style>
 </head>
 
