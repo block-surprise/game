@@ -209,6 +209,36 @@
   .score-pill .pip{width:12px; height:12px; border-radius:50%;}
   .score-pill.turn{border-color:var(--amber); box-shadow:0 0 0 2px rgba(232,147,12,.35);}
 
+  /* ---------- extra games (generic) ---------- */
+  .linegrid{display:grid; gap:4px; width:min(94vw,460px); background:var(--card); border:2px solid var(--line); border-radius:14px; padding:8px;}
+  .linegrid button{border-radius:9px; background:var(--bg); border:1.5px solid var(--line); min-height:0; padding:0; aspect-ratio:1; font-weight:900; display:grid; place-items:center; color:var(--ink);}
+  .linegrid button.m1{background:#FDE3DE; color:var(--p1);}
+  .linegrid button.m2{background:#DCECF8; color:var(--p2);}
+  .linegrid button.win{box-shadow:0 0 0 3px #FFD34D inset;}
+  .choice-row{display:flex; flex-wrap:wrap; gap:10px; justify-content:center;}
+  .choice-btn{padding:14px 18px; border-radius:16px; background:var(--card); border:2px solid var(--line); font-weight:900; font-size:1.05rem; min-width:96px;}
+  .choice-btn .big{display:block; font-size:1.9rem; line-height:1.2;}
+  .choice-btn:active{transform:scale(.97);}
+  .choice-btn:disabled{opacity:.45;}
+  .big-num{font-size:2rem; font-weight:900; text-align:center; line-height:1.3;}
+  .track{display:flex; flex-wrap:wrap; gap:4px; justify-content:center; max-width:520px;}
+  .track .sq{width:40px; height:40px; border-radius:10px; background:var(--bg); border:1.5px solid var(--line); display:grid; place-items:center; font-size:.78rem; font-weight:800; position:relative;}
+  .track .sq.boost{background:#DFF2E4;} .track .sq.trap{background:#FDE3DE;} .track .sq.goal{background:#FFE9A8;}
+  .track .tok{position:absolute; font-size:1.05rem;}
+  .memgrid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; width:min(94vw,420px);}
+  .memgrid button{aspect-ratio:1; border-radius:14px; background:var(--sky); color:#fff; font-size:1.7rem; font-weight:900; min-height:0; padding:0; border:2px solid #1D5F8F;}
+  .memgrid button.open{background:var(--card); color:var(--ink); border-color:var(--line);}
+  .memgrid button.done{background:#DFF2E4; color:var(--ink); border-color:var(--green);}
+  .dice-row{display:flex; gap:12px; justify-content:center; font-size:3rem; line-height:1;}
+  .prog{height:14px; border-radius:99px; background:var(--bg); border:1.5px solid var(--line); overflow:hidden; width:min(94vw,460px);}
+  .prog i{display:block; height:100%; transition:width .3s ease;}
+  .amida{display:flex; flex-direction:column; gap:0; width:min(94vw,420px);}
+  .simon{display:grid; grid-template-columns:1fr 1fr; gap:10px; width:min(80vw,300px);}
+  .simon button{aspect-ratio:1; border-radius:18px; min-height:0; opacity:.55; border:3px solid rgba(0,0,0,.15);}
+  .simon button.lit{opacity:1; box-shadow:0 0 0 4px #FFD34D;}
+  .dart-zone{width:min(94vw,420px); height:64px; border-radius:14px; background:linear-gradient(90deg,#8EC9EE 0 30%,#FFD34D 30% 45%,#E8503A 45% 55%,#FFD34D 55% 70%,#8EC9EE 70% 100%); position:relative; border:2px solid var(--line);}
+  .dart-cur{position:absolute; top:-8px; width:6px; height:80px; background:var(--ink); border-radius:3px;}
+
   /* ---------- p2p ---------- */
   .p2p-panel{margin-top:14px; padding:14px 16px;}
   .p2p-row{display:flex; flex-wrap:wrap; gap:8px; align-items:center;}
@@ -243,7 +273,7 @@
       <div class="badges">
         <span class="badge"><span class="dot" style="background:var(--p1)"></span>P2P対戦（1人1台・ルームコード）</span>
         <span class="badge"><span class="dot" style="background:var(--teal)"></span>CPU対戦（3段階）</span>
-        <span class="badge"><span class="dot" style="background:var(--amber)"></span>全7ゲーム</span>
+        <span class="badge"><span class="dot" style="background:var(--amber)"></span>全39ゲーム</span>
         <span class="badge"><span class="dot" style="background:var(--green)"></span>2人対戦（1台で交代）</span>
       </div>
     </div>
@@ -272,6 +302,7 @@
 
     <section>
       <h2><span class="num">2</span>ゲームを選ぶ</h2>
+      <input class="name-input" id="gameSearch" type="search" placeholder="🔍 ゲーム名でさがす（例：ダイス、将棋、クイズ）" aria-label="ゲーム名でさがす" style="margin-bottom:12px;">
       <div class="filters" id="filters">
         <button class="filter on" data-f="all">すべて</button>
         <button class="filter" data-f="board">盤上バトル</button>
@@ -301,7 +332,7 @@
     </section>
 
 
-    <footer>友達対戦ゲーム ／ 全7ゲーム・P2P対戦＆CPU対戦＆2人対戦対応</footer>
+    <footer>友達対戦ゲーム ／ 全39ゲーム・P2P対戦＆CPU対戦＆2人対戦対応</footer>
   </div>
 </div>
 
@@ -471,6 +502,8 @@ const ICONS = {
   mancala: '<svg viewBox="0 0 48 48"><rect x="4" y="12" width="40" height="24" rx="12" fill="rgba(255,255,255,.25)"/><circle cx="13" cy="24" r="4.5" fill="#FFD34D"/><circle cx="24" cy="24" r="4.5" fill="#fff"/><circle cx="35" cy="24" r="4.5" fill="#FF8A75"/><circle cx="18.5" cy="24" r="2" fill="#7ED491"/><circle cx="29.5" cy="24" r="2" fill="#8EC9EE"/></svg>',
   dots: '<svg viewBox="0 0 48 48"><path d="M12 12h24M12 24h24M12 36h24M12 12v24M24 12v24M36 12v24" stroke="rgba(255,255,255,.75)" stroke-width="3"/><rect x="12" y="12" width="12" height="12" fill="#FFD34D" opacity=".9"/><circle cx="12" cy="12" r="3.4" fill="#fff"/><circle cx="24" cy="12" r="3.4" fill="#fff"/><circle cx="36" cy="12" r="3.4" fill="#fff"/><circle cx="12" cy="24" r="3.4" fill="#fff"/><circle cx="24" cy="24" r="3.4" fill="#fff"/><circle cx="36" cy="24" r="3.4" fill="#fff"/><circle cx="12" cy="36" r="3.4" fill="#fff"/><circle cx="24" cy="36" r="3.4" fill="#fff"/><circle cx="36" cy="36" r="3.4" fill="#fff"/></svg>',
 };
+const TEXT_ICONS = { tictactoe:"✕○", yonmoku:"●●", rokumoku:"６", reversi6:"◐", dots3:"▦", dots5:"▦", mancalaMini:"●", mancalaHeavy:"６", numberMini:"２?", hasami:"挟", dobutsu:"獅", checkers:"◑", hex:"⬡", flood:"塗", nim:"山", stone:"石", maze:"迷", memory:"札", janken:"✊", dicerace:"⚀", pigdice:"⚅", quiz:"？", calc:"×", bingo:"ビ", highlow:"↕", slot:"７", darts:"◎", amida:"あ", reaction:"⚡", simon:"♪", war:"Ａ", dicepoker:"⚂" };
+for(const k in TEXT_ICONS){ ICONS[k] = '<svg viewBox="0 0 48 48"><rect x="4" y="4" width="40" height="40" rx="9" fill="rgba(255,255,255,.25)"/><text x="24" y="32" text-anchor="middle" font-size="18" font-weight="900" fill="#fff">' + TEXT_ICONS[k] + '</text></svg>'; }
 const GAMES = [
   { id:"gomoku", name:"五目並べ", cat:"board", catLabel:"盤上バトル", color:"#C07F1F",
     desc:"15×15の盤に石を交互に置き、先に5つ並べた方が勝ち。攻めと守りの駆け引きが熱い、定番の真剣勝負です。",
@@ -500,6 +533,134 @@ const GAMES = [
     desc:"点と点の間に線を引いて、四角を完成させる陣取りゲーム。1つ囲むともう1手引けるので、終盤の連鎖が勝負を決めます。",
     stars:2, brain:"★★★★☆", luck:"★☆☆☆☆", time:"5〜12分",
     rules:"<ul><li>点と点の間の線を交互に1本ずつ引きます。</li><li>四角の4辺目を引いた人は、その四角を取ってもう1本引けます（連続手番）。</li><li>全部の線が引かれたら終了。四角を多く取った方が勝ちです。</li></ul><p><b>コツ：</b>相手に「あと1辺で四角」を作らせない線引きが序盤の基本。終盤は、わざと小さい連鎖を渡して大きな連鎖を取る「譲り」の計算が勝負を分けます。</p>" },
+  { id:"tictactoe", name:"三目並べ", cat:"board", catLabel:"盤上バトル", color:"#8A6D3B",
+    desc:"3×3のマスに✕と○を交互に置いて、3つ並べれば勝ち。短時間で決着する、読み切りの入門バトルです。",
+    stars:1, brain:"★★☆☆☆", luck:"★☆☆☆☆", time:"1〜3分",
+    rules:"<ul><li>交互に空きマスへ自分の印を置きます。</li><li>縦・横・斜めのどれかに先に3つ並べれば勝ちです。</li></ul><p><b>コツ：</b>角と真ん中が強い場所。相手の「あと1つ」は必ず止め、2方向に伸びる形（フォーク）を作れば勝てます。</p>" },
+  { id:"yonmoku", name:"四目並べ（盤上）", cat:"board", catLabel:"盤上バトル", color:"#5B7C2A",
+    desc:"6×6の盤に好きな場所へコマを置いて4つ並べる、落とすタイプとは一味違う四目並べです。",
+    stars:2, brain:"★★★★☆", luck:"★☆☆☆☆", time:"3〜6分",
+    rules:"<ul><li>交互に空きマスへコマを置きます（重力はありません）。</li><li>縦・横・斜めで先に4つ並べれば勝ちです。</li></ul><p><b>コツ：</b>両端が開いた3つ（オープン3）を作ると次で止められません。</p>" },
+  { id:"rokumoku", name:"六目並べ", cat:"board", catLabel:"盤上バトル", color:"#7A4E9E",
+    desc:"10×10の広い盤で6つ並べる長期戦。気づかない斜めのラインが勝敗を分けます。",
+    stars:3, brain:"★★★★☆", luck:"★☆☆☆☆", time:"5〜12分",
+    rules:"<ul><li>交互に空きマスへ石を置きます。</li><li>縦・横・斜めで先に6つ並べれば勝ちです。</li></ul><p><b>コツ：</b>盤が広いので、離れた場所に伏せ石を作って一気につなぐ戦法が効きます。</p>" },
+  { id:"reversi6", name:"リバーシ・ミニ", cat:"board", catLabel:"盤上バトル", color:"#3E7A4F",
+    desc:"6×6の小さい盤でサクッと遊べるリバーシ。角の価値がさらに高い、短期決戦版です。",
+    stars:2, brain:"★★★★☆", luck:"★☆☆☆☆", time:"3〜6分",
+    rules:"<ul><li>ルールは通常のリバーシと同じ。はさんだ石を全部ひっくり返します。</li><li>両者置けなくなったら終了し、石が多い方が勝ちです。</li></ul><p><b>コツ：</b>盤が小さい分、角の周りは特に危険。序盤は少なめに取るのが定石です。</p>" },
+  { id:"hasami", name:"はさみゲーム", cat:"board", catLabel:"盤上バトル", color:"#A0522D",
+    desc:"コマを縦横に動かし、相手のコマを2つで挟んで取る将棋系バトル。相手を1つ以下にすれば勝ちです。",
+    stars:3, brain:"★★★★☆", luck:"★☆☆☆☆", time:"5〜10分",
+    rules:"<ul><li>自分のコマを1つ、縦か横に何マスでも動かします（他のコマは飛び越えられません）。</li><li>相手のコマを自分のコマ2つで挟む（盤の端でも可）と取れます。動いた直後だけ判定します。</li><li>相手のコマを1つ以下にすれば勝ちです。</li></ul><p><b>コツ：</b>2つ並んだ隊列は挟まれやすいので注意。端を使った挟みが決め手になります。</p>" },
+  { id:"dobutsu", name:"どうぶつしょうぎ", cat:"board", catLabel:"盤上バトル", color:"#D2691E",
+    desc:"3×4の小さい盤の将棋。ライオンを取るか、相手陣地へライオンが入れば勝ち。取った動物は味方にして使えます。",
+    stars:3, brain:"★★★★☆", luck:"★☆☆☆☆", time:"3〜8分",
+    rules:"<ul><li>ライオン（全方向1マス）、キリン（縦横1マス）、ゾウ（斜め1マス）、ひよこ（前1マス・敵陣でニワトリに進化し金将の動き）を動かします。</li><li>取った動物は自分の持ち駒になり、空きマスに打てます。</li><li>相手のライオンを取るか、自分のライオンが相手陣地の奥まで入れば勝ち（入った直後に取られる場合は負け）です。</li></ul><p><b>コツ：</b>ひよこを進化させるか、持ち駒で王手をかけるかが勝負どころです。</p>" },
+  { id:"checkers", name:"チェッカー", cat:"board", catLabel:"盤上バトル", color:"#4A4E69",
+    desc:"斜めに進み、相手のコマを飛び越えて取る世界的ボードゲーム。奥まで進めばキングになって全方向に動けます。",
+    stars:3, brain:"★★★★☆", luck:"★☆☆☆☆", time:"5〜12分",
+    rules:"<ul><li>コマは斜め前に1マス進みます。相手のコマの先が空いていれば飛び越えて取れます（取れる場合は取るのが優先の簡易ルールなし・自由選択）。</li><li>一番奥の段に着くとキングになり、斜め全方向に進めます。</li><li>相手のコマを全部取るか、動けなくすれば勝ちです。</li></ul><p><b>コツ：</b>端の列は取られにくい安全地帯。2つ並べて進むと飛び越えられにくくなります。</p>" },
+  { id:"hex", name:"ヘックス", cat:"board", catLabel:"盤上バトル", color:"#006D77",
+    desc:"自分の色の石を置いて、盤の両端を1本につなげば勝ちの陣つなぎゲーム。引き分けは絶対に起きません。",
+    stars:3, brain:"★★★★★", luck:"★☆☆☆☆", time:"5〜10分",
+    rules:"<ul><li>プレイヤー1は左端と右端、プレイヤー2は上端と下端をつなぐのが目標です。</li><li>交互に空きマスへ自分の石を1つ置きます。つながった瞬間に勝ちです。</li></ul><p><b>コツ：</b>2マス離れた「橋」の形は相手に割り込まれてもつながる鉄板形です。</p>" },
+  { id:"dots3", name:"ドット＆ボックス・ミニ", cat:"tactics", catLabel:"陣取り・計算", color:"#12836F",
+    desc:"3×3の四角で遊ぶ短期版ドット＆ボックス。連鎖の読み合いが凝縮されています。",
+    stars:2, brain:"★★★★☆", luck:"★☆☆☆☆", time:"3〜6分",
+    rules:"<ul><li>ルールは通常版と同じ。線を1本ずつ引き、四角の4辺目を引いた人がその四角を取り、もう1本引けます。</li><li>四角を多く取った方が勝ちです。</li></ul><p><b>コツ：</b>小さい盤では序盤の1本が連鎖の始まり。安全な線を数えて引きましょう。</p>" },
+  { id:"dots5", name:"ドット＆ボックス・ビッグ", cat:"tactics", catLabel:"陣取り・計算", color:"#0B6E63",
+    desc:"5×5の四角で遊ぶ大型版。終盤の大連鎖で一気に逆転する、計算力が試される陣取りです。",
+    stars:3, brain:"★★★★★", luck:"★☆☆☆☆", time:"8〜15分",
+    rules:"<ul><li>ルールは通常版と同じ。線を1本ずつ引き、四角を完成させた人が取り、もう1本引けます。</li><li>四角を多く取った方が勝ちです。</li></ul><p><b>コツ：</b>終盤は小さい連鎖を相手に渡して大きな連鎖を取る「譲り」の計算が勝敗を決めます。</p>" },
+  { id:"mancalaMini", name:"マンカラ・ミニ", cat:"tactics", catLabel:"陣取り・計算", color:"#B85C28",
+    desc:"片側4ポケット・石3個の短期版マンカラ。連続手番の数え方がすぐ身につきます。",
+    stars:2, brain:"★★★☆☆", luck:"★☆☆☆☆", time:"3〜6分",
+    rules:"<ul><li>ルールは通常のマンカラと同じ。石を1つずつまいていき、ゴールに多く集めた方が勝ちです。</li><li>最後の石がゴールで連続手番、自分の空ポケットで向かいの石を奪えます。</li></ul><p><b>コツ：</b>ゴールまでの距離を数える習慣をつけると通常版でも強くなります。</p>" },
+  { id:"mancalaHeavy", name:"マンカラ・ヘビー", cat:"tactics", catLabel:"陣取り・計算", color:"#9E4A1F",
+    desc:"石6個スタートの重量版マンカラ。一手で盤面が大きく動き、大奪いが連発します。",
+    stars:3, brain:"★★★★☆", luck:"★☆☆☆☆", time:"6〜12分",
+    rules:"<ul><li>ルールは通常のマンカラと同じ。初期の石が6個ずつで始まります。</li><li>ゴールの石が多い方が勝ちです。</li></ul><p><b>コツ：</b>石が多い分、相手側まで届く大きなまき方を常に計算に入れましょう。</p>" },
+  { id:"flood", name:"ぬりかえ陣取り", cat:"tactics", catLabel:"陣取り・計算", color:"#6A4C93",
+    desc:"自分の陣地と同じ色のマスを取り込みながら広げる陣取り。色を選ぶたびに領地がじわっと広がります。",
+    stars:2, brain:"★★★★☆", luck:"★★☆☆☆", time:"4〜8分",
+    rules:"<ul><li>プレイヤー1は左下、プレイヤー2は右上が陣地です。</li><li>自分の番に色を1つ選ぶと、陣地と陣地に接する同色マスが全部自分の陣地になります。</li><li>全マスがどちらかの陣地になったら終了。陣地が多い方が勝ちです。</li></ul><p><b>コツ：</b>目先の1マスより、次に大きく広がる色の布石を打つのが大切です。</p>" },
+  { id:"nim", name:"ニム（3つの山）", cat:"tactics", catLabel:"陣取り・計算", color:"#5F6C37",
+    desc:"3つの山から石を取る古典パズル対戦。最後の1個を取った方が勝ち。必勝法がある奥深いゲームです。",
+    stars:2, brain:"★★★★★", luck:"★☆☆☆☆", time:"2〜5分",
+    rules:"<ul><li>山は3・5・7個。自分の番に1つの山を選び、好きな個数（1個以上全部まで）の石を取ります。</li><li>最後の石を取った方が勝ちです。</li></ul><p><b>コツ：</b>各山の個数を2進数で見たときの「ニム和」を0にする手が必勝法として知られています。</p>" },
+  { id:"stone", name:"石取りゲーム", cat:"tactics", catLabel:"陣取り・計算", color:"#606C38",
+    desc:"21個の石を1〜3個ずつ取り合い、最後の石を取った方が勝ち。シンプルなのに必勝パターンがあります。",
+    stars:1, brain:"★★★☆☆", luck:"★☆☆☆☆", time:"1〜3分",
+    rules:"<ul><li>交互に石を1〜3個取ります。</li><li>最後の石を取った方が勝ちです。</li></ul><p><b>コツ：</b>相手の番に残りが4の倍数になるように取ると必勝形になります。</p>" },
+  { id:"maze", name:"めいろレース", cat:"tactics", catLabel:"陣取り・計算", color:"#283618",
+    desc:"同じ迷路を2人で競争。1手で1マス進み、先にゴールした方が勝ち。最短ルートを読む勝負です。",
+    stars:2, brain:"★★★☆☆", luck:"★☆☆☆☆", time:"3〜6分",
+    rules:"<ul><li>交互に自分のコマを上下左右へ1マス進めます（壁は通れません）。</li><li>先に右下のゴールへ着いた方が勝ちです。</li></ul><p><b>コツ：</b>行き止まりを覚えておくと無駄手が減ります。相手の進み具合も見て焦らず最短を。</p>" },
+  { id:"numberMini", name:"数当て・ミニ", cat:"mind", catLabel:"推理・読み合い", color:"#C2437E",
+    desc:"重ならない2ケタの数字を当て合う短期版ヒット＆ブロー。サクッと推理勝負できます。",
+    stars:1, brain:"★★★☆☆", luck:"★★☆☆☆", time:"2〜5分",
+    rules:"<ul><li>0〜9から重ならない2つの数字で秘密の数字を決めます。</li><li>交互に予想し、ヒット／ブローの結果から絞り込みます。先に2ヒットした方が勝ちです。</li></ul><p><b>コツ：</b>候補は最大90通り。結果と矛盾する候補を消していくのが近道です。</p>" },
+  { id:"memory", name:"神経衰弱バトル", cat:"mind", catLabel:"推理・読み合い", color:"#38618C",
+    desc:"4×4のカードをめくってペアを取る記憶バトル。そろえたら連続でめくれるので、記憶力で差がつきます。",
+    stars:2, brain:"★★★★☆", luck:"★★★☆☆", time:"3〜8分",
+    rules:"<ul><li>自分の番にカードを2枚めくります。同じ絵柄なら取り札になり、続けてもう2枚めくれます。</li><li>全部のカードが取られたら終了。ペア数が多い方が勝ちです。</li></ul><p><b>コツ：</b>相手がめくったカードこそ覚える価値があります。場所を声に出さず心でマッピングしましょう。</p>" },
+  { id:"janken", name:"じゃんけんバトル", cat:"mind", catLabel:"推理・読み合い", color:"#BC4749",
+    desc:"同時に出して先に5勝した方が勝ちのじゃんけん真剣勝負。相手のクセを読む心理戦です。",
+    stars:1, brain:"★★☆☆☆", luck:"★★★★☆", time:"2〜5分",
+    rules:"<ul><li>2人とも手（グー・チョキ・パー）を選び、そろったら同時に公開します。</li><li>勝った方が1点。あいこは引き直し。先に5点取った方が勝ちです。</li></ul><p><b>コツ：</b>人は同じ手を続ける・勝った手を繰り返す傾向があります。相手のパターンを読んでみましょう。</p>" },
+  { id:"dicerace", name:"ダイスレース", cat:"mind", catLabel:"推理・読み合い", color:"#DDA448",
+    desc:"サイコロを振って20マスのコースを進むレース。ブーストとワープ（落とし穴）のマスが波乱を起こします。",
+    stars:1, brain:"★☆☆☆☆", luck:"★★★★★", time:"2〜5分",
+    rules:"<ul><li>自分の番にサイコロを1回振り、出た目だけ進みます。</li><li>緑のマスは+2ブースト、赤のマスは-2、ゴールのマスに止まるか越えたら勝ちです。</li></ul><p><b>コツ：</b>運のゲームですが、残りマスとイベントマスの位置を見るとドキドキ感が増します。</p>" },
+  { id:"pigdice", name:"バーストダイス", cat:"mind", catLabel:"推理・読み合い", color:"#A44A3F",
+    desc:"サイコロを振り続けるか、止めて貯めるかの度胸勝負。1が出るとそのターンの分は全部パーになります。",
+    stars:2, brain:"★★★☆☆", luck:"★★★★☆", time:"3〜7分",
+    rules:"<ul><li>自分のターンに何回でもサイコロを振って合計をためられます。</li><li>「とめる」を押すと合計が得点に加算され、相手の番へ。1が出ると合計は0になって番が移ります。</li><li>先に50点に届いた方が勝ちです。</li></ul><p><b>コツ：</b>1ターン20点前後が期待値の目安。相手との点差で攻め時と守り時を変えましょう。</p>" },
+  { id:"quiz", name:"クイズバトル", cat:"mind", catLabel:"推理・読み合い", color:"#1D7874",
+    desc:"4択クイズを交互に出題し合う知識バトル。全10問で正解数が多い方が勝ちです。",
+    stars:2, brain:"★★★★☆", luck:"★★☆☆☆", time:"3〜6分",
+    rules:"<ul><li>交互にクイズが1問ずつ出ます。4つの選択肢から答えを選びます。</li><li>全10問終わって、正解数が多い方が勝ちです。</li></ul><p><b>コツ：</b>分からない問題は消去法で2択まで絞ると正解率が上がります。</p>" },
+  { id:"calc", name:"計算バトル", cat:"mind", catLabel:"推理・読み合い", color:"#144552",
+    desc:"計算問題の3択を交互に解くスピード暗算バトル。全10問で正解数が多い方が勝ちです。",
+    stars:2, brain:"★★★★☆", luck:"★☆☆☆☆", time:"3〜6分",
+    rules:"<ul><li>交互に計算問題が1問ずつ出ます。3つの選択肢から正しい答えを選びます。</li><li>全10問終わって、正解数が多い方が勝ちです。</li></ul><p><b>コツ：</b>かけ算は一の位だけ計算すると、選択肢を素早く絞れます。</p>" },
+  { id:"bingo", name:"ビンゴ対決", cat:"mind", catLabel:"推理・読み合い", color:"#7F5539",
+    desc:"3×3カードで競うビンゴ。交互に数字を引いて、自分のカードにあれば開けます。先に1ラインそろえた方が勝ちです。",
+    stars:1, brain:"★☆☆☆☆", luck:"★★★★★", time:"3〜7分",
+    rules:"<ul><li>カードは1〜15から9つの数字。真ん中はフリーです。</li><li>交互に「数字を引く」を押し、出た数字が自分のカードにあればそのマスが開きます。</li><li>縦・横・斜めのどれか1ラインを先に完成させた方が勝ちです。</li></ul><p><b>コツ：</b>完全な運勝負。リーチの形を楽しみましょう。</p>" },
+  { id:"highlow", name:"ハイ＆ロー対決", cat:"mind", catLabel:"推理・読み合い", color:"#3A506B",
+    desc:"今のカードより次が大きいか小さいかを当てる読みバトル。当て続けると連続ボーナスが付きます。",
+    stars:1, brain:"★★☆☆☆", luck:"★★★★☆", time:"3〜6分",
+    rules:"<ul><li>自分の番に、場のカードより次のカードが「大きい」か「小さい」かを予想します。</li><li>当たれば1点（連続正解でボーナス+1ずつ）。外れたら相手の番です。同じ数字は引き分けで番が移ります。</li><li>山札が尽きたら終了し、点数が多い方が勝ちです。</li></ul><p><b>コツ：</b>真ん中（7付近）のカードは読みにくい危険ゾーン。端のカードは大胆に。</p>" },
+  { id:"slot", name:"スロットバトル", cat:"mind", catLabel:"推理・読み合い", color:"#9C6644",
+    desc:"3つのリールを止めて役を作る運勝負。交互に5回ずつ回して、合計点が高い方が勝ちです。",
+    stars:1, brain:"★☆☆☆☆", luck:"★★★★★", time:"2〜4分",
+    rules:"<ul><li>自分の番にスロットを1回回します。3つ同じ絵柄で大当たり、2つ同じで小当たりです。</li><li>交互に5回ずつ回し、合計点が高い方が勝ちです。</li></ul><p><b>コツ：</b>完全な運勝負。7が3つそろうと最大点です。</p>" },
+  { id:"darts", name:"ダーツ対決", cat:"mind", catLabel:"推理・読み合い", color:"#5E503F",
+    desc:"動く照準を中心で止めるタイミング勝負。交互に3投ずつ投げて、合計点が高い方が勝ちです。",
+    stars:2, brain:"★★☆☆☆", luck:"★★★☆☆", time:"2〜4分",
+    rules:"<ul><li>左右に動く照準が真ん中の赤いゾーンに来た瞬間に「投げる」を押します。</li><li>中心に近いほど高得点。交互に3投ずつ投げ、合計点が高い方が勝ちです。</li></ul><p><b>コツ：</b>照準の往復リズムを数えて、少し早めに押すのがコツです。</p>" },
+  { id:"amida", name:"あみだバトル", cat:"mind", catLabel:"推理・読み合い", color:"#7D8597",
+    desc:"あみだくじで点数を分け合う運と読みの勝負。交互にスタート地点を選んで、4ラウンドの合計で競います。",
+    stars:1, brain:"★★☆☆☆", luck:"★★★★☆", time:"2〜5分",
+    rules:"<ul><li>4本の縦線の下に点数（10・30・50・100）が隠れています。</li><li>交互にまだ選ばれていないスタート地点を1つ選び、あみだをたどった先の点数が入ります。</li><li>4ラウンド行い、合計点が高い方が勝ちです。</li></ul><p><b>コツ：</b>横線の本数と位置から行き先を予想するのが読みの楽しさです。</p>" },
+  { id:"reaction", name:"反応スピード対決", cat:"mind", catLabel:"推理・読み合い", color:"#33415C",
+    desc:"「GO!」が出た瞬間に押す反応速度勝負。フライングは失格。5回の合計タイムが速い方が勝ちです。",
+    stars:1, brain:"★☆☆☆☆", luck:"★★☆☆☆", time:"2〜4分",
+    rules:"<ul><li>「待って…」の表示中に押しちゃダメ。「GO!」に変わった瞬間にボタンを押します。</li><li>交互に5回ずつ測り、合計タイムが短い方が勝ちです。フライングは1回につき+1000ミリ秒です。</li></ul><p><b>コツ：</b>画面の色の変化に集中。指をボタンに軽く乗せておくと速くなります。</p>" },
+  { id:"simon", name:"メモリーシーケンス", cat:"mind", catLabel:"推理・読み合い", color:"#0466C8",
+    desc:"光る色の順番を覚えて再現し、最後に1色追加する記憶バトル。間違えた方が負けです。",
+    stars:2, brain:"★★★★☆", luck:"★☆☆☆☆", time:"3〜8分",
+    rules:"<ul><li>表示された色の順番をそのまま再現し、最後に好きな色を1つ追加して相手へ渡します。</li><li>順番はだんだん長くなります。間違えた時点で負けです。</li></ul><p><b>コツ：</b>色を音や言葉に置き換えて覚えると長く続けられます。</p>" },
+  { id:"war", name:"トランプ戦争", cat:"mind", catLabel:"推理・読み合い", color:"#6D3B47",
+    desc:"山札から同時にカードをめくり、数字が大きい方が点数を取るシンプル戦争ゲーム。全13回戦です。",
+    stars:1, brain:"★☆☆☆☆", luck:"★★★★★", time:"2〜4分",
+    rules:"<ul><li>「めくる」を押すと2人のカードが同時に出ます。数字が大きい方が2点（そのラウンドのカード分）を取ります。</li><li>同じ数字は引き分けで点数なし。全13ラウンドで点数が多い方が勝ちです。</li></ul><p><b>コツ：</b>完全な運勝負。A（13として扱います）が最強です。</p>" },
+  { id:"dicepoker", name:"ダイスポーカー", cat:"mind", catLabel:"推理・読み合い", color:"#5A189A",
+    desc:"サイコロ3個を振って役を作る勝負。交互に5回振って、役の点数の合計が高い方が勝ちです。",
+    stars:1, brain:"★★☆☆☆", luck:"★★★★☆", time:"2〜5分",
+    rules:"<ul><li>自分の番にサイコロを3個振ります。3つ同じ（ゾロ目）や連番（ストレート）で高得点です。</li><li>交互に5回ずつ振り、合計点が高い方が勝ちです。</li></ul><p><b>コツ：</b>ゾロ目は出た目の10倍、ストレートは30点。運の波を読むだけの勝負です。</p>" },
 ];
 const grid = $("#gameGrid");
 GAMES.forEach(g=>{
@@ -519,6 +680,11 @@ $("#filters").addEventListener("click", e=>{
   $$("#filters .filter").forEach(f=>f.classList.toggle("on", f===b));
   const f = b.dataset.f;
   $$("#gameGrid .game-card").forEach(c=>{ c.style.display = (f==="all" || c.dataset.cat===f) ? "" : "none"; });
+function applyGameSearch(){
+  const q = $("#gameSearch").value.trim();
+  $$("#gameGrid .game-card").forEach(c=>{ c.style.display = (!q || c.querySelector("h3").textContent.includes(q)) ? "" : "none"; });
+}
+["input","keyup","change"].forEach(ev=>$("#gameSearch").addEventListener(ev, applyGameSearch));
 });
 
 /* ---------- view switching ---------- */
@@ -569,7 +735,25 @@ function startGame(id){
   area.innerHTML = "";
   G_api = null;
   state.netGameHandler = null;
-  ({ gomoku:initGomoku, reversi:initReversi, connect4:initConnect4, battleship:initBattleship, number:initNumber, mancala:initMancala, dots:initDots })[id](area);
+  const INIT = {
+    gomoku:a=>initGomoku(a), reversi:a=>initReversi(a,8), reversi6:a=>initReversi(a,6),
+    connect4:a=>initConnect4(a), battleship:a=>initBattleship(a),
+    number:a=>initNumber(a,3), numberMini:a=>initNumber(a,2),
+    mancala:a=>initMancala(a,6,4), mancalaMini:a=>initMancala(a,4,3), mancalaHeavy:a=>initMancala(a,6,6),
+    dots:a=>initDots(a,4), dots3:a=>initDots(a,3), dots5:a=>initDots(a,5),
+    tictactoe:a=>initLineGame(a,{N:3,K:3,game:"tictactoe",m1:"✕",m2:"○"}),
+    yonmoku:a=>initLineGame(a,{N:6,K:4,game:"yonmoku",m1:"●",m2:"●"}),
+    rokumoku:a=>initLineGame(a,{N:10,K:6,game:"rokumoku",m1:"●",m2:"●"}),
+    hasami:a=>initHasami(a), dobutsu:a=>initDobutsu(a), flood:a=>initFlood(a),
+    memory:a=>initMemory(a), janken:a=>initJanken(a), dicerace:a=>initDiceRace(a),
+    pigdice:a=>initPigDice(a), stone:a=>initStone(a), nim:a=>initNim(a),
+    quiz:a=>initQuiz(a), calc:a=>initCalc(a), bingo:a=>initBingo(a),
+    highlow:a=>initHighLow(a), slot:a=>initSlot(a), maze:a=>initMaze(a),
+    hex:a=>initHex(a), checkers:a=>initCheckers(a), darts:a=>initDarts(a),
+    amida:a=>initAmida(a), reaction:a=>initReaction(a), simon:a=>initSimon(a),
+    war:a=>initWar(a), dicepoker:a=>initDicePoker(a),
+  };
+  if(INIT[id]) INIT[id](area);
 }
 const isCpuTurn = turn => state.mode==="cpu" && turn===2;
 const inputLocked = turn => isCpuTurn(turn) || (state.mode==="p2p" && (!state.net.connected || turn !== state.myPlayer));
@@ -636,7 +820,7 @@ function handleNetData(d){
     applyRemote(()=>startGame(state.game));
     return;
   }
-  if(d.t==="fleet" || d.t==="secret"){ if(state.netGameHandler) state.netGameHandler(d); return; }
+  if(d.t!=="move"){ if(state.netGameHandler) state.netGameHandler(d); return; }
   if(d.t==="move" && G_api){ applyRemote(()=>G_api(d)); return; }
 }
 $("#p2pCreate").addEventListener("click", ()=>{
@@ -760,16 +944,19 @@ function initGomoku(area){
 /* ============================================================
    2) リバーシ
    ============================================================ */
-function initReversi(area){
-  const N = 8;
+function initReversi(area, sizeN){
+  const N = sizeN || 8;
   let board = Array.from({length:N}, ()=>Array(N).fill(0));
-  board[3][3]=2; board[3][4]=1; board[4][3]=1; board[4][4]=2;
+  const m = N/2 - 1;
+  board[m][m]=2; board[m][m+1]=1; board[m+1][m]=1; board[m+1][m+1]=2;
   let turn = 1, over = false, last = null;
   const gridEl = document.createElement("div"); gridEl.className = "reversi";
+  gridEl.style.gridTemplateColumns = "repeat("+N+",1fr)";
+  if(N!==8) gridEl.style.width = "min(94vw,400px)";
   const msg = document.createElement("div"); msg.className = "msg";
   const score = document.createElement("div"); score.className = "scorebar";
   area.append(score, gridEl, msg);
-  G_api = d => { if(d.game==="reversi") place(d.r, d.c); };
+  G_api = d => { if(d.game==="reversi" || d.game==="reversi6") place(d.r, d.c); };
   const DIRS = [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
   function flipsFor(r,c,p){
     if(board[r][c]) return [];
@@ -825,7 +1012,12 @@ function initReversi(area){
     if(a===b) gameOver(0, "黒 "+a+" ： 白 "+b+" の同点でした。");
     else gameOver(a>b?1:2, "最終結果は 黒 "+a+" ： 白 "+b+" でした。");
   }
-  const W = [[120,-20,20,5,5,20,-20,120],[-20,-40,-5,-5,-5,-5,-40,-20],[20,-5,15,3,3,15,-5,20],[5,-5,3,3,3,3,-5,5],[5,-5,3,3,3,3,-5,5],[20,-5,15,3,3,15,-5,20],[-20,-40,-5,-5,-5,-5,-40,-20],[120,-20,20,5,5,20,-20,120]];
+  const W = Array.from({length:N}, (_,r)=>Array.from({length:N}, (_,c)=>{
+    const corner = (r===0||r===N-1) && (c===0||c===N-1);
+    const nearCorner = (r<=1||r>=N-2) && (c<=1||c>=N-2);
+    const edge = r===0||r===N-1||c===0||c===N-1;
+    if(corner) return 120; if(nearCorner) return -30; if(edge) return 18; return 4;
+  }));
   function cpuMove(){
     if(over) return;
     const moves = legalMoves(2); if(!moves.length){ advance(); return; }
@@ -977,231 +1169,322 @@ function initConnect4(area){
    4) 海戦ゲーム
    ============================================================ */
 function initBattleship(area){
-  const N = 8;
-  const SHIPS = [ {len:4,name:"戦艦"}, {len:3,name:"巡洋艦"}, {len:3,name:"駆逐艦"}, {len:2,name:"潜水艦"} ];
-  // fleets[p] = { grid: 0 sea / 1 ship, ships: [{cells:[[r,c]..], hits}] }
-  let fleets = { 1:null, 2:null };
-  let shots = { 1:null, 2:null }; // shots[p] = grid of p's attacks on opponent: 0 none / 1 miss / 2 hit / 3 sunk-cell
-  let phase = "place"; // place -> battle
-  let placingPlayer = 1;
-  let turn = 1, over = false;
-  let orient = "h";
-  let placeIdx = 0;
-  let placeGrid = null, placeShips = [];
+const N = 8;
+const SHIPS = [ {len:4,name:"戦艦"}, {len:3,name:"巡洋艦"}, {len:3,name:"駆逐艦"}, {len:2,name:"潜水艦"}];
+// 自分の艦隊だけを手元に持つ。相手の艦隊の配置は受け取らない。
+// P2Pでは「配置完了」の合図と、攻撃マスとその結果（命中／はずれ／撃沈した船名）だけを送り合う。
+// 描画は常に対戦相手ではなく「見る人（viewer）」の視点で行い、相手の船の位置は描かない。
+let fleets = { 1:null, 2:null}; // ローカル対戦（CPU／1台）用。P2Pでは自分の分だけ入る
+let shots = { 1:null, 2:null}; // shots[p] = pが相手へ撃った記録: 0なし 1はずれ 2命中 3撃沈マス
+let phase = "place"; // place -> battle
+let placingPlayer = 1;
+let turn = 1, over = false;
+let orient = "h";
+let placeIdx = 0;
+let placeGrid = null, placeShips = [];
+// P2P専用
+let myReady = false, peerReady = false, pendingShot = null;
+let oppSunk = SHIPS.map(s=>({ name:s.name, len:s.len, sunk:false})); // 相手艦隊の「撃沈したか」だけを記録
 
-  const statusEl = document.createElement("div"); statusEl.className = "msg";
-  const mainEl = document.createElement("div");
-  const subEl = document.createElement("div");
-  const ctrlEl = document.createElement("div"); ctrlEl.className = "g-controls";
-  area.append(statusEl, mainEl, subEl, ctrlEl);
-  G_api = d => { if(d.game==="battleship") shoot(d.r, d.c); };
-  let peerFleet = null, myFleetSent = false;
-  state.netGameHandler = d => { if(d.t==="fleet"){ peerFleet = d.fleet; fleets[state.myPlayer===1?2:1] = d.fleet; if(myFleetSent) startBattle(); } };
+const statusEl = document.createElement("div"); statusEl.className = "msg";
+const mainEl = document.createElement("div");
+const subEl = document.createElement("div");
+const ctrlEl = document.createElement("div"); ctrlEl.className = "g-controls";
+area.append(statusEl, mainEl, subEl, ctrlEl);
+G_api = d => { if(d.game==="battleship" && state.mode!=="p2p") shoot(d.r, d.c);};
+state.netGameHandler = d => {
+if(state.mode!=="p2p") return;
+if(d.t==="fleetReady"){ peerReady = true; if(myReady && phase==="place") startBattle(); else if(phase==="place") renderWaiting();}
+else if(d.t==="shot"){ receiveShot(d.r, d.c);}
+else if(d.t==="shotResult"){ applyShotResult(d);}
+};
 
-  function emptyGrid(){ return Array.from({length:N}, ()=>Array(N).fill(0)); }
-  function randomFleet(){
-    const grid = emptyGrid(); const ships = [];
-    for(const s of SHIPS){
-      let placed = false;
-      while(!placed){
-        const horiz = Math.random()<0.5;
-        const r = rand(N), c = rand(N);
-        const cells = [];
-        let ok = true;
-        for(let i=0;i<s.len;i++){
-          const rr = horiz ? r : r+i, cc = horiz ? c+i : c;
-          if(rr>=N||cc>=N||grid[rr][cc]){ ok=false; break; }
-          cells.push([rr,cc]);
-        }
-        if(ok){ cells.forEach(([rr,cc])=>grid[rr][cc]=1); ships.push({cells, hits:0, len:s.len, name:s.name}); placed=true; }
-      }
-    }
-    return { grid, ships };
-  }
-  function fleetStatusHtml(p){
-    const f = fleets[p]; if(!f) return "";
-    return f.ships.map(s=>{
-      const sunk = s.hits>=s.len;
-      return '<span class="'+(sunk?"sunk":"")+'">'+s.name+"（"+s.len+"）"+(sunk?" 撃沈":"")+'</span>';
-    }).join("");
-  }
-  /* ---------- placement ---------- */
-  function startPlacement(p){
-    placingPlayer = p; placeIdx = 0; orient = "h";
-    placeGrid = emptyGrid(); placeShips = [];
-    renderPlacement();
-  }
-  function canPlace(r,c,len,dir){
-    for(let i=0;i<len;i++){
-      const rr = dir==="v" ? r+i : r, cc = dir==="h" ? c+i : c;
-      if(rr>=N||cc>=N||placeGrid[rr][cc]) return false;
-    }
-    return true;
-  }
-  function renderPlacement(){
-    setBanner('<span class="who"><span class="pip" style="background:'+(placingPlayer===1?"var(--p1)":"var(--p2)")+'"></span>'+playerNameHtml(placingPlayer)+' の艦隊を配置してください</span>', placingPlayer===1?"var(--p1)":"var(--p2)");
-    statusEl.className = "msg";
-    statusEl.textContent = placeIdx < SHIPS.length
-      ? "次に置く船：" + SHIPS[placeIdx].name + "（長さ" + SHIPS[placeIdx].len + "）— 海をタップして配置"
-      : "配置が終わりました！";
-    mainEl.innerHTML = '<div class="sea-label">自分の海</div>';
-    const g = document.createElement("div"); g.className = "sea place";
-    for(let r=0;r<N;r++) for(let c=0;c<N;c++){
-      const b = document.createElement("button"); b.type="button";
-      if(placeGrid[r][c]){ b.classList.add("ship"); b.textContent = "🚢"; }
-      if(placeIdx < SHIPS.length) b.addEventListener("click", ()=>{
-        const s = SHIPS[placeIdx];
-        if(!canPlace(r,c,s.len,orient)){ statusEl.textContent = "そこには置けません。向きを変えるか、別の場所を選んでください。"; statusEl.className="msg bad"; return; }
-        const cells = [];
-        for(let i=0;i<s.len;i++){ const rr = orient==="v"?r+i:r, cc = orient==="h"?c+i:c; placeGrid[rr][cc]=1; cells.push([rr,cc]); }
-        placeShips.push({cells, hits:0, len:s.len, name:s.name});
-        placeIdx++; renderPlacement();
-      });
-      g.appendChild(b);
-    }
-    mainEl.appendChild(g);
-    subEl.innerHTML = "";
-    ctrlEl.innerHTML = "";
-    const rot = document.createElement("button"); rot.className="btn btn-ghost btn-small";
-    rot.textContent = "🔄 向き：" + (orient==="h" ? "横向き" : "縦向き");
-    rot.addEventListener("click", ()=>{ orient = orient==="h" ? "v" : "h"; renderPlacement(); });
-    const auto = document.createElement("button"); auto.className="btn btn-ghost btn-small"; auto.textContent = "🎲 自動配置";
-    auto.addEventListener("click", ()=>{ const f = randomFleet(); placeGrid = f.grid; placeShips = f.ships; placeIdx = SHIPS.length; renderPlacement(); });
-    const clear = document.createElement("button"); clear.className="btn btn-ghost btn-small"; clear.textContent = "↩ 配置しなおす";
-    clear.addEventListener("click", ()=>startPlacement(placingPlayer));
-    ctrlEl.append(rot, auto, clear);
-    if(placeIdx >= SHIPS.length){
-      const done = document.createElement("button"); done.className="btn btn-primary btn-small"; done.textContent = "✓ この配置で決定";
-      done.addEventListener("click", ()=>{
-        fleets[placingPlayer] = { grid: placeGrid, ships: placeShips };
-        if(state.mode==="p2p"){
-          myFleetSent = true;
-          netSend({ t:"fleet", fleet: fleets[placingPlayer] });
-          if(peerFleet) startBattle();
-          else { statusEl.textContent = "配置完了！相手の配置が終わるのを待っています…"; statusEl.className = "msg"; ctrlEl.innerHTML = ""; }
-          return;
-        }
-        if(placingPlayer===1){
-          if(state.mode==="cpu"){ fleets[2] = randomFleet(); startBattle(); }
-          else handoff(2, ()=>startPlacement(2));
-        } else startBattle();
-      });
-      ctrlEl.appendChild(done);
-    }
-  }
-  /* ---------- battle ---------- */
-  function startBattle(){
-    phase = "battle"; turn = 1;
-    shots = { 1: emptyGrid(), 2: emptyGrid() };
-    renderBattle("");
-  }
-  function renderBattle(message, isBad){
-    turnBanner(turn, "相手の海を攻撃しよう");
-    statusEl.textContent = message || "相手の海のマスをタップして攻撃！命中したらもう1回攻撃できます。";
-    statusEl.className = "msg" + (isBad ? " bad" : "");
-    mainEl.innerHTML = '<div class="sea-label">相手の海（'+playerNameHtml(3-turn)+'）</div>';
-    const g = document.createElement("div"); g.className = "sea target";
-    const opp = fleets[3-turn];
-    for(let r=0;r<N;r++) for(let c=0;c<N;c++){
-      const b = document.createElement("button"); b.type="button";
-      const s = shots[turn][r][c];
-      if(s===1){ b.classList.add("miss"); b.textContent = "・"; }
-      if(s===2){ b.classList.add("hit"); b.textContent = "💥"; }
-      if(s===3){ b.classList.add("sunk"); b.textContent = "🔥"; }
-      if(!s && !over && !inputLocked(turn)) b.addEventListener("click", ()=>shoot(r,c));
-      g.appendChild(b);
-    }
-    mainEl.appendChild(g);
-    const fs = document.createElement("div"); fs.className="fleet-status"; fs.style.marginTop="10px";
-    fs.innerHTML = fleetStatusHtml(3-turn);
-    mainEl.appendChild(fs);
-    subEl.innerHTML = '<div class="sea-label" style="margin-top:14px">自分の海（'+playerNameHtml(turn)+'）</div>';
-    const g3 = document.createElement("div"); g3.className = "sea own";
-    const mine = fleets[turn];
-    for(let r=0;r<N;r++) for(let c=0;c<N;c++){
-      const b = document.createElement("button"); b.type="button"; b.disabled = true;
-      const oppShot = shots[3-turn][r][c];
-      if(mine.grid[r][c]) b.classList.add("ship");
-      if(oppShot===1){ b.classList.add("miss"); b.textContent="・"; }
-      if(oppShot===2||oppShot===3){ b.classList.add("hit"); b.textContent="💥"; }
-      g3.appendChild(b);
-    }
-    subEl.appendChild(g3);
-    const fs2 = document.createElement("div"); fs2.className="fleet-status"; fs2.style.marginTop="10px";
-    fs2.innerHTML = fleetStatusHtml(turn);
-    subEl.appendChild(fs2);
-    ctrlEl.innerHTML = "";
-  }
-  function shoot(r,c){
-    if(over || shots[turn][r][c]) return;
-    netForward({t:"move", game:"battleship", r:r, c:c});
-    const opp = fleets[3-turn];
-    if(opp.grid[r][c]){
-      shots[turn][r][c] = 2;
-      let ship = opp.ships.find(s=>s.cells.some(([rr,cc])=>rr===r&&cc===c));
-      ship.hits++;
-      let msg = "命中！もう1回攻撃できます。";
-      if(ship.hits>=ship.len){
-        ship.cells.forEach(([rr,cc])=>shots[turn][rr][cc]=3);
-        msg = ship.name + "を撃沈！もう1回攻撃できます。";
-      }
-      if(opp.ships.every(s=>s.hits>=s.len)){
-        over = true; renderBattle("全艦撃沈！");
-        gameOver(turn, playerName(turn) + " が " + playerName(3-turn) + " の艦隊を全滅させました。");
-        return;
-      }
-      renderBattle(msg);
-      if(isCpuTurn(turn)) cpuDelay(()=>{ if(!over) cpuShoot(); });
-    } else {
-      shots[turn][r][c] = 1;
-      const next = 3 - turn;
-      renderBattle("はずれ…。");
-      if(state.mode==="friend" && !over){
-        turn = next;
-        setTimeout(()=>handoff(next, ()=>renderBattle("")), 650);
-      } else {
-        turn = next;
-        if(isCpuTurn(turn)) cpuDelay(cpuShoot);
-        else renderBattle("");
-      }
-    }
-  }
-  // CPU shooting: hunt & target
-  let cpuTargets = [];
-  function cpuShoot(){
-    if(over || phase!=="battle" || turn!==2) return;
-    const myShots = shots[2];
-    let r=-1, c=-1;
-    while(cpuTargets.length){
-      const [tr,tc] = cpuTargets.shift();
-      if(tr>=0&&tr<N&&tc>=0&&tc<N&&!myShots[tr][tc]){ r=tr; c=tc; break; }
-    }
-    if(r<0){
-      // hunt: checkerboard preference
-      const cand = [];
-      for(let i=0;i<N;i++) for(let j=0;j<N;j++) if(!myShots[i][j]) cand.push([i,j]);
-      const checker = cand.filter(([i,j])=>(i+j)%2===0);
-      const pool = (state.diff>=2 && checker.length) ? checker : cand;
-      const pick = state.diff===1 ? cand[rand(cand.length)] : pool[rand(pool.length)];
-      r = pick[0]; c = pick[1];
-    }
-    // register neighbors when this shot hits (checked after shoot via grid state)
-    const before = fleets[1].grid[r][c];
-    shoot(r,c);
-    if(before && !over){
-      [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dr,dc])=>{
-        const rr=r+dr, cc=c+dc;
-        if(rr>=0&&rr<N&&cc>=0&&cc<N&&!shots[2][rr][cc]) cpuTargets.push([rr,cc]);
-      });
-    }
-  }
-  startPlacement(state.mode==="p2p" ? state.myPlayer : 1);
+function emptyGrid(){ return Array.from({length:N}, ()=>Array(N).fill(0));}
+function viewer(){ // この画面を見ている人のプレイヤー番号
+if(state.mode==="p2p") return state.myPlayer;
+if(state.mode==="friend") return turn;
+return 1;
+}
+function randomFleet(){
+const grid = emptyGrid(); const ships = [];
+for(const s of SHIPS){
+let placed = false;
+while(!placed){
+const horiz = Math.random()<0.5;
+const r = rand(N), c = rand(N);
+const cells = [];
+let ok = true;
+for(let i=0;i<s.len;i++){
+const rr = horiz? r: r+i, cc = horiz? c+i: c;
+if(rr>=N||cc>=N||grid[rr][cc]){ ok=false; break;}
+cells.push([rr,cc]);
+}
+if(ok){ cells.forEach(([rr,cc])=>grid[rr][cc]=1); ships.push({cells, hits:0, len:s.len, name:s.name}); placed=true;}
+}
+}
+return { grid, ships};
+}
+function fleetStatusHtml(p){
+// P2Pで相手の状態を表示するときは、撃沈情報だけから作る（配置は持っていない）
+if(state.mode==="p2p" && p!==state.myPlayer){
+return oppSunk.map(s=>'<span class="'+(s.sunk?"sunk":"")+'">'+s.name+"（"+s.len+"）"+(s.sunk?" 撃沈":"")+'</span>').join("");
+}
+const f = fleets[p]; if(!f) return "";
+return f.ships.map(s=>{
+const sunk = s.hits>=s.len;
+return '<span class="'+(sunk?"sunk":"")+'">'+s.name+"（"+s.len+"）"+(sunk?" 撃沈":"")+'</span>';
+}).join("");
+}
+/* ---------- placement ---------- */
+function startPlacement(p){
+placingPlayer = p; placeIdx = 0; orient = "h";
+placeGrid = emptyGrid(); placeShips = [];
+renderPlacement();
+}
+function canPlace(r,c,len,dir){
+for(let i=0;i<len;i++){
+const rr = dir==="v"? r+i: r, cc = dir==="h"? c+i: c;
+if(rr>=N||cc>=N||placeGrid[rr][cc]) return false;
+}
+return true;
+}
+function renderWaiting(){
+statusEl.className = "msg";
+statusEl.textContent = peerReady
+? "相手は配置完了！あなたの配置が終わると対戦開始です。"
+: "配置完了！相手の配置が終わるのを待っています…（相手の配置は送られてきません）";
+ctrlEl.innerHTML = "";
+}
+function renderPlacement(){
+setBanner('<span class="who"><span class="pip" style="background:'+(placingPlayer===1?"var(--p1)":"var(--p2)")+'"></span>'+playerNameHtml(placingPlayer)+' の艦隊を配置してください</span>', placingPlayer===1?"var(--p1)":"var(--p2)");
+statusEl.className = "msg";
+statusEl.textContent = placeIdx < SHIPS.length
+? "次に置く船：" + SHIPS[placeIdx].name + "（長さ" + SHIPS[placeIdx].len + "）— 海をタップして配置"
+: "配置が終わりました！";
+mainEl.innerHTML = '<div class="sea-label">自分の海</div>';
+const g = document.createElement("div"); g.className = "sea place";
+for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+const b = document.createElement("button"); b.type="button";
+if(placeGrid[r][c]){ b.classList.add("ship"); b.textContent = "🚢";}
+if(placeIdx < SHIPS.length) b.addEventListener("click", ()=>{
+const s = SHIPS[placeIdx];
+if(!canPlace(r,c,s.len,orient)){ statusEl.textContent = "そこには置けません。向きを変えるか、別の場所を選んでください。"; statusEl.className="msg bad"; return;}
+const cells = [];
+for(let i=0;i<s.len;i++){ const rr = orient==="v"?r+i:r, cc = orient==="h"?c+i:c; placeGrid[rr][cc]=1; cells.push([rr,cc]);}
+placeShips.push({cells, hits:0, len:s.len, name:s.name});
+placeIdx++; renderPlacement();
+});
+g.appendChild(b);
+}
+mainEl.appendChild(g);
+subEl.innerHTML = "";
+ctrlEl.innerHTML = "";
+const rot = document.createElement("button"); rot.className="btn btn-ghost btn-small";
+rot.textContent = "🔄 向き：" + (orient==="h"? "横向き": "縦向き");
+rot.addEventListener("click", ()=>{ orient = orient==="h"? "v": "h"; renderPlacement();});
+const auto = document.createElement("button"); auto.className="btn btn-ghost btn-small"; auto.textContent = "🎲 自動配置";
+auto.addEventListener("click", ()=>{ const f = randomFleet(); placeGrid = f.grid; placeShips = f.ships; placeIdx = SHIPS.length; renderPlacement();});
+const clear = document.createElement("button"); clear.className="btn btn-ghost btn-small"; clear.textContent = "↩ 配置しなおす";
+clear.addEventListener("click", ()=>startPlacement(placingPlayer));
+ctrlEl.append(rot, auto, clear);
+if(placeIdx >= SHIPS.length){
+const done = document.createElement("button"); done.className="btn btn-primary btn-small"; done.textContent = "✓ この配置で決定";
+done.addEventListener("click", ()=>{
+fleets[placingPlayer] = { grid: placeGrid, ships: placeShips};
+if(state.mode==="p2p"){
+myReady = true;
+netSend({ t:"fleetReady"}); // 配置そのものは送らない。完了の合図だけ送る
+if(peerReady) startBattle();
+else renderWaiting();
+return;
+}
+if(placingPlayer===1){
+if(state.mode==="cpu"){ fleets[2] = randomFleet(); startBattle();}
+else handoff(2, ()=>startPlacement(2));
+} else startBattle();
+});
+ctrlEl.appendChild(done);
+}
+}
+/* ---------- battle ---------- */
+function startBattle(){
+phase = "battle"; turn = 1; over = false;
+shots = { 1: emptyGrid(), 2: emptyGrid()};
+renderBattle("");
+}
+function renderBattle(message, isBad){
+const v = viewer(), opp = 3 - v;
+turnBanner(turn, turn===v? "相手の海を攻撃しよう": "相手の攻撃を待っています");
+statusEl.textContent = message || (turn===v? "相手の海のマスをタップして攻撃！命中したらもう1回攻撃できます。": playerName(turn) + " の攻撃です。自分の海がどうなるか見守りましょう。");
+statusEl.className = "msg" + (isBad? " bad": "");
+// 相手の海：自分が撃った記録だけを表示する（相手の船の位置は描かない）
+mainEl.innerHTML = '<div class="sea-label">相手の海（'+playerNameHtml(opp)+'）— あなたの攻撃記録</div>';
+const g = document.createElement("div"); g.className = "sea target";
+for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+const b = document.createElement("button"); b.type="button";
+const s = shots[v][r][c];
+if(s===1){ b.classList.add("miss"); b.textContent = "・";}
+if(s===2){ b.classList.add("hit"); b.textContent = "💥";}
+if(s===3){ b.classList.add("sunk"); b.textContent = "🔥";}
+if(!s &&!over && turn===v &&!pendingShot &&!inputLocked(turn)) b.addEventListener("click", ()=>shoot(r,c));
+g.appendChild(b);
+}
+mainEl.appendChild(g);
+const fs = document.createElement("div"); fs.className="fleet-status"; fs.style.marginTop="10px";
+fs.innerHTML = fleetStatusHtml(opp);
+mainEl.appendChild(fs);
+// 自分の海：自分の船と、相手の攻撃記録だけを表示する
+subEl.innerHTML = '<div class="sea-label" style="margin-top:14px">自分の海（'+playerNameHtml(v)+'）</div>';
+const g3 = document.createElement("div"); g3.className = "sea own";
+const mine = fleets[v];
+for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+const b = document.createElement("button"); b.type="button"; b.disabled = true;
+const oppShot = shots[opp][r][c];
+if(mine && mine.grid[r][c]) b.classList.add("ship");
+if(oppShot===1){ b.classList.add("miss"); b.textContent="・";}
+if(oppShot===2||oppShot===3){ b.classList.add("hit"); b.textContent="💥";}
+g3.appendChild(b);
+}
+subEl.appendChild(g3);
+const fs2 = document.createElement("div"); fs2.className="fleet-status"; fs2.style.marginTop="10px";
+fs2.innerHTML = fleetStatusHtml(v);
+subEl.appendChild(fs2);
+ctrlEl.innerHTML = "";
+}
+/* ----- ローカル対戦（CPU／1台）の攻撃 ----- */
+function shoot(r,c){
+if(over || phase!=="battle") return;
+if(state.mode==="p2p"){ shootP2P(r,c); return;}
+if(shots[turn][r][c]) return;
+netForward({t:"move", game:"battleship", r:r, c:c});
+const opp = fleets[3-turn];
+if(opp.grid[r][c]){
+shots[turn][r][c] = 2;
+let ship = opp.ships.find(s=>s.cells.some(([rr,cc])=>rr===r&&cc===c));
+ship.hits++;
+let msg = "命中！もう1回攻撃できます。";
+if(ship.hits>=ship.len){
+ship.cells.forEach(([rr,cc])=>shots[turn][rr][cc]=3);
+msg = ship.name + "を撃沈！もう1回攻撃できます。";
+}
+if(opp.ships.every(s=>s.hits>=s.len)){
+over = true; renderBattle("全艦撃沈！");
+gameOver(turn, playerName(turn) + " が " + playerName(3-turn) + " の艦隊を全滅させました。");
+return;
+}
+renderBattle(msg);
+if(isCpuTurn(turn)) cpuDelay(()=>{ if(!over) cpuShoot();});
+} else {
+shots[turn][r][c] = 1;
+const next = 3 - turn;
+if(state.mode==="friend" &&!over){
+renderBattle("はずれ…。");
+turn = next;
+setTimeout(()=>handoff(next, ()=>renderBattle("")), 650);
+} else {
+turn = next;
+if(isCpuTurn(turn)) cpuDelay(cpuShoot);
+else renderBattle("はずれ…。");
+}
+}
+}
+/* ----- P2Pの攻撃：撃つ→相手が自分の艦隊で判定→結果だけ返ってくる ----- */
+function shootP2P(r,c){
+if(turn!==state.myPlayer || pendingShot || shots[state.myPlayer][r][c]) return;
+pendingShot = [r,c];
+netSend({ t:"shot", r:r, c:c});
+renderBattle("攻撃！相手の判定を待っています…");
+}
+function receiveShot(r,c){
+if(over || phase!=="battle") return;
+const atk = 3 - state.myPlayer;
+const mine = fleets[state.myPlayer];
+if(!mine || shots[atk][r][c]) return;
+let hit =!!mine.grid[r][c];
+let sunkInfo = null, win = false;
+if(hit){
+shots[atk][r][c] = 2;
+const ship = mine.ships.find(s=>s.cells.some(([rr,cc])=>rr===r&&cc===c));
+ship.hits++;
+if(ship.hits>=ship.len){
+ship.cells.forEach(([rr,cc])=>shots[atk][rr][cc]=3);
+sunkInfo = { name: ship.name, len: ship.len, cells: ship.cells};
+}
+win = mine.ships.every(s=>s.hits>=s.len);
+} else {
+shots[atk][r][c] = 1;
+}
+netSend({ t:"shotResult", r:r, c:c, hit:hit, sunk:sunkInfo, win:win});
+if(win){
+over = true; renderBattle("全艦撃沈されてしまいました…");
+gameOver(atk, playerName(atk) + " が " + playerName(state.myPlayer) + " の艦隊を全滅させました。");
+return;
+}
+if(hit){
+renderBattle(sunkInfo? sunkInfo.name + "が撃沈されました！相手の攻撃が続きます。": "被弾！相手の攻撃が続きます。", true);
+} else {
+turn = state.myPlayer;
+renderBattle("相手の攻撃ははずれ！あなたの番です。");
+}
+}
+function applyShotResult(d){
+const me = state.myPlayer;
+pendingShot = null;
+if(over) return;
+if(d.hit){
+shots[me][d.r][d.c] = 2;
+if(d.sunk){
+d.sunk.cells.forEach(([rr,cc])=>shots[me][rr][cc]=3);
+const rec = oppSunk.find(s=>s.name===d.sunk.name && s.len===d.sunk.len);
+if(rec) rec.sunk = true;
+}
+if(d.win){
+over = true; renderBattle("全艦撃沈！");
+gameOver(me, playerName(me) + " が相手の艦隊を全滅させました。");
+return;
+}
+renderBattle(d.sunk? d.sunk.name + "を撃沈！もう1回攻撃できます。": "命中！もう1回攻撃できます。");
+} else {
+shots[me][d.r][d.c] = 1;
+turn = 3 - me;
+renderBattle("はずれ…。相手の番です。");
+}
+}
+// CPU shooting: hunt & target
+let cpuTargets = [];
+function cpuShoot(){
+if(over || phase!=="battle" || turn!==2) return;
+const myShots = shots[2];
+let r=-1, c=-1;
+while(cpuTargets.length){
+const [tr,tc] = cpuTargets.shift();
+if(tr>=0&&tr<N&&tc>=0&&tc<N&&!myShots[tr][tc]){ r=tr; c=tc; break;}
+}
+if(r<0){
+const cand = [];
+for(let i=0;i<N;i++) for(let j=0;j<N;j++) if(!myShots[i][j]) cand.push([i,j]);
+const checker = cand.filter(([i,j])=>(i+j)%2===0);
+const pool = (state.diff>=2 && checker.length)? checker: cand;
+const pick = state.diff===1? cand[rand(cand.length)]: pool[rand(pool.length)];
+r = pick[0]; c = pick[1];
+}
+const before = fleets[1].grid[r][c];
+shoot(r,c);
+if(before &&!over){
+[[1,0],[-1,0],[0,1],[0,-1]].forEach(([dr,dc])=>{
+const rr=r+dr, cc=c+dc;
+if(rr>=0&&rr<N&&cc>=0&&cc<N&&!shots[2][rr][cc]) cpuTargets.push([rr,cc]);
+});
+}
+}
+startPlacement(state.mode==="p2p"? state.myPlayer: 1);
 }
 
 /* ============================================================
    5) 数当てバトル
    ============================================================ */
-function initNumber(area){
+function initNumber(area, digits){
+  const DIG = digits || 3;
   let secrets = { 1:null, 2:null };
   let logs = { 1:[], 2:[] }; // guesses made BY player p
   let phase = "set"; // set -> play
@@ -1214,7 +1497,7 @@ function initNumber(area){
   area.append(statusEl, mainEl);
 
   function randomSecret(){
-    return shuffle([0,1,2,3,4,5,6,7,8,9]).slice(0,3);
+    return shuffle([0,1,2,3,4,5,6,7,8,9]).slice(0,DIG);
   }
   function judge(guess, secret){
     let h=0, b=0;
@@ -1225,13 +1508,13 @@ function initNumber(area){
     currentGuess = [];
     setBanner('<span class="who"><span class="pip" style="background:'+(settingPlayer===1&&phase==="set"?"var(--p1)":"var(--p2)")+'"></span>'+title+'</span>');
     statusEl.className = "msg";
-    statusEl.textContent = "重ならない数字を3つ選んでください。相手には見えません。";
+    statusEl.textContent = "重ならない数字を" + DIG + "つ選んでください。相手には見えません。";
     mainEl.innerHTML = "";
     const slots = document.createElement("div"); slots.className = "guess-slots";
     const pad = document.createElement("div"); pad.className = "pad"; pad.style.marginTop = "14px";
     function paint(){
       slots.innerHTML = "";
-      for(let i=0;i<3;i++){
+      for(let i=0;i<DIG;i++){
         const s = document.createElement("div");
         s.className = "slot" + (currentGuess[i]!==undefined ? " filled" : "");
         s.textContent = currentGuess[i]!==undefined ? currentGuess[i] : "？";
@@ -1240,19 +1523,19 @@ function initNumber(area){
       pad.querySelectorAll("button").forEach(btn=>{
         btn.disabled = currentGuess.includes(parseInt(btn.textContent,10));
       });
-      doneBtn.disabled = currentGuess.length!==3;
-      doneBtn.style.opacity = currentGuess.length===3 ? "1" : ".45";
+      doneBtn.disabled = currentGuess.length!==DIG;
+      doneBtn.style.opacity = currentGuess.length===DIG ? "1" : ".45";
     }
     for(let d=0; d<=9; d++){
       const b = document.createElement("button"); b.type="button"; b.textContent = d;
-      b.addEventListener("click", ()=>{ if(currentGuess.length<3 && !currentGuess.includes(d)){ currentGuess.push(d); paint(); } });
+      b.addEventListener("click", ()=>{ if(currentGuess.length<DIG && !currentGuess.includes(d)){ currentGuess.push(d); paint(); } });
       pad.appendChild(b);
     }
     const ctrl = document.createElement("div"); ctrl.className = "g-controls";
     const del = document.createElement("button"); del.className="btn btn-ghost btn-small"; del.textContent = "⌫ 1つ消す";
     del.addEventListener("click", ()=>{ currentGuess.pop(); paint(); });
     const doneBtn = document.createElement("button"); doneBtn.className="btn btn-primary btn-small"; doneBtn.textContent = "✓ 決定";
-    doneBtn.addEventListener("click", ()=>{ if(currentGuess.length===3) onDone(currentGuess.slice()); });
+    doneBtn.addEventListener("click", ()=>{ if(currentGuess.length===DIG) onDone(currentGuess.slice()); });
     ctrl.append(del, doneBtn);
     mainEl.append(slots, pad, ctrl);
     paint();
@@ -1282,7 +1565,7 @@ function initNumber(area){
   function renderPlay(message){
     turnBanner(turn, "相手の秘密の数字を当てよう");
     statusEl.className = "msg";
-    statusEl.textContent = message || (playerName(turn) + " の予想：数字を3つ選んで「予想する」を押してください。");
+    statusEl.textContent = message || (playerName(turn) + " の予想：数字を" + DIG + "つ選んで「予想する」を押してください。");
     mainEl.innerHTML = "";
     currentGuess = [];
     const slots = document.createElement("div"); slots.className = "guess-slots";
@@ -1291,24 +1574,24 @@ function initNumber(area){
     const guessBtn = document.createElement("button"); guessBtn.className = "btn btn-primary btn-small"; guessBtn.textContent = "🎯 予想する";
     function paint(){
       slots.innerHTML = "";
-      for(let i=0;i<3;i++){
+      for(let i=0;i<DIG;i++){
         const s = document.createElement("div");
         s.className = "slot" + (currentGuess[i]!==undefined ? " filled" : "");
         s.textContent = currentGuess[i]!==undefined ? currentGuess[i] : "？";
         slots.appendChild(s);
       }
       pad.querySelectorAll("button").forEach(btn=>{ btn.disabled = currentGuess.includes(parseInt(btn.textContent,10)); });
-      guessBtn.disabled = currentGuess.length!==3;
-      guessBtn.style.opacity = currentGuess.length===3 ? "1" : ".45";
+      guessBtn.disabled = currentGuess.length!==DIG;
+      guessBtn.style.opacity = currentGuess.length===DIG ? "1" : ".45";
     }
     for(let d=0; d<=9; d++){
       const b = document.createElement("button"); b.type="button"; b.textContent = d;
-      b.addEventListener("click", ()=>{ if(currentGuess.length<3 && !currentGuess.includes(d)){ currentGuess.push(d); paint(); } });
+      b.addEventListener("click", ()=>{ if(currentGuess.length<DIG && !currentGuess.includes(d)){ currentGuess.push(d); paint(); } });
       pad.appendChild(b);
     }
     const del = document.createElement("button"); del.className="btn btn-ghost btn-small"; del.textContent = "⌫ 1つ消す";
     del.addEventListener("click", ()=>{ currentGuess.pop(); paint(); });
-    guessBtn.addEventListener("click", ()=>{ if(currentGuess.length===3) doGuess(currentGuess.slice()); });
+    guessBtn.addEventListener("click", ()=>{ if(currentGuess.length===DIG) doGuess(currentGuess.slice()); });
     ctrl.append(del, guessBtn);
     const logsWrap = document.createElement("div"); logsWrap.className = "two-col"; logsWrap.style.marginTop = "16px";
     [1,2].forEach(p=>{
@@ -1327,7 +1610,7 @@ function initNumber(area){
     netForward({t:"move", game:"number", g:g});
     const [h,b] = judge(g, secrets[3-turn]);
     logs[turn].push({ g, h, b });
-    if(h===3){
+    if(h===DIG){
       over = true;
       renderPlay("");
       gameOver(turn, playerName(turn) + " が " + logs[turn].length + " 回目の予想で当てました！相手の数字は " + secrets[3-turn].join("") + " でした。");
@@ -1348,7 +1631,8 @@ function initNumber(area){
   let cpuCandidates = null;
   function allCandidates(){
     const out = [];
-    for(let a=0;a<=9;a++) for(let b=0;b<=9;b++){ if(b===a) continue; for(let c=0;c<=9;c++){ if(c===a||c===b) continue; out.push([a,b,c]); } }
+    const rec = (cur, used)=>{ if(cur.length===DIG){ out.push(cur.slice()); return; } for(let d=0;d<=9;d++){ if(used.has(d)) continue; used.add(d); cur.push(d); rec(cur, used); cur.pop(); used.delete(d); } };
+    rec([], new Set());
     return out;
   }
   function cpuGuess(){
@@ -1366,7 +1650,7 @@ function initNumber(area){
     doGuess(pick.slice());
   }
   if(state.mode==="cpu"){ cpuCandidates = null; }
-  G_api = d => { if(d.game==="number") doGuess(d.g); };
+  G_api = d => { if(d.game==="number" || d.game==="numberMini") doGuess(d.g); };
   let peerSecret = null, mySecretSent = false;
   state.netGameHandler = d => { if(d.t==="secret"){ peerSecret = d.secret; secrets[state.myPlayer===1?2:1] = d.secret; if(mySecretSent) startPlay(); } };
   startSet(state.mode==="p2p" ? state.myPlayer : 1);
@@ -1375,29 +1659,35 @@ function initNumber(area){
 /* ============================================================
    6) マンカラ
    ============================================================ */
-function initMancala(area){
-  // pits: 0-5 = P1, 6 = P1 store, 7-12 = P2, 13 = P2 store
-  let pits = Array(14).fill(4); pits[6] = 0; pits[13] = 0;
+function initMancala(area, cfgP, cfgS){
+  const P = cfgP || 6;              // pits per side
+  const T = 2*P + 2;                // total pockets incl. stores
+  const S1 = P, S2 = 2*P + 1;       // store indices
+  let pits = Array(T).fill(cfgS || 4); pits[S1] = 0; pits[S2] = 0;
   let turn = 1, over = false, lastPit = -1;
   const boardEl = document.createElement("div"); boardEl.className = "mancala";
   const msg = document.createElement("div"); msg.className = "msg";
   area.append(boardEl, msg);
-  G_api = d => { if(d.game==="mancala") sow(d.i); };
+  G_api = d => { if(d.game==="mancala" || d.game==="mancalaMini" || d.game==="mancalaHeavy") sow(d.i); };
   const stoneStr = n => "●".repeat(Math.min(n, 12)) + (n>12 ? "…" : "");
+  const ownSide = (idx,p) => p===1 ? (idx>=0 && idx<P) : (idx>P && idx<=2*P);
+  const ownStore = p => p===1 ? S1 : S2;
 
   function render(message){
     msg.textContent = message || "";
     boardEl.innerHTML = "";
-    turnBanner(turn, "ゴール： "+playerNameHtml(1)+" "+pits[6]+"個 ／ "+playerNameHtml(2)+" "+pits[13]+"個");
+    turnBanner(turn, "ゴール： "+playerNameHtml(1)+" "+pits[S1]+"個 ／ "+playerNameHtml(2)+" "+pits[S2]+"個");
     const mid = document.createElement("div"); mid.className = "m-stores";
     const rowsWrap = document.createElement("div");
     const topRow2 = document.createElement("div"); topRow2.className = "m-row";
-    for(let i=12;i>=7;i--) topRow2.appendChild(pitEl(i));
+    topRow2.style.gridTemplateColumns = "repeat("+P+",1fr)";
+    for(let i=2*P;i>P;i--) topRow2.appendChild(pitEl(i));
     const botRow = document.createElement("div"); botRow.className = "m-row";
-    for(let i=0;i<=5;i++) botRow.appendChild(pitEl(i));
+    botRow.style.gridTemplateColumns = "repeat("+P+",1fr)";
+    for(let i=0;i<P;i++) botRow.appendChild(pitEl(i));
     rowsWrap.append(topRow2, botRow);
     rowsWrap.style.display = "flex"; rowsWrap.style.flexDirection = "column"; rowsWrap.style.gap = "8px";
-    mid.append(storeEl(13, playerName(2)), rowsWrap, storeEl(6, playerName(1)));
+    mid.append(storeEl(S2, playerName(2)), rowsWrap, storeEl(S1, playerName(1)));
     boardEl.append(mid);
   }
   function storeEl(idx, label){
@@ -1407,7 +1697,7 @@ function initMancala(area){
     return d;
   }
   function pitEl(i){
-    const owner = i<6 ? 1 : 2;
+    const owner = i<P ? 1 : 2;
     const b = document.createElement("button"); b.type = "button";
     b.className = "pit" + (lastPit===i ? " lastpit" : "");
     b.innerHTML = '<span class="cnt">'+pits[i]+'</span><span class="stones">'+stoneStr(pits[i])+'</span>';
@@ -1424,32 +1714,31 @@ function initMancala(area){
     let stones = pits[i]; pits[i] = 0;
     let idx = i;
     while(stones>0){
-      idx = (idx+1) % 14;
-      if(idx === (p===1 ? 13 : 6)) continue; // skip opponent store
+      idx = (idx+1) % T;
+      if(idx === ownStore(3-p)) continue; // skip opponent store
       pits[idx]++; stones--;
     }
     lastPit = idx;
     let message = "";
     let extra = false;
-    if(idx === (p===1 ? 6 : 13)){ extra = true; message = "ゴールに入ったので、もう1回 " + playerName(p) + " の番です！"; }
-    else if((p===1 ? (idx>=0&&idx<=5) : (idx>=7&&idx<=12)) && pits[idx]===1){
-      const opp = 12 - idx;
+    if(idx === ownStore(p)){ extra = true; message = "ゴールに入ったので、もう1回 " + playerName(p) + " の番です！"; }
+    else if(ownSide(idx,p) && pits[idx]===1){
+      const opp = 2*P - idx;
       if(pits[opp]>0){
         const captured = pits[opp] + 1;
-        pits[p===1?6:13] += captured;
+        pits[ownStore(p)] += captured;
         pits[opp] = 0; pits[idx] = 0;
         message = "奪い成功！" + captured + "個をゴールへ。";
       }
     }
-    // end check
-    const side1 = pits.slice(0,6).reduce((a,b)=>a+b,0);
-    const side2 = pits.slice(7,13).reduce((a,b)=>a+b,0);
+    const side1 = pits.slice(0,P).reduce((a,b)=>a+b,0);
+    const side2 = pits.slice(P+1,2*P+1).reduce((a,b)=>a+b,0);
     if(side1===0 || side2===0){
-      pits[6] += side1; pits[13] += side2;
-      for(let k=0;k<6;k++){ pits[k]=0; pits[7+k]=0; }
+      pits[S1] += side1; pits[S2] += side2;
+      for(let k=0;k<P;k++){ pits[k]=0; pits[P+1+k]=0; }
       over = true; render(message);
-      if(pits[6]===pits[13]) gameOver(0, "ゴールは " + pits[6] + " ： " + pits[13] + " の同点でした。");
-      else gameOver(pits[6]>pits[13]?1:2, "最終ゴールは " + playerName(1) + " " + pits[6] + "個 ： " + playerName(2) + " " + pits[13] + "個でした。");
+      if(pits[S1]===pits[S2]) gameOver(0, "ゴールは " + pits[S1] + " ： " + pits[S2] + " の同点でした。");
+      else gameOver(pits[S1]>pits[S2]?1:2, "最終ゴールは " + playerName(1) + " " + pits[S1] + "個 ： " + playerName(2) + " " + pits[S2] + "個でした。");
       return;
     }
     if(!extra) turn = 3 - turn;
@@ -1459,27 +1748,27 @@ function initMancala(area){
   function simulate(pitsIn, i, p){
     const q = pitsIn.slice();
     let stones = q[i]; q[i] = 0; let idx = i;
-    while(stones>0){ idx = (idx+1)%14; if(idx===(p===1?13:6)) continue; q[idx]++; stones--; }
-    let extra = idx === (p===1?6:13);
-    if(!extra && (p===1 ? (idx>=0&&idx<=5) : (idx>=7&&idx<=12)) && q[idx]===1){
-      const opp = 12 - idx;
-      if(q[opp]>0){ q[p===1?6:13] += q[opp]+1; q[opp]=0; q[idx]=0; }
+    while(stones>0){ idx = (idx+1)%T; if(idx===ownStore(3-p)) continue; q[idx]++; stones--; }
+    let extra = idx === ownStore(p);
+    if(!extra && ownSide(idx,p) && q[idx]===1){
+      const opp = 2*P - idx;
+      if(q[opp]>0){ q[ownStore(p)] += q[opp]+1; q[opp]=0; q[idx]=0; }
     }
     return { q, extra };
   }
   function cpuMove(){
     if(over || turn!==2) return;
-    const mine = [7,8,9,10,11,12].filter(i=>pits[i]>0);
+    const mine = [];
+    for(let i=P+1;i<=2*P;i++) if(pits[i]>0) mine.push(i);
     if(!mine.length) return;
     if(state.diff===1 && Math.random()<0.4){ sow(mine[rand(mine.length)]); return; }
     let best = mine[0], bestScore = -Infinity;
     for(const i of mine){
       const { q, extra } = simulate(pits, i, 2);
-      let s = (q[13]-pits[13]) * 3 + (extra ? 6 : 0) + Math.random()*1.5;
+      let s = (q[S2]-pits[S2]) * 3 + (extra ? 6 : 0) + Math.random()*1.5;
       if(state.diff===3){
-        // penalize opponent's best capture reply
         let oppBest = 0;
-        for(let j=0;j<6;j++) if(q[j]>0){ const r2 = simulate(q, j, 1); oppBest = Math.max(oppBest, (r2.q[6]-q[6]) * 3 + (r2.extra?6:0)); }
+        for(let j=0;j<P;j++) if(q[j]>0){ const r2 = simulate(q, j, 1); oppBest = Math.max(oppBest, (r2.q[S1]-q[S1]) * 3 + (r2.extra?6:0)); }
         s -= oppBest * 0.8;
       }
       if(s>bestScore){ bestScore = s; best = i; }
@@ -1492,8 +1781,8 @@ function initMancala(area){
 /* ============================================================
    7) ドット＆ボックス
    ============================================================ */
-function initDots(area){
-  const B = 4; // 4x4 boxes, 5x5 dots
+function initDots(area, sizeB){
+  const B = sizeB || 4; // boxes per side
   // hEdges[r][c]: r in 0..B, c in 0..B-1 ; vEdges[r][c]: r in 0..B-1, c in 0..B
   let hE = Array.from({length:B+1}, ()=>Array(B).fill(0));
   let vE = Array.from({length:B}, ()=>Array(B+1).fill(0));
@@ -1503,7 +1792,7 @@ function initDots(area){
   const score = document.createElement("div"); score.className = "scorebar";
   const msg = document.createElement("div"); msg.className = "msg";
   area.append(score, boardEl, msg);
-  G_api = d => { if(d.game!=="dots") return; if(d.kind==="h") drawH(d.r, d.c); else drawV(d.r, d.c); };
+  G_api = d => { if(d.game!=="dots" && d.game!=="dots3" && d.game!=="dots5") return; if(d.kind==="h") drawH(d.r, d.c); else drawV(d.r, d.c); };
 
   function boxComplete(r,c){ return hE[r][c] && hE[r+1][c] && vE[r][c] && vE[r][c+1]; }
   function counts(){ let a=0,b=0; boxes.forEach(row=>row.forEach(v=>{ if(v===1)a++; if(v===2)b++; })); return [a,b]; }
@@ -1633,6 +1922,1795 @@ function initDots(area){
     bestEdge[0]==="h" ? drawH(bestEdge[1],bestEdge[2]) : drawV(bestEdge[1],bestEdge[2]);
   }
   render("");
+}
+
+/* ============================================================
+   追加ゲーム共通ヘルパー
+   ============================================================ */
+function mkEl(tag, cls, text){ const e = document.createElement(tag); if(cls) e.className = cls; if(text !== undefined) e.textContent = text; return e; }
+function stdLayout(area){
+  const msg = mkEl("div", "msg");
+  const main = mkEl("div"); main.style.width = "100%";
+  const ctrl = mkEl("div", "g-controls");
+  area.append(msg, main, ctrl);
+  return { msg, main, ctrl };
+}
+function scorePillsHtml(s1, s2, turn, over, unit){
+  return '<span class="score-pill'+(turn===1&&!over?' turn':'')+'"><span class="pip" style="background:var(--p1)"></span>'+playerNameHtml(1)+'：'+s1+(unit||"")+'</span>' +
+         '<span class="score-pill'+(turn===2&&!over?' turn':'')+'"><span class="pip" style="background:var(--p2)"></span>'+playerNameHtml(2)+'：'+s2+(unit||"")+'</span>';
+}
+function diceFace(n){ return ["","⚀","⚁","⚂","⚃","⚄","⚅"][n] || ""; }
+const TURN_END = { next:true };
+
+/* ============================================================
+   並べ系（○×／盤上四目／六目）
+   ============================================================ */
+function initLineGame(area, cfg){
+  const N = cfg.N, K = cfg.K;
+  let board = Array.from({length:N}, ()=>Array(N).fill(0));
+  let turn = 1, over = false, winSet = new Set();
+  const gridEl = mkEl("div", "linegrid");
+  gridEl.style.gridTemplateColumns = "repeat("+N+",1fr)";
+  gridEl.style.width = N>=10 ? "min(94vw,520px)" : N>=6 ? "min(94vw,460px)" : "min(94vw,320px)";
+  gridEl.style.fontSize = N>=10 ? ".72rem" : N>=6 ? "1.05rem" : "1.5rem";
+  const msg = mkEl("div", "msg");
+  area.append(gridEl, msg);
+  G_api = d => { if(d.game===cfg.game) place(d.r, d.c); };
+  turnBanner(1, K + "つ並べれば勝ち");
+  function lineCells(r,c,p){
+    const dirs = [[1,0],[0,1],[1,1],[1,-1]];
+    for(const [dr,dc] of dirs){
+      const cells = [[r,c]];
+      for(const s of [1,-1]){
+        let rr=r+dr*s, cc=c+dc*s;
+        while(rr>=0&&rr<N&&cc>=0&&cc<N&&board[rr][cc]===p){ cells.push([rr,cc]); rr+=dr*s; cc+=dc*s; }
+      }
+      if(cells.length>=K) return cells;
+    }
+    return null;
+  }
+  function render(){
+    gridEl.innerHTML = "";
+    for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+      const b = mkEl("button", board[r][c] ? "m"+board[r][c] : "");
+      b.type = "button";
+      if(winSet.has(r+","+c)) b.classList.add("win");
+      b.textContent = board[r][c] ? (cfg.game==="tictactoe" ? (board[r][c]===1 ? cfg.m1 : cfg.m2) : "●") : "";
+      if(!over && !board[r][c] && !inputLocked(turn)) b.addEventListener("click", ()=>place(r,c));
+      else b.disabled = true;
+      gridEl.appendChild(b);
+    }
+    if(!over) turnBanner(turn);
+  }
+  function place(r,c){
+    if(over || board[r][c]) return;
+    netForward({t:"move", game:cfg.game, r:r, c:c});
+    board[r][c] = turn;
+    const w = lineCells(r,c,turn);
+    if(w){ winSet = new Set(w.map(([rr,cc])=>rr+","+cc)); over = true; render(); gameOver(turn, K + "つ並びました！"); return; }
+    if(board.every(row=>row.every(v=>v!==0))){ over = true; render(); gameOver(0, "盤がいっぱいになりました。"); return; }
+    turn = 3 - turn; render();
+    if(isCpuTurn(turn)) cpuDelay(cpuMove);
+  }
+  function dirScore(r,c,p){
+    let total = 0;
+    const dirs = [[1,0],[0,1],[1,1],[1,-1]];
+    for(const [dr,dc] of dirs){
+      let cnt = 1, open = 0;
+      for(const s of [1,-1]){
+        let rr=r+dr*s, cc=c+dc*s;
+        while(rr>=0&&rr<N&&cc>=0&&cc<N&&board[rr][cc]===p){ cnt++; rr+=dr*s; cc+=dc*s; }
+        if(rr>=0&&rr<N&&cc>=0&&cc<N&&board[rr][cc]===0) open++;
+      }
+      if(cnt>=K) total += 10000000;
+      else if(cnt===K-1) total += open===2 ? 120000 : 15000;
+      else if(cnt===K-2) total += open===2 ? 4000 : 400;
+      else total += cnt * 12 * (open+1);
+    }
+    return total;
+  }
+  function cpuMove(){
+    if(over) return;
+    let cand = [];
+    if(N<=3){ for(let r=0;r<N;r++) for(let c=0;c<N;c++) if(!board[r][c]) cand.push([r,c]); }
+    else {
+      const seen = new Set();
+      for(let r=0;r<N;r++) for(let c=0;c<N;c++) if(board[r][c]){
+        for(let dr=-2;dr<=2;dr++) for(let dc=-2;dc<=2;dc++){
+          const rr=r+dr, cc=c+dc, k=rr+","+cc;
+          if(rr>=0&&rr<N&&cc>=0&&cc<N&&board[rr][cc]===0&&!seen.has(k)){ seen.add(k); cand.push([rr,cc]); }
+        }
+      }
+      if(!cand.length) cand = [[Math.floor(N/2), Math.floor(N/2)]];
+    }
+    if(state.diff===1 && Math.random()<0.45){ const [r,c]=cand[rand(cand.length)]; place(r,c); return; }
+    let best=null, bs=-1;
+    for(const [r,c] of cand){
+      const atk = dirScore(r,c,2), def = dirScore(r,c,1);
+      let s = Math.max(atk, def * (state.diff===3 ? 1.0 : 0.92)) + Math.min(atk,def)*0.1 + Math.random()*4;
+      if(N===3 && r===1 && c===1) s += 500;
+      if(s>bs){ bs=s; best=[r,c]; }
+    }
+    place(best[0], best[1]);
+  }
+  render();
+}
+
+/* ============================================================
+   はさみゲーム（5×5）
+   ============================================================ */
+function initHasami(area){
+  const N = 5;
+  let board = Array.from({length:N}, ()=>Array(N).fill(0));
+  for(let c=0;c<N;c++){ board[0][c]=2; board[N-1][c]=1; }
+  let turn = 1, over = false, sel = null;
+  const { msg, main, ctrl } = stdLayout(area);
+  const score = mkEl("div", "scorebar");
+  const gridEl = mkEl("div", "linegrid");
+  gridEl.style.gridTemplateColumns = "repeat("+N+",1fr)"; gridEl.style.width = "min(94vw,380px)"; gridEl.style.fontSize = "1.3rem";
+  main.append(score, gridEl);
+  G_api = d => { if(d.game==="hasami") doMove(d.fr, d.fc, d.tr, d.tc); };
+  function counts(){ let a=0,b=0; board.forEach(row=>row.forEach(v=>{ if(v===1)a++; if(v===2)b++; })); return [a,b]; }
+  function movesFrom(r,c){
+    const out = []; const p = board[r][c];
+    if(!p) return out;
+    for(const [dr,dc] of [[1,0],[-1,0],[0,1],[0,-1]]){
+      let rr=r+dr, cc=c+dc;
+      while(rr>=0&&rr<N&&cc>=0&&cc<N&&!board[rr][cc]){ out.push([rr,cc]); rr+=dr; cc+=dc; }
+    }
+    return out;
+  }
+  function capturesAt(r,c,p){
+    // (r,c)にpのコマが来たとき挟んで取れる相手コマ
+    const caps = [];
+    for(const [dr,dc] of [[1,0],[-1,0],[0,1],[0,-1]]){
+      const rr=r+dr, cc=c+dc;
+      if(rr<0||rr>=N||cc<0||cc>=N||board[rr][cc]!==3-p) continue;
+      const br=r+2*dr, bc=c+2*dc;
+      if(br<0||br>=N||bc<0||bc>=N || board[br][bc]===p) caps.push([rr,cc]);
+    }
+    return caps;
+  }
+  function render(note){
+    const [a,b] = counts();
+    score.innerHTML = scorePillsHtml(a, b, turn, over, "個");
+    msg.textContent = note || (sel ? "移動先のマスを選んでください" : "自分のコマを選んでください");
+    gridEl.innerHTML = "";
+    const dests = sel ? new Set(movesFrom(sel[0], sel[1]).map(([r,c])=>r+","+c)) : new Set();
+    for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+      const btn = mkEl("button", board[r][c] ? "m"+board[r][c] : "");
+      btn.type = "button";
+      btn.textContent = board[r][c] ? "●" : (dests.has(r+","+c) ? "・" : "");
+      if(sel && sel[0]===r && sel[1]===c) btn.classList.add("win");
+      if(!over && !inputLocked(turn)){
+        if(board[r][c]===turn) btn.addEventListener("click", ()=>{ sel = [r,c]; render(); });
+        else if(sel && dests.has(r+","+c)) btn.addEventListener("click", ()=>doMove(sel[0], sel[1], r, c));
+        else btn.disabled = true;
+      } else btn.disabled = true;
+      gridEl.appendChild(btn);
+    }
+    if(!over) turnBanner(turn, "挟んで取ろう");
+  }
+  function doMove(fr,fc,tr,tc){
+    if(over || board[fr][fc]!==turn) return;
+    if(!movesFrom(fr,fc).some(([r,c])=>r===tr&&c===tc)) return;
+    netForward({t:"move", game:"hasami", fr:fr, fc:fc, tr:tr, tc:tc});
+    const p = turn;
+    board[tr][tc] = p; board[fr][fc] = 0; sel = null;
+    const caps = capturesAt(tr,tc,p);
+    caps.forEach(([r,c])=>board[r][c]=0);
+    const [a,b] = counts();
+    if(a<=1 || b<=1){ over = true; render(); gameOver(a<=1?2:1, "相手のコマを1つ以下にしました！"); return; }
+    turn = 3 - turn;
+    render(caps.length ? caps.length + "個のコマを取りました！" : "");
+    if(isCpuTurn(turn)) cpuDelay(cpuMove);
+  }
+  function cpuMove(){
+    if(over || turn!==2) return;
+    const all = [];
+    for(let r=0;r<N;r++) for(let c=0;c<N;c++) if(board[r][c]===2)
+      movesFrom(r,c).forEach(([tr,tc])=>all.push([r,c,tr,tc]));
+    if(!all.length){ over = true; gameOver(1, "相手が動けなくなりました。"); return; }
+    if(state.diff===1 && Math.random()<0.4){ const m = all[rand(all.length)]; doMove(m[0],m[1],m[2],m[3]); return; }
+    let best = all[0], bs = -Infinity;
+    for(const [fr,fc,tr,tc] of all){
+      const saved = board.map(row=>row.slice());
+      board[tr][tc]=2; board[fr][fc]=0;
+      const caps = capturesAt(tr,tc,2); caps.forEach(([r,c])=>board[r][c]=0);
+      let s = caps.length * 100 + Math.random()*6;
+      if(state.diff===3){
+        // 相手の取り返しを避ける
+        let danger = 0;
+        for(let r=0;r<N;r++) for(let c=0;c<N;c++) if(board[r][c]===1)
+          movesFrom(r,c).forEach(([ar,ac])=>{ const sv = board[ar][ac]; board[ar][ac]=1; const cc2 = capturesAt(ar,ac,1); board[ar][ac]=sv; if(cc2.length) danger = Math.max(danger, cc2.length); });
+        s -= danger * 90;
+      }
+      board = saved;
+      if(s>bs){ bs=s; best=[fr,fc,tr,tc]; }
+    }
+    doMove(best[0], best[1], best[2], best[3]);
+  }
+  render("");
+}
+
+/* ============================================================
+   どうぶつしょうぎ（3×4）
+   ============================================================ */
+function initDobutsu(area){
+  // piece: {o:1|2, t:'L'|'G'|'E'|'C'|'H'}
+  const W = 3, H = 4;
+  let board = Array.from({length:H}, ()=>Array(W).fill(null));
+  const P = (o,t)=>({o,t});
+  board[0][0]=P(2,"G"); board[0][1]=P(2,"L"); board[0][2]=P(2,"E"); board[1][1]=P(2,"C");
+  board[3][0]=P(1,"E"); board[3][1]=P(1,"L"); board[3][2]=P(1,"G"); board[2][1]=P(1,"C");
+  let hands = { 1:[], 2:[] };   // 取った動物（'G'|'E'|'C'）
+  let turn = 1, over = false, sel = null, selHand = -1, tryPending = 0;
+  const { msg, main, ctrl } = stdLayout(area);
+  const handEl = mkEl("div", "scorebar");
+  const gridEl = mkEl("div", "linegrid");
+  gridEl.style.gridTemplateColumns = "repeat(3,1fr)"; gridEl.style.width = "min(94vw,300px)"; gridEl.style.fontSize = "1.6rem";
+  main.append(handEl, gridEl);
+  const EMOJI = { L:"🦁", G:"🦒", E:"🐘", C:"🐤", H:"🐔" };
+  const NAME = { L:"ライオン", G:"キリン", E:"ゾウ", C:"ひよこ", H:"ニワトリ" };
+  G_api = d => { if(d.game!=="dobutsu") return; if(d.kind==="drop") doDrop(d.piece, d.tr, d.tc); else doMove(d.fr, d.fc, d.tr, d.tc); };
+  const fwd = p => p===1 ? -1 : 1;
+  const farRow = p => p===1 ? 0 : H-1;
+  function dirsFor(piece){
+    const f = fwd(piece.o);
+    if(piece.t==="L") return [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+    if(piece.t==="G") return [[1,0],[-1,0],[0,1],[0,-1]];
+    if(piece.t==="E") return [[1,1],[1,-1],[-1,1],[-1,-1]];
+    if(piece.t==="C") return [[f,0]];
+    if(piece.t==="H") return [[f,0],[f,1],[f,-1],[0,1],[0,-1],[-f,0]];
+    return [];
+  }
+  function movesFrom(r,c){
+    const piece = board[r][c]; if(!piece) return [];
+    const out = [];
+    for(const [dr,dc] of dirsFor(piece)){
+      const rr=r+dr, cc=c+dc;
+      if(rr<0||rr>=H||cc<0||cc>=W) continue;
+      if(board[rr][cc] && board[rr][cc].o===piece.o) continue;
+      out.push([rr,cc]);
+    }
+    return out;
+  }
+  function allMoves(p){
+    const out = [];
+    for(let r=0;r<H;r++) for(let c=0;c<W;c++) if(board[r][c] && board[r][c].o===p)
+      movesFrom(r,c).forEach(([tr,tc])=>out.push({fr:r,fc:c,tr,tc}));
+    return out;
+  }
+  function lionPos(p){ for(let r=0;r<H;r++) for(let c=0;c<W;c++) if(board[r][c] && board[r][c].o===p && board[r][c].t==="L") return [r,c]; return null; }
+  function render(note){
+    handEl.innerHTML = [1,2].map(p=>{
+      const hs = hands[p].length ? hands[p].map(t=>EMOJI[t]).join(" ") : "なし";
+      return '<span class="score-pill'+(turn===p&&!over?' turn':'')+'"><span class="pip" style="background:'+(p===1?"var(--p1)":"var(--p2)")+'"></span>'+playerNameHtml(p)+'の持ち駒：'+hs+'</span>';
+    }).join("");
+    msg.textContent = note || (selHand>=0 ? "持ち駒を置くマスを選んでください" : sel ? "移動先か、別の駒を選んでください" : "自分の動物か持ち駒を選んでください");
+    gridEl.innerHTML = "";
+    const dests = sel ? new Set(movesFrom(sel[0], sel[1]).map(([r,c])=>r+","+c)) : new Set();
+    for(let r=0;r<H;r++) for(let c=0;c<W;c++){
+      const piece = board[r][c];
+      const btn = mkEl("button", piece ? "m"+piece.o : "");
+      btn.type = "button";
+      btn.textContent = piece ? EMOJI[piece.t] : (selHand>=0 || dests.has(r+","+c) ? "・" : "");
+      btn.title = piece ? NAME[piece.t] : "";
+      if(sel && sel[0]===r && sel[1]===c) btn.classList.add("win");
+      if(!over && !inputLocked(turn)){
+        if(piece && piece.o===turn) btn.addEventListener("click", ()=>{ sel=[r,c]; selHand=-1; render(); });
+        else if(sel && dests.has(r+","+c)) btn.addEventListener("click", ()=>doMove(sel[0], sel[1], r, c));
+        else if(selHand>=0 && !piece) btn.addEventListener("click", ()=>doDrop(hands[turn][selHand], r, c));
+        else btn.disabled = true;
+      } else btn.disabled = true;
+      gridEl.appendChild(btn);
+    }
+    ctrl.innerHTML = "";
+    if(!over && !inputLocked(turn)) hands[turn].forEach((t,i)=>{
+      const b = mkEl("button", "btn btn-ghost btn-small", EMOJI[t] + " " + NAME[t] + "を打つ");
+      b.addEventListener("click", ()=>{ selHand = i; sel = null; render(); });
+      ctrl.appendChild(b);
+    });
+    if(!over) turnBanner(turn, "ライオンを取るか奥まで進めよう");
+  }
+  function finishMove(capturedLion, mover){
+    sel = null; selHand = -1;
+    if(capturedLion){ over = true; render(); gameOver(mover, "相手のライオンを取りました！"); return true; }
+    // トライ判定：相手の手が終わった時点でライオンが生き残っていれば勝ち
+    if(tryPending && tryPending!==mover){
+      const lp = lionPos(tryPending);
+      if(lp){ over = true; render(); gameOver(tryPending, "ライオンが相手陣地に突入（トライ）しました！"); return true; }
+      tryPending = 0;
+    }
+    const lp2 = lionPos(mover);
+    if(lp2 && lp2[0]===farRow(mover)) tryPending = mover;
+    turn = 3 - turn;
+    render("");
+    if(isCpuTurn(turn)) cpuDelay(cpuMove);
+    return true;
+  }
+  function doMove(fr,fc,tr,tc){
+    if(over) return;
+    const piece = board[fr][fc];
+    if(!piece || piece.o!==turn) return;
+    if(!movesFrom(fr,fc).some(([r,c])=>r===tr&&c===tc)) return;
+    netForward({t:"move", game:"dobutsu", kind:"move", fr:fr, fc:fc, tr:tr, tc:tc});
+    const target = board[tr][tc];
+    let capturedLion = false;
+    if(target){
+      if(target.t==="L") capturedLion = true;
+      else hands[turn].push(target.t==="H" ? "C" : target.t);
+    }
+    board[tr][tc] = piece; board[fr][fc] = null;
+    if(piece.t==="C" && tr===farRow(turn)) piece.t = "H";
+    finishMove(capturedLion, turn);
+  }
+  function doDrop(pieceType, tr, tc){
+    if(over || board[tr][tc]) return;
+    const idx = hands[turn].indexOf(pieceType);
+    if(idx<0) return;
+    if(pieceType==="C" && tr===farRow(turn)) return; // 動けなくなる場所には打てない
+    netForward({t:"move", game:"dobutsu", kind:"drop", piece:pieceType, tr:tr, tc:tc});
+    hands[turn].splice(idx,1);
+    board[tr][tc] = { o:turn, t:pieceType };
+    finishMove(false, turn);
+  }
+  function cpuMove(){
+    if(over || turn!==2) return;
+    const moves = allMoves(2);
+    const drops = [];
+    hands[2].forEach(t=>{ for(let r=0;r<H;r++) for(let c=0;c<W;c++) if(!board[r][c] && !(t==="C"&&r===farRow(2))) drops.push({piece:t,tr:r,tc:c}); });
+    const VAL = { L:1000, G:30, E:30, C:20, H:45 };
+    function evalMove(m){
+      let s = Math.random()*4;
+      const target = board[m.tr][m.tc];
+      if(target) s += VAL[target.t] * 2;
+      const piece = board[m.fr][m.fc];
+      if(piece.t==="C" && m.tr===farRow(2)) s += 40;
+      if(piece.t==="L" && m.tr===farRow(2)) s += 300;
+      return s;
+    }
+    if(state.diff===1 && Math.random()<0.4){
+      if(drops.length && Math.random()<0.3){ const d = drops[rand(drops.length)]; doDrop(d.piece, d.tr, d.tc); return; }
+      const m = moves[rand(moves.length)]; if(m) doMove(m.fr, m.fc, m.tr, m.tc); return;
+    }
+    let best = null, bs = -Infinity;
+    for(const m of moves){ const s = evalMove(m); if(s>bs){ bs=s; best=m; } }
+    if(drops.length && Math.random()<0.25){ const d = drops[rand(drops.length)]; doDrop(d.piece, d.tr, d.tc); return; }
+    if(best) doMove(best.fr, best.fc, best.tr, best.tc);
+  }
+  render("");
+}
+
+/* ============================================================
+   チェッカー（6×6）
+   ============================================================ */
+function initCheckers(area){
+  const N = 6;
+  let board = Array.from({length:N}, ()=>Array(N).fill(0)); // 1,2 / king: 11,22
+  for(let r=0;r<2;r++) for(let c=0;c<N;c++) if((r+c)%2===1) board[r][c]=2;
+  for(let r=N-2;r<N;r++) for(let c=0;c<N;c++) if((r+c)%2===1) board[r][c]=1;
+  let turn = 1, over = false, sel = null;
+  const { msg, main, ctrl } = stdLayout(area);
+  const gridEl = mkEl("div", "linegrid");
+  gridEl.style.gridTemplateColumns = "repeat("+N+",1fr)"; gridEl.style.width = "min(94vw,400px)"; gridEl.style.fontSize = "1.25rem";
+  main.append(gridEl);
+  G_api = d => { if(d.game==="checkers") doMove(d.fr, d.fc, d.tr, d.tc); };
+  const ownerOf = v => v===1||v===11 ? 1 : v===2||v===22 ? 2 : 0;
+  const isKing = v => v===11 || v===22;
+  function movesFrom(r,c){
+    const v = board[r][c]; if(!v) return [];
+    const p = ownerOf(v), out = [];
+    const dirs = isKing(v) ? [[1,1],[1,-1],[-1,1],[-1,-1]] : (p===1 ? [[-1,1],[-1,-1]] : [[1,1],[1,-1]]);
+    for(const [dr,dc] of dirs){
+      const rr=r+dr, cc=c+dc;
+      if(rr<0||rr>=N||cc<0||cc>=N) continue;
+      if(!board[rr][cc]) out.push([rr,cc,false]);
+      else if(ownerOf(board[rr][cc])===3-p){
+        const jr=r+2*dr, jc=c+2*dc;
+        if(jr>=0&&jr<N&&jc>=0&&jc<N&&!board[jr][jc]) out.push([jr,jc,true]);
+      }
+    }
+    return out;
+  }
+  function anyMoves(p){
+    for(let r=0;r<N;r++) for(let c=0;c<N;c++) if(ownerOf(board[r][c])===p && movesFrom(r,c).length) return true;
+    return false;
+  }
+  function counts(){ let a=0,b=0; board.forEach(row=>row.forEach(v=>{ if(ownerOf(v)===1)a++; if(ownerOf(v)===2)b++; })); return [a,b]; }
+  function render(note){
+    msg.textContent = note || (sel ? "移動先を選んでください（斜め・ジャンプで取れます）" : "自分のコマを選んでください");
+    gridEl.innerHTML = "";
+    const dests = sel ? new Map(movesFrom(sel[0], sel[1]).map(([r,c,j])=>[r+","+c, j])) : new Map();
+    for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+      const v = board[r][c];
+      const btn = mkEl("button", v ? "m"+ownerOf(v) : "");
+      btn.type = "button";
+      btn.style.background = (r+c)%2===1 ? "" : "var(--bg2)";
+      btn.textContent = v ? (isKing(v) ? "◆" : "●") : (dests.has(r+","+c) ? "・" : "");
+      if(sel && sel[0]===r && sel[1]===c) btn.classList.add("win");
+      if(!over && !inputLocked(turn)){
+        if(ownerOf(v)===turn) btn.addEventListener("click", ()=>{ sel=[r,c]; render(); });
+        else if(sel && dests.has(r+","+c)) btn.addEventListener("click", ()=>doMove(sel[0], sel[1], r, c));
+        else btn.disabled = true;
+      } else btn.disabled = true;
+      gridEl.appendChild(btn);
+    }
+    if(!over) turnBanner(turn, "相手のコマを全部取ろう");
+  }
+  function doMove(fr,fc,tr,tc){
+    if(over || ownerOf(board[fr][fc])!==turn) return;
+    const mv = movesFrom(fr,fc).find(([r,c])=>r===tr&&c===tc);
+    if(!mv) return;
+    netForward({t:"move", game:"checkers", fr:fr, fc:fc, tr:tr, tc:tc});
+    let v = board[fr][fc];
+    board[fr][fc] = 0;
+    if(mv[2]) board[(fr+tr)/2][(fc+tc)/2] = 0;
+    if(turn===1 && tr===0 && v===1) v = 11;
+    if(turn===2 && tr===N-1 && v===2) v = 22;
+    board[tr][tc] = v; sel = null;
+    const [a,b] = counts();
+    const next = 3 - turn;
+    if(a===0 || b===0 || !anyMoves(next)){ over = true; render(); gameOver(a===0?2:1, "相手のコマを全部取るか、動けなくしました！"); return; }
+    turn = next; render(mv[2] ? "ジャンプで取りました！" : "");
+    if(isCpuTurn(turn)) cpuDelay(cpuMove);
+  }
+  function cpuMove(){
+    if(over || turn!==2) return;
+    const all = [];
+    for(let r=0;r<N;r++) for(let c=0;c<N;c++) if(ownerOf(board[r][c])===2)
+      movesFrom(r,c).forEach(([tr,tc,j])=>all.push([r,c,tr,tc,j]));
+    if(!all.length){ over = true; gameOver(1, "相手が動けなくなりました。"); return; }
+    if(state.diff===1 && Math.random()<0.4){ const m = all[rand(all.length)]; doMove(m[0],m[1],m[2],m[3]); return; }
+    let best = all[0], bs = -Infinity;
+    for(const m of all){
+      let s = (m[4] ? 60 : 0) + Math.random()*6;
+      if(m[2]===N-1 && board[m[0]][m[1]]===2) s += 40;
+      if(isKing(board[m[0]][m[1]])) s += 5;
+      if(s>bs){ bs=s; best=m; }
+    }
+    doMove(best[0], best[1], best[2], best[3]);
+  }
+  render("");
+}
+
+/* ============================================================
+   ヘックス（7×7）
+   ============================================================ */
+function initHex(area){
+  const N = 7;
+  let board = Array.from({length:N}, ()=>Array(N).fill(0));
+  let turn = 1, over = false;
+  const { msg, main, ctrl } = stdLayout(area);
+  const wrapEl = mkEl("div"); wrapEl.style.display = "flex"; wrapEl.style.flexDirection = "column"; wrapEl.style.gap = "4px"; wrapEl.style.alignItems = "flex-start"; wrapEl.style.margin = "0 auto"; wrapEl.style.width = "fit-content"; wrapEl.style.maxWidth = "94vw";
+  main.append(wrapEl);
+  msg.textContent = "プレイヤー1は左右、プレイヤー2は上下をつなげば勝ち";
+  G_api = d => { if(d.game==="hex") place(d.r, d.c); };
+  function connected(p){
+    const seen = Array.from({length:N}, ()=>Array(N).fill(false));
+    const q = [];
+    for(let i=0;i<N;i++){
+      const r = p===1 ? i : 0, c = p===1 ? 0 : i;
+      if(board[r][c]===p){ q.push([r,c]); seen[r][c]=true; }
+    }
+    const dirs = [[1,0],[-1,0],[0,1],[0,-1],[1,-1],[-1,1]];
+    while(q.length){
+      const [r,c] = q.shift();
+      if(p===1 && c===N-1) return true;
+      if(p===2 && r===N-1) return true;
+      for(const [dr,dc] of dirs){
+        const rr=r+dr, cc=c+dc;
+        if(rr>=0&&rr<N&&cc>=0&&cc<N&&!seen[rr][cc]&&board[rr][cc]===p){ seen[rr][cc]=true; q.push([rr,cc]); }
+      }
+    }
+    return false;
+  }
+  function render(){
+    wrapEl.innerHTML = "";
+    for(let r=0;r<N;r++){
+      const row = mkEl("div"); row.style.display = "flex"; row.style.gap = "4px"; row.style.marginLeft = (r*14) + "px";
+      for(let c=0;c<N;c++){
+        const btn = mkEl("button", board[r][c] ? "m"+board[r][c] : "");
+        btn.type = "button";
+        btn.style.cssText = "width:38px;height:38px;border-radius:50%;border:2px solid var(--line);font-weight:900;padding:0;min-height:0;";
+        if(board[r][c]){ btn.style.background = board[r][c]===1 ? "#FDE3DE" : "#DCECF8"; btn.style.color = board[r][c]===1 ? "var(--p1)" : "var(--p2)"; btn.textContent = "●"; }
+        if(!over && !board[r][c] && !inputLocked(turn)) btn.addEventListener("click", ()=>place(r,c));
+        else btn.disabled = true;
+        row.appendChild(btn);
+      }
+      wrapEl.appendChild(row);
+    }
+    if(!over) turnBanner(turn, turn===1 ? "左右をつなげよう" : "上下をつなげよう");
+  }
+  function place(r,c){
+    if(over || board[r][c]) return;
+    netForward({t:"move", game:"hex", r:r, c:c});
+    board[r][c] = turn;
+    if(connected(turn)){ over = true; render(); gameOver(turn, "両端がつながりました！"); return; }
+    turn = 3 - turn; render();
+    if(isCpuTurn(turn)) cpuDelay(cpuMove);
+  }
+  function cpuMove(){
+    if(over || turn!==2) return;
+    const empt = [];
+    for(let r=0;r<N;r++) for(let c=0;c<N;c++) if(!board[r][c]) empt.push([r,c]);
+    if(!empt.length) return;
+    if(state.diff===1 && Math.random()<0.4){ const [r,c]=empt[rand(empt.length)]; place(r,c); return; }
+    for(const [r,c] of empt){ board[r][c]=2; const w = connected(2); board[r][c]=0; if(w){ place(r,c); return; } }
+    for(const [r,c] of empt){ board[r][c]=1; const w = connected(1); board[r][c]=0; if(w){ place(r,c); return; } }
+    let best = empt[0], bs = -Infinity;
+    for(const [r,c] of empt){
+      let own = 0;
+      [[1,0],[-1,0],[0,1],[0,-1],[1,-1],[-1,1]].forEach(([dr,dc])=>{ const rr=r+dr, cc=c+dc; if(rr>=0&&rr<N&&cc>=0&&cc<N&&board[rr][cc]===2) own++; });
+      const s = own * 10 + r * 2 + Math.random()*6; // 上下方向の前進を評価
+      if(s>bs){ bs=s; best=[r,c]; }
+    }
+    place(best[0], best[1]);
+  }
+  render();
+}
+
+/* ============================================================
+   ぬりかえ陣取り（フラッド）
+   ============================================================ */
+function initFlood(area){
+  const N = 8, NC = 5;
+  const PALETTE = ["#E8503A","#2E7FC2","#3E9B4F","#F2B705","#8A5BA6"];
+  let board = Array.from({length:N}, ()=>Array.from({length:N}, ()=>rand(NC)));
+  let own = Array.from({length:N}, ()=>Array(N).fill(0));
+  own[N-1][0] = 1; own[0][N-1] = 2;
+  board[N-1][0] = 0; board[0][N-1] = 1;
+  let curCol = { 1:0, 2:1 };
+  let turn = 1, over = false;
+  const { msg, main, ctrl } = stdLayout(area);
+  const score = mkEl("div", "scorebar");
+  const gridEl = mkEl("div", "linegrid");
+  gridEl.style.gridTemplateColumns = "repeat("+N+",1fr)"; gridEl.style.width = "min(94vw,400px)"; gridEl.style.gap = "2px"; gridEl.style.padding = "4px";
+  main.append(score, gridEl);
+  let boardReady = state.mode!=="p2p" || state.myPlayer===1;
+  state.netGameHandler = d => { if(d.t==="floodInit"){ board = d.board; boardReady = true; render("相手と盤面を共有しました。"); } };
+  if(state.mode==="p2p" && state.myPlayer===1) netSend({ t:"floodInit", board:board });
+  G_api = d => { if(d.game==="flood") pick(d.col); };
+  function counts(){ let a=0,b=0; own.forEach(row=>row.forEach(v=>{ if(v===1)a++; if(v===2)b++; })); return [a,b]; }
+  function expand(p, col){
+    // pの陣地に接する col 色のマスをすべて取り込む（シミュレーション対応）
+    const ownCopy = own.map(row=>row.slice());
+    let changed = true;
+    while(changed){
+      changed = false;
+      for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+        if(ownCopy[r][c]===p) continue;
+        if(board[r][c]!==col) continue;
+        const adj = [[1,0],[-1,0],[0,1],[0,-1]].some(([dr,dc])=>{ const rr=r+dr, cc=c+dc; return rr>=0&&rr<N&&cc>=0&&cc<N&&ownCopy[rr][cc]===p; });
+        if(adj){ ownCopy[r][c]=p; changed=true; }
+      }
+    }
+    return ownCopy;
+  }
+  function render(note){
+    const [a,b] = counts();
+    score.innerHTML = scorePillsHtml(a, b, turn, over, "マス");
+    msg.textContent = note || "広げたい色を選んでください";
+    gridEl.innerHTML = "";
+    for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+      const d = mkEl("div");
+      d.style.cssText = "aspect-ratio:1;border-radius:5px;display:grid;place-items:center;background:" + PALETTE[board[r][c]] + ";";
+      if(own[r][c]){ const s = mkEl("span", "", "●"); s.style.color = own[r][c]===1 ? "#fff" : "#111"; s.style.fontSize = ".8rem"; s.style.textShadow = "0 0 3px rgba(0,0,0,.4)"; d.appendChild(s); }
+      gridEl.appendChild(d);
+    }
+    ctrl.innerHTML = "";
+    if(!over && boardReady && !inputLocked(turn)){
+      PALETTE.forEach((hexCol, i)=>{
+        if(i===curCol[turn]) return;
+        const b = mkEl("button", "choice-btn", "");
+        b.style.background = hexCol; b.style.minWidth = "52px"; b.style.padding = "10px";
+        b.setAttribute("aria-label", "色" + (i+1));
+        b.addEventListener("click", ()=>pick(i));
+        ctrl.appendChild(b);
+      });
+    }
+    if(!over) turnBanner(turn, "陣地を広げよう");
+  }
+  function pick(col){
+    if(over || col===curCol[turn] || !boardReady) return;
+    netForward({t:"move", game:"flood", col:col});
+    const before = counts()[turn-1];
+    own = expand(turn, col);
+    curCol[turn] = col;
+    for(let r=0;r<N;r++) for(let c=0;c<N;c++) if(own[r][c]===turn) board[r][c] = col;
+    const gained = counts()[turn-1] - before;
+    const [a,b] = counts();
+    if(a + b >= N * N){
+      over = true; render();
+      if(a===b) gameOver(0, "陣地は " + a + " ： " + b + " の同点でした。");
+      else gameOver(a>b?1:2, "陣地は " + playerName(1) + " " + a + "マス ： " + playerName(2) + " " + b + "マスでした。");
+      return;
+    }
+    turn = 3 - turn;
+    render(gained > 0 ? gained + "マス広がりました！" : "広がりませんでした…");
+    if(isCpuTurn(turn)) cpuDelay(cpuMove);
+  }
+  function cpuMove(){
+    if(over || turn!==2) return;
+    let bestCol = 0, bestGain = -1;
+    for(let col=0; col<NC; col++){
+      if(col===curCol[2]) continue;
+      const sim = expand(2, col);
+      let cnt = 0; sim.forEach(row=>row.forEach(v=>{ if(v===2) cnt++; }));
+      const gain = cnt + (state.diff===1 ? Math.random()*8 : Math.random()*1.5);
+      if(gain>bestGain){ bestGain=gain; bestCol=col; }
+    }
+    pick(bestCol);
+  }
+  render("");
+}
+
+/* ============================================================
+   神経衰弱バトル（4×4）
+   ============================================================ */
+function initMemory(area){
+  const EMOJIS = ["🍑","🍊","🍇","🍓","🍎","🍌","🍉","🥝"];
+  let cards = shuffle([...EMOJIS, ...EMOJIS]);
+  let opened = Array(16).fill(0); // 0 down, 1 up, 2 taken
+  let takenBy = Array(16).fill(0);
+  let pairs = { 1:0, 2:0 };
+  let turn = 1, over = false, firstPick = -1, busy = false;
+  const { msg, main, ctrl } = stdLayout(area);
+  const score = mkEl("div", "scorebar");
+  const gridEl = mkEl("div", "memgrid");
+  main.append(score, gridEl);
+  let cardsReady = state.mode!=="p2p" || state.myPlayer===1;
+  state.netGameHandler = d => { if(d.t==="cards"){ cards = d.cards; cardsReady = true; render("相手とカードを共有しました。"); } };
+  if(state.mode==="p2p" && state.myPlayer===1) netSend({ t:"cards", cards:cards });
+  G_api = d => { if(d.game==="memory") flip(d.i, true); };
+  let cpuKnown = {}; // CPUが覚えているカード位置
+  function render(note){
+    score.innerHTML = scorePillsHtml(pairs[1], pairs[2], turn, over, "ペア");
+    msg.textContent = note || "カードを2枚めくってください";
+    gridEl.innerHTML = "";
+    cards.forEach((em, i)=>{
+      const b = mkEl("button", opened[i]===2 ? "done" : opened[i]===1 ? "open" : "");
+      b.type = "button";
+      b.textContent = opened[i]===0 ? "？" : em;
+      if(opened[i]===2) b.style.outline = "3px solid " + (takenBy[i]===1 ? "var(--p1)" : "var(--p2)");
+      if(opened[i]===0 && !over && !busy && cardsReady && !inputLocked(turn)) b.addEventListener("click", ()=>flip(i, false));
+      else b.disabled = true;
+      gridEl.appendChild(b);
+    });
+    if(!over) turnBanner(turn, "ペアをそろえると続けられます");
+  }
+  function flip(i, remote){
+    if(over || busy || opened[i]!==0 || !cardsReady) return;
+    if(!remote) netForward({t:"move", game:"memory", i:i});
+    opened[i] = 1;
+    if(state.mode==="cpu") cpuKnown[i] = cards[i];
+    if(firstPick<0){ firstPick = i; render("もう1枚めくってください"); return; }
+    const a = firstPick; firstPick = -1;
+    if(cards[a]===cards[i]){
+      opened[a] = 2; opened[i] = 2; takenBy[a] = turn; takenBy[i] = turn;
+      pairs[turn]++;
+      if(opened.every(v=>v===2)){
+        over = true; render();
+        if(pairs[1]===pairs[2]) gameOver(0, "ペアは " + pairs[1] + " ： " + pairs[2] + " の同点でした。");
+        else gameOver(pairs[1]>pairs[2]?1:2, "ペアは " + playerName(1) + " " + pairs[1] + " ： " + playerName(2) + " " + pairs[2] + " でした。");
+        return;
+      }
+      render("ペア成立！続けてもう2枚めくれます。");
+      if(isCpuTurn(turn)) cpuDelay(cpuFlipStep);
+    } else {
+      busy = true; render("残念、違いました…");
+      setTimeout(()=>{
+        opened[a] = 0; opened[i] = 0; busy = false;
+        turn = 3 - turn; render("");
+        if(isCpuTurn(turn)) cpuDelay(cpuFlipStep);
+      }, 900);
+    }
+  }
+  function cpuFlipStep(){
+    if(over || turn!==2 || busy) return;
+    // 覚えているペアがあれば取る
+    const known = {};
+    Object.keys(cpuKnown).forEach(k=>{ const i = +k; if(opened[i]===0){ (known[cpuKnown[i]] = known[cpuKnown[i]] || []).push(i); } });
+    for(const em in known){ if(known[em].length>=2){ flip(known[em][0], false); setTimeout(()=>flip(known[em][1], false), 350); return; } }
+    const downs = []; opened.forEach((v,i)=>{ if(v===0) downs.push(i); });
+    if(!downs.length) return;
+    const a = state.diff===1 ? downs[rand(downs.length)] : (downs.find(i=>cpuKnown[i]===undefined) ?? downs[0]);
+    flip(a, false);
+    setTimeout(()=>{
+      if(over || turn!==2) return;
+      const match = downs.find(i=>i!==a && opened[i]===0 && cpuKnown[i]===cards[a]);
+      if(match!==undefined && state.diff>=2){ flip(match, false); return; }
+      const rest = []; opened.forEach((v,i)=>{ if(v===0 && i!==a) rest.push(i); });
+      if(rest.length) flip(rest[rand(rest.length)], false);
+    }, 400);
+  }
+  render("");
+}
+
+/* ============================================================
+   じゃんけんバトル（同時出し・先に5勝）
+   ============================================================ */
+function initJanken(area){
+  const HANDS = [ {k:"rock", em:"✊", name:"グー"}, {k:"scissors", em:"✌️", name:"チョキ"}, {k:"paper", em:"🖐️", name:"パー"} ];
+  let scores = { 1:0, 2:0 };
+  let turn = 1, over = false;   // friend/cpuでは「今選んでいる人」を表す
+  let myPick = null, peerPick = null, p1Pick = null;
+  const { msg, main, ctrl } = stdLayout(area);
+  const score = mkEl("div", "scorebar");
+  const stage = mkEl("div"); stage.style.textAlign = "center";
+  main.append(score, stage);
+  state.netGameHandler = d => { if(d.t==="pick"){ peerPick = d.hand; tryResolve(); } };
+  function beats(a, b){ return (a==="rock"&&b==="scissors") || (a==="scissors"&&b==="paper") || (a==="paper"&&b==="rock"); }
+  function render(note){
+    score.innerHTML = scorePillsHtml(scores[1], scores[2], 0, over, "勝");
+    msg.textContent = note || "";
+    stage.innerHTML = "";
+    ctrl.innerHTML = "";
+    if(over) return;
+    if(state.mode==="p2p"){
+      setBanner('<span class="who">同時に手を選んでください（相手には見えません）</span>');
+      if(myPick){ stage.appendChild(mkEl("div", "big-num", "選択済み ✔ 相手の手を待っています…")); return; }
+    } else if(state.mode==="friend"){
+      turnBanner(turn, "相手に見えないように手を選んでください");
+    } else {
+      setBanner('<span class="who">あなたの手を選んでください</span>');
+    }
+    const row = mkEl("div", "choice-row");
+    HANDS.forEach(h=>{
+      const b = mkEl("button", "choice-btn");
+      b.innerHTML = '<span class="big">'+h.em+'</span>' + h.name;
+      b.addEventListener("click", ()=>choose(h.k));
+      row.appendChild(b);
+    });
+    stage.appendChild(row);
+  }
+  function choose(k){
+    if(over) return;
+    if(state.mode==="p2p"){
+      if(myPick) return;
+      myPick = k;
+      netSend({ t:"pick", hand:k });
+      tryResolve(); render("選択済み ✔ 相手の手を待っています…");
+      return;
+    }
+    if(state.mode==="cpu"){
+      resolve(k, HANDS[rand(3)].k);
+      return;
+    }
+    // friend: 1人目が選んだら端末を渡す
+    if(turn===1){ p1Pick = k; turn = 2; handoff(2, ()=>render("")); }
+    else { const p2 = k; turn = 1; resolve(p1Pick, p2); }
+  }
+  function tryResolve(){
+    if(state.mode!=="p2p" || !myPick || !peerPick) return;
+    const mine = myPick, peer = peerPick;
+    myPick = null; peerPick = null;
+    if(state.myPlayer===1) resolve(mine, peer); else resolve(peer, mine);
+  }
+  function resolve(a, b){
+    const ha = HANDS.find(h=>h.k===a), hb = HANDS.find(h=>h.k===b);
+    let note;
+    if(a===b) note = "あいこ！もう一度。";
+    else if(beats(a,b)){ scores[1]++; note = playerName(1) + " の勝ち！（" + ha.name + " vs " + hb.name + "）"; }
+    else { scores[2]++; note = playerName(2) + " の勝ち！（" + ha.name + " vs " + hb.name + "）"; }
+    stage.innerHTML = "";
+    const d = mkEl("div", "big-num", ha.em + " vs " + hb.em);
+    stage.appendChild(d);
+    if(scores[1]>=5 || scores[2]>=5){
+      over = true; render(note);
+      gameOver(scores[1]>=5?1:2, "じゃんけん " + scores[1] + " ： " + scores[2] + " で決着しました。");
+      return;
+    }
+    render(note);
+  }
+  render("先に5勝した方が勝ちです");
+}
+
+/* ============================================================
+   ダイスレース（20マス）
+   ============================================================ */
+function initDiceRace(area){
+  const GOAL = 20;
+  let pos = { 1:0, 2:0 };
+  let turn = 1, over = false;
+  const BOOST = new Set([4, 11, 16]), TRAP = new Set([7, 13, 18]);
+  const { msg, main, ctrl } = stdLayout(area);
+  const track = mkEl("div", "track");
+  const diceEl = mkEl("div", "dice-row");
+  main.append(track, diceEl);
+  G_api = d => { if(d.game==="dicerace") doRoll(d.v); };
+  function render(note, diceVal){
+    track.innerHTML = "";
+    for(let i=0;i<=GOAL;i++){
+      const sq = mkEl("div", "sq" + (i===GOAL ? " goal" : BOOST.has(i) ? " boost" : TRAP.has(i) ? " trap" : ""));
+      sq.textContent = i===GOAL ? "🏁" : i;
+      if(pos[1]===i){ const t = mkEl("span", "tok", "🔴"); t.style.top = "-8px"; t.style.left = "-4px"; sq.appendChild(t); }
+      if(pos[2]===i){ const t = mkEl("span", "tok", "🔵"); t.style.bottom = "-8px"; t.style.right = "-4px"; sq.appendChild(t); }
+      track.appendChild(sq);
+    }
+    diceEl.textContent = diceVal ? diceFace(diceVal) : "";
+    msg.textContent = note || "";
+    ctrl.innerHTML = "";
+    if(!over && !inputLocked(turn)){
+      const b = mkEl("button", "btn btn-primary", "🎲 サイコロを振る");
+      b.addEventListener("click", ()=>doRoll(1 + rand(6)));
+      ctrl.appendChild(b);
+    }
+    if(!over) turnBanner(turn, "🏁 ゴールまであと " + Math.max(0, GOAL - pos[turn]) + " マス");
+  }
+  function doRoll(v){
+    if(over) return;
+    netForward({t:"move", game:"dicerace", v:v});
+    const p = turn;
+    pos[p] = Math.min(GOAL, pos[p] + v);
+    let note = playerName(p) + " は " + v + " マス進みました。";
+    if(BOOST.has(pos[p])){ pos[p] = Math.min(GOAL, pos[p] + 2); note += "ブーストで+2！"; }
+    if(TRAP.has(pos[p])){ pos[p] = Math.max(0, pos[p] - 2); note += "落とし穴で-2…"; }
+    if(pos[p]>=GOAL){ over = true; render(note, v); gameOver(p, playerName(p) + " がゴールしました！"); return; }
+    turn = 3 - turn; render(note, v);
+    if(isCpuTurn(turn)) cpuDelay(()=>doRoll(1 + rand(6)));
+  }
+  render("サイコロを振ってゴールを目指そう");
+}
+
+/* ============================================================
+   バーストダイス（Pig・50点）
+   ============================================================ */
+function initPigDice(area){
+  const TARGET = 50;
+  let scores = { 1:0, 2:0 };
+  let turn = 1, over = false, turnTotal = 0;
+  const { msg, main, ctrl } = stdLayout(area);
+  const score = mkEl("div", "scorebar");
+  const diceEl = mkEl("div", "dice-row");
+  const progWrap = mkEl("div"); progWrap.style.display = "flex"; progWrap.style.justifyContent = "center";
+  main.append(score, diceEl, progWrap);
+  G_api = d => { if(d.game!=="pigdice") return; if(d.act==="roll") doRoll(d.v); else if(d.act==="bank") doBank(); };
+  function render(note, diceVal){
+    score.innerHTML = scorePillsHtml(scores[1], scores[2], turn, over, "点");
+    diceEl.textContent = diceVal ? diceFace(diceVal) : "";
+    progWrap.innerHTML = "";
+    [1,2].forEach(p=>{
+      const w = mkEl("div"); w.style.margin = "4px 8px"; w.style.textAlign = "center";
+      w.appendChild(mkEl("div", "", playerName(p) + "：" + scores[p] + "点"));
+      const bar = mkEl("div", "prog"); bar.style.width = "180px";
+      const i = mkEl("i"); i.style.width = Math.min(100, scores[p]/TARGET*100) + "%"; i.style.background = p===1 ? "var(--p1)" : "var(--p2)";
+      bar.appendChild(i); w.appendChild(bar); progWrap.appendChild(w);
+    });
+    msg.textContent = note || ("このターンの合計：" + turnTotal + "点（1が出ると0になります）");
+    ctrl.innerHTML = "";
+    if(!over && !inputLocked(turn)){
+      const roll = mkEl("button", "btn btn-primary", "🎲 振る");
+      roll.addEventListener("click", ()=>doRoll(1 + rand(6)));
+      const bank = mkEl("button", "btn btn-ghost", "💰 とめて貯める（" + turnTotal + "点）");
+      bank.disabled = turnTotal===0; bank.style.opacity = turnTotal===0 ? ".45" : "1";
+      bank.addEventListener("click", doBank);
+      ctrl.append(roll, bank);
+    }
+    if(!over) turnBanner(turn, "先に " + TARGET + " 点で勝ち");
+  }
+  function doRoll(v){
+    if(over) return;
+    netForward({t:"move", game:"pigdice", act:"roll", v:v});
+    if(v===1){
+      const p = turn; turnTotal = 0; turn = 3 - turn;
+      render(playerName(p) + " は1を出してバースト！合計が消えました。", v);
+      if(isCpuTurn(turn)) cpuDelay(cpuTurn);
+      return;
+    }
+    turnTotal += v;
+    render("このターンの合計：" + turnTotal + "点", v);
+    if(isCpuTurn(turn)) cpuDelay(cpuTurn);
+  }
+  function doBank(){
+    if(over || turnTotal===0) return;
+    netForward({t:"move", game:"pigdice", act:"bank"});
+    scores[turn] += turnTotal;
+    const p = turn, gained = turnTotal;
+    turnTotal = 0;
+    if(scores[p]>=TARGET){ over = true; render(); gameOver(p, playerName(p) + " が " + scores[p] + " 点で " + TARGET + " 点に届きました！"); return; }
+    turn = 3 - turn;
+    render(playerName(p) + " は " + gained + " 点を貯めました。");
+    if(isCpuTurn(turn)) cpuDelay(cpuTurn);
+  }
+  function cpuTurn(){
+    if(over || turn!==2) return;
+    const threshold = state.diff===1 ? 10 + rand(8) : state.diff===3 ? (scores[1] - scores[2] > 10 ? 25 : 18) : 16;
+    if(turnTotal>0 && (turnTotal>=threshold || scores[2] + turnTotal >= TARGET)) doBank();
+    else doRoll(1 + rand(6));
+  }
+  render("振るか、とめるか。度胸の勝負です");
+}
+
+/* ============================================================
+   石取りゲーム（21個・1〜3個）
+   ============================================================ */
+function initStone(area){
+  let stones = 21, turn = 1, over = false;
+  const { msg, main, ctrl } = stdLayout(area);
+  const pile = mkEl("div", "big-num");
+  main.append(pile);
+  G_api = d => { if(d.game==="stone") take(d.n); };
+  function render(note){
+    pile.textContent = "🪨".repeat(Math.min(stones, 21)) + "（残り " + stones + " 個）";
+    pile.style.fontSize = "1.4rem"; pile.style.wordBreak = "break-all"; pile.style.lineHeight = "1.5";
+    msg.textContent = note || "1〜3個取ってください";
+    ctrl.innerHTML = "";
+    if(!over && !inputLocked(turn)){
+      for(let n=1;n<=3;n++){
+        if(n>stones) break;
+        const b = mkEl("button", "btn btn-ghost", n + " 個取る");
+        b.addEventListener("click", ()=>take(n));
+        ctrl.appendChild(b);
+      }
+    }
+    if(!over) turnBanner(turn, "最後の石を取った方が勝ち");
+  }
+  function take(n){
+    if(over || n<1 || n>3 || n>stones) return;
+    netForward({t:"move", game:"stone", n:n});
+    stones -= n;
+    const p = turn;
+    if(stones===0){ over = true; render(); gameOver(p, playerName(p) + " が最後の石を取りました！"); return; }
+    turn = 3 - turn; render(playerName(p) + " は " + n + " 個取りました。");
+    if(isCpuTurn(turn)) cpuDelay(cpuMove);
+  }
+  function cpuMove(){
+    if(over || turn!==2) return;
+    let n;
+    if(state.diff===1) n = 1 + rand(Math.min(3, stones));
+    else {
+      const mod = stones % 4;
+      n = mod===0 ? 1 + rand(Math.min(3, stones)) : mod; // 残りを4の倍数にする必勝形
+      if(n>stones) n = stones;
+    }
+    take(n);
+  }
+  render("");
+}
+
+/* ============================================================
+   ニム（3・5・7）
+   ============================================================ */
+function initNim(area){
+  let piles = [3, 5, 7], turn = 1, over = false, selPile = -1;
+  const { msg, main, ctrl } = stdLayout(area);
+  const pilesEl = mkEl("div"); pilesEl.style.display = "flex"; pilesEl.style.flexDirection = "column"; pilesEl.style.gap = "10px"; pilesEl.style.alignItems = "center";
+  main.append(pilesEl);
+  G_api = d => { if(d.game==="nim") take(d.pile, d.n); };
+  function render(note){
+    msg.textContent = note || (selPile>=0 ? "取る個数を選んでください" : "山を1つ選んでください");
+    pilesEl.innerHTML = "";
+    piles.forEach((cnt, i)=>{
+      const row = mkEl("div"); row.style.display = "flex"; row.style.alignItems = "center"; row.style.gap = "10px"; row.style.flexWrap = "wrap"; row.style.justifyContent = "center";
+      row.appendChild(mkEl("b", "", "山" + (i+1)));
+      const stonesEl = mkEl("span", "", "🪨".repeat(cnt) || "（なし）");
+      stonesEl.style.fontSize = "1.2rem";
+      row.appendChild(stonesEl);
+      if(!over && !inputLocked(turn) && cnt>0){
+        const b = mkEl("button", "btn btn-small " + (selPile===i ? "btn-primary" : "btn-ghost"), selPile===i ? "選択中" : "この山");
+        b.addEventListener("click", ()=>{ selPile = i; render(); });
+        row.appendChild(b);
+      }
+      pilesEl.appendChild(row);
+    });
+    ctrl.innerHTML = "";
+    if(!over && !inputLocked(turn) && selPile>=0){
+      for(let n=1;n<=piles[selPile];n++){
+        const b = mkEl("button", "btn btn-ghost btn-small", n + " 個");
+        b.addEventListener("click", ()=>take(selPile, n));
+        ctrl.appendChild(b);
+      }
+    }
+    if(!over) turnBanner(turn, "最後の石を取った方が勝ち");
+  }
+  function take(pile, n){
+    if(over || piles[pile]<n || n<1) return;
+    netForward({t:"move", game:"nim", pile:pile, n:n});
+    piles[pile] -= n; selPile = -1;
+    const p = turn;
+    if(piles.every(v=>v===0)){ over = true; render(); gameOver(p, playerName(p) + " が最後の石を取りました！"); return; }
+    turn = 3 - turn; render("");
+    if(isCpuTurn(turn)) cpuDelay(cpuMove);
+  }
+  function nimSum(){ return piles.reduce((a,b)=>a^b, 0); }
+  function cpuMove(){
+    if(over || turn!==2) return;
+    if(state.diff>=2){
+      const ns = nimSum();
+      for(let i=0;i<3;i++){
+        const target = piles[i] ^ ns;
+        if(target < piles[i]){ take(i, piles[i] - target); return; }
+      }
+    }
+    const avail = [0,1,2].filter(i=>piles[i]>0);
+    const i = avail[rand(avail.length)];
+    take(i, 1 + rand(piles[i]));
+  }
+  render("");
+}
+
+/* ============================================================
+   クイズバトル（全10問）
+   ============================================================ */
+const QUIZ_DATA = [
+  ["日本の首都はどこ？", ["京都","東京","大阪","名古屋"], 1],
+  ["水の化学式は？", ["CO2","O2","H2O","NaCl"], 2],
+  ["1年は何日？（うるう年以外）", ["360日","365日","366日","364日"], 1],
+  ["富士山の高さに一番近いのは？", ["3,000m","3,500m","3,776m","4,200m"], 2],
+  ["「桃太郎」に出てこない動物は？", ["犬","サル","キジ","ウサギ"], 3],
+  ["9×7は？", ["56","63","72","54"], 1],
+  ["地球から一番近い星は？", ["月","太陽","金星","火星"], 1],
+  ["パンダの主食は？", ["笹（竹）","肉","魚","果物だけ"], 0],
+  ["日本で一番大きい島は？", ["北海道","本州","九州","四国"], 1],
+  ["英語で「ありがとう」は？", ["Hello","Sorry","Thank you","Goodbye"], 2],
+  ["氷がとけると何になる？", ["水蒸気","水","雪","霧"], 1],
+  ["サッカーチームは1チーム何人？", ["9人","10人","11人","12人"], 2],
+];
+function initQuiz(area){ initQuestionGame(area, "quiz"); }
+function initCalc(area){ initQuestionGame(area, "calc"); }
+function initQuestionGame(area, kind){
+  let questions;
+  if(kind==="quiz"){ questions = shuffle(QUIZ_DATA).slice(0, 10).map(q=>({ text:q[0], choices:q[1], ans:q[2] })); }
+  else {
+    questions = [];
+    for(let i=0;i<10;i++){
+      const a = 2 + rand(11), b = 2 + rand(9), mul = Math.random()<0.5;
+      const ans = mul ? a * b : a + b * 3;
+      const text = mul ? a + " × " + b + " は？" : a + " ＋ " + (b*3) + " は？";
+      const opts = new Set([ans]);
+      while(opts.size<3){ opts.add(ans + (rand(9) - 4 || 1)); }
+      questions.push({ text, choices: shuffle([...opts]), ans });
+    }
+    questions.forEach(q=>{ q.ans = q.choices.indexOf(q.ans); });
+  }
+  let idx = 0, turn = 1, over = false;
+  let scores = { 1:0, 2:0 };
+  let qReady = state.mode!=="p2p" || state.myPlayer===1;
+  state.netGameHandler = d => { if(d.t==="questions"){ questions = d.questions; qReady = true; render("相手と問題を共有しました。"); } };
+  if(state.mode==="p2p" && state.myPlayer===1) netSend({ t:"questions", questions:questions });
+  const { msg, main, ctrl } = stdLayout(area);
+  const score = mkEl("div", "scorebar");
+  const qEl = mkEl("div", "big-num");
+  main.append(score, qEl);
+  G_api = d => { if(d.game===kind) answer(d.choice, true); };
+  function render(note){
+    score.innerHTML = scorePillsHtml(scores[1], scores[2], turn, over, "問正解");
+    const q = questions[idx];
+    qEl.textContent = over ? "終了！" : "第" + (idx+1) + "問：" + q.text;
+    qEl.style.fontSize = "1.5rem";
+    msg.textContent = note || "";
+    ctrl.innerHTML = "";
+    if(!over && qReady && !inputLocked(turn)){
+      q.choices.forEach((ch, i)=>{
+        const b = mkEl("button", "btn btn-ghost", String(ch));
+        b.addEventListener("click", ()=>answer(i, false));
+        ctrl.appendChild(b);
+      });
+    }
+    if(!over) turnBanner(turn, "問題に答えてください");
+  }
+  function answer(choice, remote){
+    if(over || !qReady) return;
+    if(!remote) netForward({t:"move", game:kind, choice:choice});
+    const q = questions[idx];
+    const correct = choice === q.ans;
+    if(correct) scores[turn]++;
+    const p = turn;
+    idx++;
+    if(idx>=questions.length){
+      over = true; render();
+      if(scores[1]===scores[2]) gameOver(0, "正解数は " + scores[1] + " ： " + scores[2] + " の同点でした。");
+      else gameOver(scores[1]>scores[2]?1:2, "正解数は " + playerName(1) + " " + scores[1] + "問 ： " + playerName(2) + " " + scores[2] + "問でした。");
+      return;
+    }
+    turn = 3 - turn;
+    render(playerName(p) + (correct ? " は正解！⭕" : " は残念…正解は「" + q.choices[q.ans] + "」でした。"));
+    if(isCpuTurn(turn)) cpuDelay(cpuAnswer);
+  }
+  function cpuAnswer(){
+    if(over || turn!==2) return;
+    const q = questions[idx];
+    const rate = state.diff===1 ? 0.35 : state.diff===2 ? 0.6 : 0.85;
+    if(Math.random()<rate) answer(q.ans, false);
+    else { let c = rand(q.choices.length); if(c===q.ans) c = (c+1) % q.choices.length; answer(c, false); }
+  }
+  render(kind==="quiz" ? "全10問、交互に答えます" : "全10問、交互に計算します");
+  if(isCpuTurn(turn)) cpuDelay(cpuAnswer);
+}
+
+/* ============================================================
+   ビンゴ対決（3×3）
+   ============================================================ */
+function initBingo(area){
+  function makeCard(){
+    const nums = shuffle([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]).slice(0, 8);
+    const card = nums.slice(); card.splice(4, 0, 0); // center free = 0
+    return card;
+  }
+  let cards = { 1:makeCard(), 2:makeCard() };
+  let opened = { 1:new Set([4]), 2:new Set([4]) };
+  let pool = shuffle([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]);
+  let turn = 1, over = false, lastDraw = null;
+  const { msg, main, ctrl } = stdLayout(area);
+  const wrap = mkEl("div", "two-col");
+  main.append(wrap);
+  let cardsReady = state.mode!=="p2p" || state.myPlayer===1;
+  state.netGameHandler = d => { if(d.t==="cards"){ cards = d.cards; cardsReady = true; render("相手とカードを共有しました。"); } };
+  if(state.mode==="p2p" && state.myPlayer===1) netSend({ t:"cards", cards:cards });
+  G_api = d => { if(d.game==="bingo") draw(d.v); };
+  function hasLine(p){
+    const L = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+    return L.some(line=>line.every(i=>opened[p].has(i)));
+  }
+  function render(note){
+    msg.textContent = note || (lastDraw ? "出た数字：" + lastDraw : "数字を引いてください");
+    wrap.innerHTML = "";
+    const viewer = state.mode==="p2p" ? state.myPlayer : 0;
+    [1,2].forEach(p=>{
+      const card = mkEl("div", "mini-card");
+      card.appendChild(mkEl("h4", "", playerName(p) + " のカード"));
+      const g = mkEl("div", "linegrid");
+      g.style.gridTemplateColumns = "repeat(3,1fr)"; g.style.width = "180px"; g.style.fontSize = "1.1rem";
+      cards[p].forEach((n, i)=>{
+        const d = mkEl("button", opened[p].has(i) ? "m"+p : "");
+        d.type = "button"; d.disabled = true;
+        d.textContent = n===0 ? "★" : n;
+        g.appendChild(d);
+      });
+      card.appendChild(g);
+      wrap.appendChild(card);
+    });
+    ctrl.innerHTML = "";
+    if(!over && cardsReady && !inputLocked(turn) && pool.length){
+      const b = mkEl("button", "btn btn-primary", "🎱 数字を引く");
+      b.addEventListener("click", ()=>draw(pool[0]));
+      ctrl.appendChild(b);
+    }
+    if(!over) turnBanner(turn, "先に1ラインそろえた方が勝ち");
+  }
+  function draw(v){
+    if(over || !pool.length || !cardsReady) return;
+    netForward({t:"move", game:"bingo", v:v});
+    pool = pool.filter(x=>x!==v);
+    lastDraw = v;
+    [1,2].forEach(p=>{ const i = cards[p].indexOf(v); if(i>=0) opened[p].add(i); });
+    const winners = [1,2].filter(p=>hasLine(p));
+    if(winners.length){
+      over = true; render("数字 " + v + " でビンゴ！");
+      if(winners.length===2) gameOver(0, "同時にビンゴ！引き分けです。");
+      else gameOver(winners[0], playerName(winners[0]) + " が先にラインをそろえました。");
+      return;
+    }
+    if(!pool.length){ over = true; render(); gameOver(0, "全部の数字が出ましたが、ラインはそろいませんでした。"); return; }
+    turn = 3 - turn; render("出た数字：" + v);
+    if(isCpuTurn(turn)) cpuDelay(()=>draw(pool[0]));
+  }
+  render("");
+}
+
+/* ============================================================
+   ハイ＆ロー対決
+   ============================================================ */
+function initHighLow(area){
+  let deck = shuffle(Array.from({length:52}, (_,i)=>(i % 13) + 1));
+  let current = deck.pop();
+  let scores = { 1:0, 2:0 }, streak = { 1:0, 2:0 };
+  let turn = 1, over = false;
+  const { msg, main, ctrl } = stdLayout(area);
+  const score = mkEl("div", "scorebar");
+  const cardEl = mkEl("div", "big-num");
+  main.append(score, cardEl);
+  state.netGameHandler = d => { if(d.t==="hlInit"){ current = d.current; render("相手と山札を共有しました。"); } };
+  if(state.mode==="p2p" && state.myPlayer===1) netSend({ t:"hlInit", current:current });
+  G_api = d => { if(d.game==="highlow") guess(d.dir, d.next); };
+  function render(note){
+    score.innerHTML = scorePillsHtml(scores[1], scores[2], turn, over, "点");
+    cardEl.textContent = "場のカード：" + current + (current===1 ? "（A）" : current===13 ? "（K）" : current===12 ? "（Q）" : current===11 ? "（J）" : "");
+    cardEl.style.fontSize = "1.6rem";
+    msg.textContent = note || ("山札の残り：" + deck.length + "枚");
+    ctrl.innerHTML = "";
+    if(!over && !inputLocked(turn) && deck.length){
+      const hi = mkEl("button", "btn btn-primary", "⬆ 大きい");
+      hi.addEventListener("click", ()=>guess("hi", deck[deck.length-1]));
+      const lo = mkEl("button", "btn btn-ghost", "⬇ 小さい");
+      lo.addEventListener("click", ()=>guess("lo", deck[deck.length-1]));
+      ctrl.append(hi, lo);
+    }
+    if(!over) turnBanner(turn, "次のカードは大きい？小さい？");
+  }
+  function guess(dir, next){
+    if(over || !deck.length) return;
+    netForward({t:"move", game:"highlow", dir:dir, next:next});
+    deck.pop();
+    const p = turn;
+    let note;
+    if(next===current){ note = "同じ数字！引き分けで番が移ります。"; streak[p] = 0; turn = 3 - turn; }
+    else if((dir==="hi" && next>current) || (dir==="lo" && next<current)){
+      streak[p]++;
+      const pts = 1 + Math.floor(streak[p] / 3);
+      scores[p] += pts;
+      note = playerName(p) + " 正解！+" + pts + "点（" + streak[p] + "連続正解）。続けてもう1回予想できます。";
+    } else { note = playerName(p) + " はずれ…次のカードは " + next + " でした。"; streak[p] = 0; turn = 3 - turn; }
+    current = next;
+    if(!deck.length){
+      over = true; render(note);
+      if(scores[1]===scores[2]) gameOver(0, "点数は " + scores[1] + " ： " + scores[2] + " の同点でした。");
+      else gameOver(scores[1]>scores[2]?1:2, "点数は " + playerName(1) + " " + scores[1] + "点 ： " + playerName(2) + " " + scores[2] + "点でした。");
+      return;
+    }
+    render(note);
+    if(isCpuTurn(turn)) cpuDelay(cpuGuess);
+  }
+  function cpuGuess(){
+    if(over || turn!==2 || !deck.length) return;
+    let dir;
+    if(state.diff===1) dir = Math.random()<0.5 ? "hi" : "lo";
+    else dir = current<=7 ? "hi" : "lo";
+    guess(dir, deck[deck.length-1]);
+  }
+  render("最初のカードより大きいか小さいか当てよう");
+}
+
+/* ============================================================
+   スロットバトル（5回ずつ）
+   ============================================================ */
+function initSlot(area){
+  const SYMS = ["🍒","🍋","🍇","🔔","⭐","７"];
+  const VAL = { "７":50, "⭐":30, "🔔":20, "🍇":15, "🍋":10, "🍒":10 };
+  let scores = { 1:0, 2:0 }, spins = { 1:0, 2:0 };
+  let turn = 1, over = false;
+  const { msg, main, ctrl } = stdLayout(area);
+  const score = mkEl("div", "scorebar");
+  const reels = mkEl("div", "big-num");
+  main.append(score, reels);
+  G_api = d => { if(d.game==="slot") spin(d.v); };
+  function render(note, vals){
+    score.innerHTML = scorePillsHtml(scores[1], scores[2], turn, over, "点");
+    reels.textContent = vals ? vals.join(" ") : "🎰";
+    reels.style.fontSize = "2.6rem";
+    msg.textContent = note || ("残り回数：" + playerName(1) + " " + (5 - spins[1]) + "回 ／ " + playerName(2) + " " + (5 - spins[2]) + "回");
+    ctrl.innerHTML = "";
+    if(!over && !inputLocked(turn)){
+      const b = mkEl("button", "btn btn-primary", "🎰 回す");
+      b.addEventListener("click", ()=>spin([SYMS[rand(6)], SYMS[rand(6)], SYMS[rand(6)]]));
+      ctrl.appendChild(b);
+    }
+    if(!over) turnBanner(turn, "3つそろえば大当たり");
+  }
+  function spin(vals){
+    if(over) return;
+    netForward({t:"move", game:"slot", v:vals});
+    spins[turn]++;
+    let pts = 0, note = "";
+    if(vals[0]===vals[1] && vals[1]===vals[2]){ pts = VAL[vals[0]]; note = "🎉 3つそろった！+" + pts + "点"; }
+    else if(vals[0]===vals[1] || vals[1]===vals[2] || vals[0]===vals[2]){ pts = 5; note = "2つそろった！+5点"; }
+    else note = "残念、そろいませんでした。";
+    scores[turn] += pts;
+    const p = turn;
+    if(spins[1]>=5 && spins[2]>=5){
+      over = true; render(note, vals);
+      if(scores[1]===scores[2]) gameOver(0, "点数は " + scores[1] + " ： " + scores[2] + " の同点でした。");
+      else gameOver(scores[1]>scores[2]?1:2, "点数は " + playerName(1) + " " + scores[1] + "点 ： " + playerName(2) + " " + scores[2] + "点でした。");
+      return;
+    }
+    turn = 3 - turn;
+    render(playerName(p) + "：" + note, vals);
+    if(isCpuTurn(turn)) cpuDelay(()=>spin([SYMS[rand(6)], SYMS[rand(6)], SYMS[rand(6)]]));
+  }
+  render("交互に5回ずつ回します");
+}
+
+/* ============================================================
+   めいろレース（9×9固定迷路）
+   ============================================================ */
+function initMaze(area){
+  const ROWS = [
+    "S........",
+    ".###.###.",
+    "...#.#...",
+    "###.#.###",
+    "...#...#.",
+    ".#####.#.",
+    ".....#.#.",
+    ".###.#...",
+    "....###.G",
+  ];
+  const N = 9;
+  let pos = { 1:[0,0], 2:[0,0] };
+  let turn = 1, over = false;
+  const { msg, main, ctrl } = stdLayout(area);
+  const gridEl = mkEl("div", "linegrid");
+  gridEl.style.gridTemplateColumns = "repeat("+N+",1fr)"; gridEl.style.width = "min(94vw,400px)"; gridEl.style.fontSize = "1rem";
+  main.append(gridEl);
+  G_api = d => { if(d.game==="maze") move(d.dr, d.dc); };
+  const isWall = (r,c)=> ROWS[r][c]==="#";
+  function render(note){
+    msg.textContent = note || "方向ボタンで1マス進みます";
+    gridEl.innerHTML = "";
+    for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+      const d = mkEl("button", "");
+      d.type = "button"; d.disabled = true;
+      if(isWall(r,c)){ d.style.background = "var(--ink2)"; }
+      let t = ROWS[r][c]==="G" ? "🏁" : "";
+      if(pos[1][0]===r && pos[1][1]===c) t = "🔴";
+      if(pos[2][0]===r && pos[2][1]===c) t = (t==="🔴") ? "🟣" : "🔵";
+      d.textContent = t;
+      gridEl.appendChild(d);
+    }
+    ctrl.innerHTML = "";
+    if(!over && !inputLocked(turn)){
+      [["⬆",-1,0],["⬅",0,-1],["➡",0,1],["⬇",1,0]].forEach(([label, dr, dc])=>{
+        const b = mkEl("button", "btn btn-ghost", label);
+        b.addEventListener("click", ()=>move(dr, dc));
+        ctrl.appendChild(b);
+      });
+    }
+    if(!over) turnBanner(turn, "先に🏁へ着いた方が勝ち");
+  }
+  function move(dr, dc){
+    if(over) return;
+    netForward({t:"move", game:"maze", dr:dr, dc:dc});
+    const p = turn;
+    const nr = pos[p][0] + dr, nc = pos[p][1] + dc;
+    let note = "";
+    if(nr<0||nr>=N||nc<0||nc>=N||isWall(nr,nc)) note = "壁で進めませんでした（1手消費）。";
+    else pos[p] = [nr, nc];
+    if(pos[p][0]===N-1 && pos[p][1]===N-1){ over = true; render(note); gameOver(p, playerName(p) + " が先にゴールしました！"); return; }
+    turn = 3 - turn; render(note);
+    if(isCpuTurn(turn)) cpuDelay(cpuMove);
+  }
+  function cpuMove(){
+    if(over || turn!==2) return;
+    // ゴールへ近づく手（壁なし）を優先する貪欲法
+    const [r, c] = pos[2];
+    const opts = [[1,0],[0,1],[-1,0],[0,-1]].filter(([dr,dc])=>{ const nr=r+dr, nc=c+dc; return nr>=0&&nr<N&&nc>=0&&nc<N&&!isWall(nr,nc); });
+    if(!opts.length){ move(0,0); return; }
+    if(state.diff===1){ const [dr,dc] = opts[rand(opts.length)]; move(dr,dc); return; }
+    opts.sort((a,b)=>((N-1-(r+b[0])) + (N-1-(c+b[1]))) - ((N-1-(r+a[0])) + (N-1-(c+a[1]))));
+    move(opts[0][0], opts[0][1]);
+  }
+  render("");
+}
+
+/* ============================================================
+   ダーツ対決（3投ずつ）
+   ============================================================ */
+function initDarts(area){
+  let scores = { 1:0, 2:0 }, throws_ = { 1:0, 2:0 };
+  let turn = 1, over = false, cursorPos = 0, dir = 1, timer = null, running = false;
+  const { msg, main, ctrl } = stdLayout(area);
+  const score = mkEl("div", "scorebar");
+  const zone = mkEl("div", "dart-zone");
+  const cur = mkEl("div", "dart-cur");
+  zone.appendChild(cur);
+  main.append(score, zone);
+  G_api = d => { if(d.game==="darts") applyThrow(d.pts); };
+  function pointsAt(pct){
+    const d = Math.abs(pct - 50);
+    if(d<=5) return 50; if(d<=12) return 30; if(d<=20) return 20; if(d<=32) return 10; return 3;
+  }
+  function startCursor(){
+    stopCursor();
+    running = true;
+    timer = setInterval(()=>{
+      cursorPos += dir * 2.4;
+      if(cursorPos>=100){ cursorPos = 100; dir = -1; }
+      if(cursorPos<=0){ cursorPos = 0; dir = 1; }
+      cur.style.left = "calc(" + cursorPos + "% - 3px)";
+    }, 30);
+  }
+  function stopCursor(){ if(timer){ clearInterval(timer); timer = null; } running = false; }
+  function render(note){
+    score.innerHTML = scorePillsHtml(scores[1], scores[2], turn, over, "点");
+    msg.textContent = note || ("残り：" + playerName(turn) + " あと " + (3 - throws_[turn]) + " 投");
+    ctrl.innerHTML = "";
+    if(!over && !inputLocked(turn)){
+      const b = mkEl("button", "btn btn-primary", "🎯 投げる");
+      b.addEventListener("click", doThrow);
+      ctrl.appendChild(b);
+      startCursor();
+    } else stopCursor();
+    if(!over) turnBanner(turn, "真ん中の赤で止めよう");
+  }
+  function doThrow(){
+    if(over || !running) return;
+    const pts = pointsAt(cursorPos);
+    netForward({t:"move", game:"darts", pts:pts});
+    applyThrow(pts);
+  }
+  function applyThrow(pts){
+    stopCursor();
+    scores[turn] += pts; throws_[turn]++;
+    const p = turn;
+    if(throws_[1]>=3 && throws_[2]>=3){
+      over = true; render(pts + "点！");
+      if(scores[1]===scores[2]) gameOver(0, "点数は " + scores[1] + " ： " + scores[2] + " の同点でした。");
+      else gameOver(scores[1]>scores[2]?1:2, "点数は " + playerName(1) + " " + scores[1] + "点 ： " + playerName(2) + " " + scores[2] + "点でした。");
+      return;
+    }
+    turn = 3 - turn;
+    render(playerName(p) + " は " + pts + " 点！");
+    if(isCpuTurn(turn)) cpuDelay(cpuThrow);
+  }
+  function cpuThrow(){
+    if(over || turn!==2) return;
+    const skill = state.diff===1 ? 26 : state.diff===2 ? 16 : 8;
+    const pct = 50 + (rand(skill * 2 + 1) - skill);
+    applyThrow(pointsAt(pct));
+  }
+  render("照準が真ん中に来たら「投げる」");
+}
+
+/* ============================================================
+   あみだバトル（4ラウンド）
+   ============================================================ */
+function initAmida(area){
+  const PRIZES = [10, 30, 50, 100];
+  let scores = { 1:0, 2:0 };
+  let round = 1, turn = 1, over = false;
+  let prizesAt = shuffle(PRIZES);          // 各レーン下の点数
+  let rungs = [];                          // 横線: {row, lane} lane-lane+1 をつなぐ
+  let usedLanes = new Set();
+  const ROWS_N = 5;
+  const { msg, main, ctrl } = stdLayout(area);
+  const score = mkEl("div", "scorebar");
+  const boardEl = mkEl("div", "amida");
+  main.append(score, boardEl);
+  G_api = d => { if(d.game==="amida") pickLane(d.lane, d.rungs, d.prizes); };
+  function newRound(){
+    prizesAt = shuffle(PRIZES); usedLanes = new Set();
+    rungs = [];
+    for(let row=0; row<ROWS_N; row++){
+      let lane = 0;
+      while(lane<3){ if(Math.random()<0.45){ rungs.push({row, lane}); lane += 2; } else lane += 1; }
+    }
+  }
+  function trace(lane){
+    let cur = lane;
+    for(let row=0; row<ROWS_N; row++){
+      if(rungs.some(g=>g.row===row && g.lane===cur)) cur++;
+      else if(rungs.some(g=>g.row===row && g.lane===cur-1)) cur--;
+    }
+    return cur;
+  }
+  function render(note, reveal){
+    score.innerHTML = scorePillsHtml(scores[1], scores[2], turn, over, "点");
+    msg.textContent = note || ("ラウンド " + round + " / 4：スタート地点を選んでください");
+    boardEl.innerHTML = "";
+    // start buttons
+    const topRow = mkEl("div"); topRow.style.display = "flex"; topRow.style.gap = "6px";
+    for(let lane=0; lane<4; lane++){
+      const b = mkEl("button", "btn btn-small " + (usedLanes.has(lane) ? "btn-ghost" : "btn-primary"), String(lane + 1));
+      b.style.flex = "1";
+      if(usedLanes.has(lane) || over || inputLocked(turn)) b.disabled = true;
+      else b.addEventListener("click", ()=>pickLane(lane, rungs, prizesAt));
+      topRow.appendChild(b);
+    }
+    boardEl.appendChild(topRow);
+    // ladder svg-like rows (text representation)
+    for(let row=0; row<ROWS_N; row++){
+      const r = mkEl("div"); r.style.display = "flex"; r.style.gap = "6px"; r.style.height = "26px"; r.style.alignItems = "center";
+      for(let lane=0; lane<4; lane++){
+        const seg = mkEl("div"); seg.style.flex = "1"; seg.style.textAlign = "center"; seg.style.borderLeft = "3px solid var(--ink2)"; seg.style.height = "100%"; seg.style.position = "relative";
+        if(rungs.some(g=>g.row===row && g.lane===lane)){ const bar = mkEl("div"); bar.style.cssText = "position:absolute;top:50%;left:0;width:calc(100% + 6px);height:4px;background:var(--ink);transform:translateY(-50%);"; seg.appendChild(bar); }
+        r.appendChild(seg);
+      }
+      boardEl.appendChild(r);
+    }
+    const botRow = mkEl("div"); botRow.style.display = "flex"; botRow.style.gap = "6px";
+    for(let lane=0; lane<4; lane++){
+      const d = mkEl("div", "", reveal ? prizesAt[lane] + "点" : "？点");
+      d.style.flex = "1"; d.style.textAlign = "center"; d.style.fontWeight = "900";
+      botRow.appendChild(d);
+    }
+    boardEl.appendChild(botRow);
+    if(!over) turnBanner(turn, "あみだの行き先を読もう");
+  }
+  function pickLane(lane, rungsIn, prizesIn){
+    if(over || usedLanes.has(lane)) return;
+    // リモート／CPU以外では現在のラダーを使う。リモート適用時は送られてきたラダーで統一
+    if(rungsIn && prizesIn && state.applyingRemote){ rungs = rungsIn; prizesAt = prizesIn; }
+    netForward({t:"move", game:"amida", lane:lane, rungs:rungs, prizes:prizesAt});
+    usedLanes.add(lane);
+    const dest = trace(lane);
+    const pts = prizesAt[dest];
+    scores[turn] += pts;
+    const p = turn;
+    if(usedLanes.size>=4){
+      if(round>=4){
+        over = true; render(playerName(p) + " は " + pts + " 点！", true);
+        if(scores[1]===scores[2]) gameOver(0, "合計は " + scores[1] + " ： " + scores[2] + " の同点でした。");
+        else gameOver(scores[1]>scores[2]?1:2, "合計は " + playerName(1) + " " + scores[1] + "点 ： " + playerName(2) + " " + scores[2] + "点でした。");
+        return;
+      }
+      round++; turn = round % 2 === 1 ? 1 : 2;
+      const note = playerName(p) + " は " + pts + " 点！次のラウンドへ。";
+      newRound();
+      render(note, false);
+    } else {
+      turn = 3 - turn;
+      render(playerName(p) + " は " + pts + " 点を取りました（行き先はレーン " + (dest+1) + "）", true);
+    }
+    if(isCpuTurn(turn) && !over) cpuDelay(cpuPick);
+  }
+  function cpuPick(){
+    if(over || turn!==2) return;
+    const avail = [0,1,2,3].filter(l=>!usedLanes.has(l));
+    if(!avail.length) return;
+    let lane;
+    if(state.diff===1) lane = avail[rand(avail.length)];
+    else { // 行き先を読んで最良を選ぶ
+      let best = -1; lane = avail[0];
+      for(const l of avail){ const pts = prizesAt[trace(l)]; if(pts>best){ best = pts; lane = l; } }
+      if(state.diff===2 && Math.random()<0.3) lane = avail[rand(avail.length)];
+    }
+    pickLane(lane, rungs, prizesAt);
+  }
+  newRound();
+  render("");
+}
+
+/* ============================================================
+   反応スピード対決（5回ずつ）
+   ============================================================ */
+function initReaction(area){
+  let times = { 1:[], 2:[] };
+  let turn = 1, over = false, phase = "idle"; // idle -> waiting -> go
+  let waitTimer = null, goTime = 0;
+  const { msg, main, ctrl } = stdLayout(area);
+  const score = mkEl("div", "scorebar");
+  const stage = mkEl("div", "big-num");
+  main.append(score, stage);
+  G_api = d => { if(d.game==="reaction") recordTime(d.ms); };
+  function total(p){ return times[p].reduce((a,b)=>a+b, 0); }
+  function render(note){
+    score.innerHTML = scorePillsHtml(total(1), total(2), turn, over, "ms");
+    stage.textContent = phase==="go" ? "GO!" : phase==="waiting" ? "待って…" : "準備OK";
+    stage.style.color = phase==="go" ? "var(--green)" : phase==="waiting" ? "var(--accent)" : "";
+    msg.textContent = note || (playerName(turn) + " の番：" + (times[turn].length + 1) + " 回目（全5回）");
+    ctrl.innerHTML = "";
+    if(!over && !inputLocked(turn)){
+      if(phase==="idle"){
+        const b = mkEl("button", "btn btn-primary", "▶ スタート");
+        b.addEventListener("click", startWait);
+        ctrl.appendChild(b);
+      } else {
+        const b = mkEl("button", "btn btn-primary", phase==="go" ? "押す！" : "まだ…");
+        b.style.minWidth = "160px"; b.style.minHeight = "64px"; b.style.fontSize = "1.3rem";
+        b.addEventListener("click", press);
+        ctrl.appendChild(b);
+      }
+    }
+    if(!over) turnBanner(turn, "GO!が出たら即押し");
+  }
+  function startWait(){
+    phase = "waiting"; render("「GO!」を待って…");
+    waitTimer = setTimeout(()=>{ phase = "go"; goTime = Date.now(); render("今だ！"); }, 900 + rand(2200));
+  }
+  function press(){
+    if(phase==="waiting"){
+      clearTimeout(waitTimer); phase = "idle";
+      netForward({t:"move", game:"reaction", ms:1000});
+      recordTime(1000, "フライング！+1000ms");
+      return;
+    }
+    if(phase==="go"){
+      const ms = Date.now() - goTime;
+      phase = "idle";
+      netForward({t:"move", game:"reaction", ms:ms});
+      recordTime(ms);
+    }
+  }
+  function recordTime(ms, noteOverride){
+    times[turn].push(ms);
+    const p = turn;
+    if(times[1].length>=5 && times[2].length>=5){
+      over = true; render();
+      if(total(1)===total(2)) gameOver(0, "合計タイムは同点でした。");
+      else gameOver(total(1)<total(2)?1:2, "合計タイムは " + playerName(1) + " " + total(1) + "ms ： " + playerName(2) + " " + total(2) + "ms でした。");
+      return;
+    }
+    turn = 3 - turn; phase = "idle";
+    render(noteOverride || (playerName(p) + " は " + ms + " ms でした。"));
+    if(isCpuTurn(turn)) cpuDelay(cpuPlay);
+  }
+  function cpuPlay(){
+    if(over || turn!==2) return;
+    const base = state.diff===1 ? 380 : state.diff===2 ? 300 : 235;
+    recordTime(base + rand(140));
+  }
+  render("");
+}
+
+/* ============================================================
+   メモリーシーケンス
+   ============================================================ */
+function initSimon(area){
+  const COLORS = ["#E8503A", "#2E7FC2", "#3E9B4F", "#F2B705"];
+  let seq = [rand(4)];
+  let seqReady = state.mode!=="p2p" || state.myPlayer===1;
+  let turn = 1, over = false, phase = "show"; // show -> input -> add
+  let inputIdx = 0;
+  const { msg, main, ctrl } = stdLayout(area);
+  const pads = mkEl("div", "simon");
+  const padBtns = [];
+  for(let i=0;i<4;i++){
+    const b = mkEl("button"); b.type = "button"; b.style.background = COLORS[i];
+    b.addEventListener("click", ()=>padPress(i));
+    pads.appendChild(b); padBtns.push(b);
+  }
+  main.append(pads);
+  state.netGameHandler = d => { if(d.t==="seqInit"){ seq = d.seq; seqReady = true; render("相手とシーケンスを共有しました。"); } };
+  if(state.mode==="p2p" && state.myPlayer===1) netSend({ t:"seqInit", seq:seq });
+  G_api = d => { if(d.game!=="simon") return; if(d.act==="press") remotePress(d.i); else if(d.act==="add") remoteAdd(d.i); else if(d.act==="fail") remoteFail(); };
+  function render(note){
+    msg.textContent = note || (phase==="show" ? "順番を覚えて…" : phase==="input" ? "順番どおりに押してください（あと " + (seq.length - inputIdx) + " 個）" : "最後に好きな色を1つ追加してください");
+    ctrl.innerHTML = "";
+    if(phase==="show" && !over && seqReady){
+      const b = mkEl("button", "btn btn-primary", "▶ 順番を見る");
+      b.addEventListener("click", playSeq);
+      ctrl.appendChild(b);
+    }
+    if(!over) turnBanner(turn, "長さ " + seq.length + " のシーケンス");
+  }
+  function playSeq(){
+    let i = 0;
+    const step = ()=>{
+      if(i>0) padBtns[seq[i-1]].classList.remove("lit");
+      if(i>=seq.length){ phase = "input"; inputIdx = 0; render(""); return; }
+      padBtns[seq[i]].classList.add("lit");
+      i++; setTimeout(step, 480);
+    };
+    step();
+  }
+  function padPress(i){
+    if(over || !seqReady || inputLocked(turn)) return;
+    if(phase==="input"){
+      netForward({t:"move", game:"simon", act:"press", i:i});
+      remotePress(i);
+    } else if(phase==="add"){
+      netForward({t:"move", game:"simon", act:"add", i:i});
+      remoteAdd(i);
+    }
+  }
+  function remotePress(i){
+    flash(i);
+    if(i!==seq[inputIdx]){
+      netForward({t:"move", game:"simon", act:"fail"});
+      remoteFail();
+      return;
+    }
+    inputIdx++;
+    if(inputIdx>=seq.length){ phase = "add"; render("正解！最後に1色追加して相手へ渡そう。"); if(isCpuTurn(turn)) cpuDelay(cpuAdd); }
+    else render("");
+  }
+  function remoteAdd(i){
+    flash(i);
+    seq.push(i);
+    phase = "show"; inputIdx = 0;
+    turn = 3 - turn;
+    render(playerName(3-turn) + " が1色追加しました。順番を見て再現してください。");
+    if(isCpuTurn(turn)) cpuDelay(cpuPlay);
+  }
+  function remoteFail(){
+    if(over) return;
+    over = true;
+    gameOver(3 - turn, playerName(turn) + " が順番を間違えました（長さ " + seq.length + " まで進みました）。");
+  }
+  function flash(i){ padBtns[i].classList.add("lit"); setTimeout(()=>padBtns[i].classList.remove("lit"), 260); }
+  function cpuPlay(){
+    if(over || turn!==2) return;
+    playSeq();
+    const errRate = state.diff===1 ? 0.3 : state.diff===2 ? 0.15 : 0.05;
+    let k = 0;
+    const step = ()=>{
+      if(over || turn!==2 || phase!=="input") return;
+      if(k>=seq.length) return;
+      const wrong = Math.random() < errRate / Math.max(1, seq.length) && k>0;
+      const i = wrong ? (seq[k] + 1 + rand(3)) % 4 : seq[k];
+      k++;
+      padPress(i);
+      if(phase==="input") setTimeout(step, 420);
+    };
+    setTimeout(step, seq.length * 480 + 500);
+  }
+  function cpuAdd(){ if(!over && turn===2 && phase==="add") padPress(rand(4)); }
+  render("最初のシーケンスは長さ1です");
+}
+
+/* ============================================================
+   トランプ戦争（13回戦）
+   ============================================================ */
+function initWar(area){
+  let deck = shuffle(Array.from({length:26}, (_,i)=>(i % 13) + 1));
+  let scores = { 1:0, 2:0 };
+  let round = 0, over = false, deckReady = state.mode!=="p2p" || state.myPlayer===1;
+  const { msg, main, ctrl } = stdLayout(area);
+  const score = mkEl("div", "scorebar");
+  const stage = mkEl("div", "big-num");
+  main.append(score, stage);
+  state.netGameHandler = d => { if(d.t==="deck"){ deck = d.deck; deckReady = true; render("相手と山札を共有しました。"); } };
+  if(state.mode==="p2p" && state.myPlayer===1) netSend({ t:"deck", deck:deck });
+  G_api = d => { if(d.game==="war") flip(); };
+  function cardName(v){ return v===1 ? "A" : v===11 ? "J" : v===12 ? "Q" : v===13 ? "K" : String(v); }
+  function render(note){
+    score.innerHTML = scorePillsHtml(scores[1], scores[2], 0, over, "点");
+    msg.textContent = note || (deckReady ? "「めくる」で同時に出します（" + (round+1) + " / 13回戦）" : "相手の接続と山札の共有を待っています…");
+    ctrl.innerHTML = "";
+    if(!over && deckReady && !(state.mode==="p2p" && !state.net.connected)){
+      const b = mkEl("button", "btn btn-primary", "🃏 めくる");
+      b.addEventListener("click", ()=>{ netForward({t:"move", game:"war"}); flip(); });
+      ctrl.appendChild(b);
+    }
+  }
+  function flip(){
+    if(over || deck.length<2) return;
+    const a = deck.pop(), b = deck.pop();
+    round++;
+    let note;
+    if(a>b){ scores[1] += 2; note = playerName(1) + " の勝ち！"; }
+    else if(b>a){ scores[2] += 2; note = playerName(2) + " の勝ち！"; }
+    else note = "引き分け（戦争なし）。";
+    stage.textContent = cardName(a) + " vs " + cardName(b);
+    if(round>=13 || deck.length<2){
+      over = true; render(note);
+      if(scores[1]===scores[2]) gameOver(0, "点数は " + scores[1] + " ： " + scores[2] + " の同点でした。");
+      else gameOver(scores[1]>scores[2]?1:2, "点数は " + playerName(1) + " " + scores[1] + "点 ： " + playerName(2) + " " + scores[2] + "点でした。");
+      return;
+    }
+    render(note);
+  }
+  render("");
+}
+
+/* ============================================================
+   ダイスポーカー（5回ずつ）
+   ============================================================ */
+function initDicePoker(area){
+  let scores = { 1:0, 2:0 }, rolls = { 1:0, 2:0 };
+  let turn = 1, over = false;
+  const { msg, main, ctrl } = stdLayout(area);
+  const score = mkEl("div", "scorebar");
+  const diceEl = mkEl("div", "dice-row");
+  main.append(score, diceEl);
+  G_api = d => { if(d.game==="dicepoker") rollDice(d.v); };
+  function handScore(v){
+    const s = v.slice().sort((a,b)=>a-b);
+    if(s[0]===s[1] && s[1]===s[2]) return { pts: s[0] * 10, name: s[0] + "のゾロ目" };
+    if(s[1]===s[0]+1 && s[2]===s[1]+1) return { pts: 30, name: "ストレート" };
+    if(s[0]===s[1] || s[1]===s[2] || s[0]===s[2]) return { pts: 10, name: "ワンペア" };
+    return { pts: Math.max(...s), name: "役なし（最大の目）" };
+  }
+  function render(note, vals){
+    score.innerHTML = scorePillsHtml(scores[1], scores[2], turn, over, "点");
+    diceEl.textContent = vals ? vals.map(diceFace).join(" ") : "🎲🎲🎲";
+    msg.textContent = note || ("残り：" + playerName(1) + " " + (5 - rolls[1]) + "回 ／ " + playerName(2) + " " + (5 - rolls[2]) + "回");
+    ctrl.innerHTML = "";
+    if(!over && !inputLocked(turn)){
+      const b = mkEl("button", "btn btn-primary", "🎲 3個振る");
+      b.addEventListener("click", ()=>rollDice([1 + rand(6), 1 + rand(6), 1 + rand(6)]));
+      ctrl.appendChild(b);
+    }
+    if(!over) turnBanner(turn, "ゾロ目・ストレートを狙おう");
+  }
+  function rollDice(vals){
+    if(over) return;
+    netForward({t:"move", game:"dicepoker", v:vals});
+    const h = handScore(vals);
+    scores[turn] += h.pts; rolls[turn]++;
+    const p = turn;
+    if(rolls[1]>=5 && rolls[2]>=5){
+      over = true; render("", vals);
+      if(scores[1]===scores[2]) gameOver(0, "合計は " + scores[1] + " ： " + scores[2] + " の同点でした。");
+      else gameOver(scores[1]>scores[2]?1:2, "合計は " + playerName(1) + " " + scores[1] + "点 ： " + playerName(2) + " " + scores[2] + "点でした。");
+      return;
+    }
+    turn = 3 - turn;
+    render(playerName(p) + " は " + h.name + " で +" + h.pts + " 点！", vals);
+    if(isCpuTurn(turn)) cpuDelay(()=>rollDice([1 + rand(6), 1 + rand(6), 1 + rand(6)]));
+  }
+  render("交互に5回ずつ振ります");
 }
 </script>
 </body>
