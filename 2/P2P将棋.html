@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>P2P将棋</title>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;800&display=swap" rel="stylesheet">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#dde4ea;--ink:#1c2733;--panel:#f4f6f8;--line:#c3ccd5;--wood:#d9a95a;--grid:#4a3417;--sel:#8fb339;--red:#b3261e;--btn:#1f3a5a;--btnt:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#16202c;--ink:#e6ebf0;--panel:#1f2b3a;--line:#33445a;--btn:#8fb2d8;--btnt:#10202f}}
+:root[data-theme="dark"]{--bg:#16202c;--ink:#e6ebf0;--panel:#1f2b3a;--line:#33445a;--btn:#8fb2d8;--btnt:#10202f}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Shippori Mincho","Hiragino Mincho ProN","Yu Mincho",serif;line-height:1.6}
+main{max-width:600px;margin:0 auto;padding:16px 12px 32px}
+h1{font-size:1.5rem;letter-spacing:.15em;margin:0 0 12px}
+section{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+p{margin:.4em 0}
+button{font:inherit;font-weight:500;background:var(--btn);color:var(--btnt);border:0;border-radius:6px;padding:9px 14px;cursor:pointer;margin:4px 6px 4px 0}
+button:focus-visible,textarea:focus-visible{outline:3px solid var(--sel);outline-offset:2px}
+button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+textarea{width:100%;height:84px;font:12px/1.3 monospace;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:6px;word-break:break-all}
+#note{color:var(--red);min-height:1.5em;font-size:.9rem}
+#status{font-weight:800;font-size:1.1rem;margin-bottom:6px;min-height:1.7em}
+#who{font-weight:500;font-size:.85rem;opacity:.75;margin-left:8px}
+.hand{display:flex;flex-wrap:wrap;align-items:center;gap:4px;min-height:56px;padding:4px 0}
+.hand .lb{font-size:.8rem;opacity:.75;margin-right:6px}
+.hp{position:relative;background:none;border:2px solid transparent;border-radius:6px;padding:2px;margin:0}
+.hp.sel{border-color:var(--sel)}
+.hp i{position:absolute;right:-2px;bottom:-2px;background:var(--ink);color:var(--bg);font-style:normal;font-size:.75rem;border-radius:10px;min-width:18px;height:18px;line-height:18px;text-align:center}
+#board{container-type:inline-size;display:grid;grid-template-columns:repeat(9,1fr);width:min(100%,560px);aspect-ratio:1;margin:0 auto;background:var(--wood);border:3px solid var(--grid)}
+.sq{position:relative;border:.5px solid var(--grid);display:grid;place-items:center;cursor:pointer;aspect-ratio:1;min-width:0}
+.sq.last{background:rgba(179,38,30,.22)}
+.sq.chk{background:rgba(179,38,30,.5)}
+.sq.sel{background:rgba(143,179,57,.6)}
+.sq.tg::after{content:"";position:absolute;width:30%;height:30%;border-radius:50%;background:var(--sel);pointer-events:none}
+.sq.tg.cap::after{width:88%;height:88%;background:none;border:3px solid var(--sel)}
+.pc{width:82%;height:90%;background:linear-gradient(#f5e2b0,#e4c680);clip-path:polygon(50% 0,86% 16%,100% 100%,0 100%,14% 16%);display:grid;place-items:center;font-weight:800;font-size:5.6cqw;color:#1b1208;padding-top:14%;line-height:1}
+.pc.pro{color:var(--red)}
+.pc.flip{transform:rotate(180deg);padding-top:0;padding-bottom:14%}
+.hp .pc{width:38px;height:42px;font-size:20px}
+.row{margin-top:10px}
+#pm{position:fixed;inset:0;background:rgba(0,0,0,.5);display:grid;place-items:center;z-index:5}
+#pm div{background:var(--panel);padding:18px;border-radius:10px;text-align:center}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+<h1>P2P将棋</h1>
+<section id="lobby">
+  <p>サーバーなしで、ブラウザ同士が直接つながって対戦します。コードを相手にLINEなどで送り合って接続してください。</p>
+  <button id="bHost">部屋を作る（先手）</button>
+  <button id="bGuest">参加する（後手）</button>
+  <button id="bLocal" class="ghost">1台で対戦</button>
+  <div id="hostBox" hidden>
+    <p>1. 招待コードを相手に送る</p>
+    <textarea id="offer" readonly placeholder="作成中…"></textarea>
+    <button id="cpOffer" class="ghost">コピー</button>
+    <p>2. 相手の返信コードを貼り付ける</p>
+    <textarea id="ansIn"></textarea>
+    <button id="doConn">接続する</button>
+  </div>
+  <div id="guestBox" hidden>
+    <p>1. 相手の招待コードを貼り付ける</p>
+    <textarea id="offIn"></textarea>
+    <button id="mkAns">返信コードを作る</button>
+    <p>2. 返信コードを相手に送る。相手が接続すると対局が始まります。</p>
+    <textarea id="answer" readonly></textarea>
+    <button id="cpAns" class="ghost">コピー</button>
+  </div>
+  <div id="note"></div>
+</section>
+<section id="game" hidden>
+  <div id="status"></div>
+  <div class="hand" id="hTop"></div>
+  <div id="board"></div>
+  <div class="hand" id="hBot"></div>
+  <div class="row"><button id="resign">投了</button><button id="again" class="ghost">もう一局</button><button id="quit" class="ghost">やめる</button></div>
+  <div id="note2" style="color:var(--red)"></div>
+</section>
+</main>
+<div id="pm" hidden><div><p>成りますか？</p><button id="pY">成る</button><button id="pN" class="ghost">成らない</button></div></div>
+<script>
+const $=id=>document.getElementById(id);
+const KJ={P:'歩',L:'香',N:'桂',S:'銀',G:'金',B:'角',R:'飛','+P':'と','+L':'杏','+N':'圭','+S':'全','+B':'馬','+R':'龍'};
+const PRO={P:'+P',L:'+L',N:'+N',S:'+S',B:'+B',R:'+R'};
+const UNP=t=>t[0]=='+'?t[1]:t;
+const ok=(y,x)=>y>=0&&y<9&&x>=0&&x<9;
+const zone=(y,o)=>o?y>=6:y<=2;
+const forced=(t,y,o)=>{const l=o?8:0;return(t=='P'||t=='L')?y==l:t=='N'?(y==l||y==(o?7:1)):false};
+let S,sel=null,over=false,win=null,endMsg='',chk=false,mode='local',me=0;
+
+function init(){
+  const row=(s,o)=>[...s].map(t=>t=='.'?null:[t,o]);
+  const e=()=>Array(9).fill(null);
+  return{b:[row('LNSGKGSNL',1),row('.B.....R.',1),row('PPPPPPPPP',1),e(),e(),e(),row('PPPPPPPPP',0),row('.R.....B.',0),row('LNSGKGSNL',0)],h:[{},{}],t:0,last:null};
+}
+function targets(b,r,c){
+  const[t,o]=b[r][c],f=o?1:-1,out=[];
+  const orth=[[1,0],[-1,0],[0,1],[0,-1]],dia=[[1,1],[1,-1],[-1,1],[-1,-1]];
+  const gold=[[f,-1],[f,0],[f,1],[0,-1],[0,1],[-f,0]];
+  let st=[],sl=[];
+  switch(t){
+    case'P':st=[[f,0]];break;
+    case'L':sl=[[f,0]];break;
+    case'N':st=[[2*f,-1],[2*f,1]];break;
+    case'S':st=[[f,-1],[f,0],[f,1],[-f,-1],[-f,1]];break;
+    case'G':case'+P':case'+L':case'+N':case'+S':st=gold;break;
+    case'B':sl=dia;break;
+    case'R':sl=orth;break;
+    case'K':st=[...orth,...dia];break;
+    case'+B':sl=dia;st=orth;break;
+    case'+R':sl=orth;st=dia;break;
+  }
+  for(const[d,e]of st){const y=r+d,x=c+e;if(ok(y,x)&&(!b[y][x]||b[y][x][1]!=o))out.push([y,x])}
+  for(const[d,e]of sl){let y=r+d,x=c+e;while(ok(y,x)){if(!b[y][x])out.push([y,x]);else{if(b[y][x][1]!=o)out.push([y,x]);break}y+=d;x+=e}}
+  return out;
+}
+function inCheck(b,o){
+  let k=null;
+  for(let r=0;r<9;r++)for(let c=0;c<9;c++){const p=b[r][c];if(p&&p[0]=='K'&&p[1]==o)k=[r,c]}
+  if(!k)return false;
+  for(let r=0;r<9;r++)for(let c=0;c<9;c++){const p=b[r][c];
+    if(p&&p[1]!=o&&targets(b,r,c).some(([y,x])=>y==k[0]&&x==k[1]))return true}
+  return false;
+}
+function apply(s,m){
+  const b=s.b.map(r=>r.slice()),h=[{...s.h[0]},{...s.h[1]}],o=s.t;
+  if(m.drop){b[m.to[0]][m.to[1]]=[m.drop,o];h[o][m.drop]--}
+  else{
+    const[fy,fx]=m.from,[y,x]=m.to,p=b[fy][fx],cap=b[y][x];
+    if(cap){const u=UNP(cap[0]);h[o][u]=(h[o][u]||0)+1}
+    b[fy][fx]=null;b[y][x]=[m.pro?PRO[p[0]]:p[0],o];
+  }
+  return{b,h,t:1-o,last:m.to};
+}
+function movesFrom(s,r,c){
+  const p=s.b[r][c];if(!p||p[1]!=s.t)return[];
+  const res=[];
+  for(const[y,x]of targets(s.b,r,c)){
+    const can=PRO[p[0]]&&(zone(y,s.t)||zone(r,s.t));
+    const opts=can?(forced(p[0],y,s.t)?[true]:[false,true]):[false];
+    for(const pro of opts){
+      const m={from:[r,c],to:[y,x],pro};
+      if(!inCheck(apply(s,m).b,s.t))res.push(m);
+    }
+  }
+  return res;
+}
+function drops(s,fast){
+  const o=s.t,res=[];
+  for(const t in s.h[o]){
+    if(!s.h[o][t])continue;
+    for(let y=0;y<9;y++)for(let x=0;x<9;x++){
+      if(s.b[y][x]||forced(t,y,o))continue;
+      if(t=='P'){let np=false;for(let i=0;i<9;i++){const q=s.b[i][x];if(q&&q[0]=='P'&&q[1]==o)np=true}if(np)continue}
+      const m={drop:t,to:[y,x]},n=apply(s,m);
+      if(inCheck(n.b,o))continue;
+      if(!fast&&t=='P'&&inCheck(n.b,1-o)&&!hasMove(n))continue; // 打ち歩詰め
+      res.push(m);if(fast)return res;
+    }
+  }
+  return res;
+}
+function hasMove(s){
+  for(let r=0;r<9;r++)for(let c=0;c<9;c++)if(movesFrom(s,r,c).length)return true;
+  return drops(s,true).length>0;
+}
+function allMoves(s){
+  const a=[];for(let r=0;r<9;r++)for(let c=0;c<9;c++)a.push(...movesFrom(s,r,c));
+  return a.concat(drops(s));
+}
+const key=m=>[m.from||'',m.to,m.drop||'',m.pro?1:0].join('|');
+
+/* ---- 画面 ---- */
+const lab=o=>o?'後手':'先手';
+const mine=()=>mode=='local'||S.t==me;
+function pc(p,bot){
+  const e=document.createElement('div');
+  e.className='pc'+(p[0][0]=='+'?' pro':'')+(p[1]!=bot?' flip':'');
+  e.textContent=p[0]=='K'?(p[1]?'王':'玉'):KJ[p[0]];
+  return e;
+}
+function hand(el,o,bot){
+  el.innerHTML='<span class="lb">'+lab(o)+'の持駒</span>';
+  for(const t of['R','B','G','S','N','L','P']){
+    const n=S.h[o][t];if(!n)continue;
+    const b=document.createElement('button');
+    b.className='hp'+(sel&&sel.drop==t&&S.t==o?' sel':'');
+    b.append(pc([t,o],bot));
+    if(n>1){const k=document.createElement('i');k.textContent=n;b.append(k)}
+    b.onclick=()=>{if(over||!mine()||o!=S.t)return;sel={drop:t,list:drops(S).filter(m=>m.drop==t)};render()};
+    el.append(b);
+  }
+}
+function render(){
+  const flip=mode=='net'&&me==1,bot=flip?1:0,B=$('board');
+  B.innerHTML='';
+  const tg=new Set((sel?sel.list:[]).map(m=>m.to.join()));
+  for(let i=0;i<9;i++)for(let j=0;j<9;j++){
+    const r=flip?8-i:i,c=flip?8-j:j,p=S.b[r][c],d=document.createElement('div');
+    d.className='sq';
+    if(sel&&sel.from&&sel.from[0]==r&&sel.from[1]==c)d.classList.add('sel');
+    if(tg.has(r+','+c)){d.classList.add('tg');if(p)d.classList.add('cap')}
+    if(S.last&&S.last[0]==r&&S.last[1]==c)d.classList.add('last');
+    if(chk&&p&&p[0]=='K'&&p[1]==S.t)d.classList.add('chk');
+    if(p)d.append(pc(p,bot));
+    d.onclick=()=>click(r,c);
+    B.append(d);
+  }
+  hand($('hTop'),1-bot,bot);hand($('hBot'),bot,bot);
+  const net=mode=='net';
+  $('status').innerHTML=(over
+    ?endMsg+'　'+(net?(win==me?'あなたの勝ち':'あなたの負け'):lab(win)+'の勝ち')
+    :lab(S.t)+'の番'+(net?(S.t==me?'（あなた）':'（相手）'):'')+(chk?'　王手':''))
+    +(net?'<span id="who">あなたは'+lab(me)+'</span>':'');
+}
+function askPro(){
+  $('pm').hidden=false;
+  return new Promise(res=>{$('pY').onclick=()=>{$('pm').hidden=true;res(true)};$('pN').onclick=()=>{$('pm').hidden=true;res(false)}});
+}
+function click(r,c){
+  if(over||!mine())return;
+  if(sel){
+    const ms=sel.list.filter(m=>m.to[0]==r&&m.to[1]==c);
+    if(ms.length==1)return commit(ms[0]);
+    if(ms.length>1)return askPro().then(y=>commit(ms.find(m=>m.pro==y)));
+  }
+  const p=S.b[r][c];
+  sel=(p&&p[1]==S.t)?{from:[r,c],list:movesFrom(S,r,c)}:null;
+  render();
+}
+function commit(m,remote){
+  sel=null;S=apply(S,m);
+  if(mode=='net'&&!remote)send({m});
+  chk=inCheck(S.b,S.t);
+  if(!hasMove(S)){over=true;win=1-S.t;endMsg='詰み'}
+  render();
+}
+function reset(){S=init();sel=null;over=false;win=null;chk=false;endMsg=''}
+function resign(){
+  if(over)return;
+  if(mode=='net'){send({resign:1});win=1-me}else win=1-S.t;
+  over=true;endMsg='投了';render();
+}
+$('resign').onclick=resign;
+$('quit').onclick=()=>location.reload();
+$('again').onclick=()=>{if(mode=='net'){send({again:1});me=1-me}reset();render()};
+function start(m,side){mode=m;me=side||0;reset();$('lobby').hidden=true;$('game').hidden=false;render()}
+$('bLocal').onclick=()=>start('local');
+
+/* ---- P2P (WebRTC・手動シグナリング) ---- */
+let pc_,dc;
+const ICE={iceServers:[{urls:['stun:stun.l.google.com:19302','stun:stun.cloudflare.com:3478']}]};
+const note=t=>{$('note').textContent=t;$('note2').textContent=t};
+async function pack(s){
+  const st=new Blob([s]).stream().pipeThrough(new CompressionStream('deflate-raw'));
+  return btoa(String.fromCharCode(...new Uint8Array(await new Response(st).arrayBuffer())));
+}
+async function unpack(t){
+  const bin=Uint8Array.from(atob(t.trim()),c=>c.charCodeAt(0));
+  return await new Response(new Blob([bin]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text();
+}
+function mkPc(){
+  pc_=new RTCPeerConnection(ICE);
+  pc_.onconnectionstatechange=()=>{if(['failed','disconnected','closed'].includes(pc_.connectionState))note('相手との接続が切れました')};
+}
+function gathered(){
+  return new Promise(res=>{
+    if(pc_.iceGatheringState=='complete')return res();
+    pc_.onicegatheringstatechange=()=>pc_.iceGatheringState=='complete'&&res();
+    setTimeout(res,5000);
+  });
+}
+function wire(ch,side){
+  ch.onopen=()=>start('net',side);
+  ch.onmessage=e=>recv(JSON.parse(e.data));
+  ch.onclose=()=>note('相手との接続が切れました');
+}
+function send(o){try{dc.send(JSON.stringify(o))}catch(e){note('送信できませんでした')}}
+function recv(d){
+  if(d.m){
+    if(over||S.t==me)return;
+    const m=allMoves(S).find(x=>key(x)==key(d.m));
+    if(m)commit(m,true);
+  }else if(d.resign){over=true;win=me;endMsg='相手が投了';render()}
+  else if(d.again){me=1-me;reset();render()}
+}
+async function copy(id){
+  const t=$(id);t.select();
+  try{await navigator.clipboard.writeText(t.value)}catch(e){document.execCommand('copy')}
+}
+$('bHost').onclick=async()=>{
+  $('hostBox').hidden=false;$('guestBox').hidden=true;note('');
+  try{
+    mkPc();dc=pc_.createDataChannel('shogi');wire(dc,0);
+    await pc_.setLocalDescription(await pc_.createOffer());await gathered();
+    $('offer').value=await pack(JSON.stringify(pc_.localDescription));
+  }catch(e){note('コードを作れませんでした: '+e.message)}
+};
+$('doConn').onclick=async()=>{
+  try{await pc_.setRemoteDescription(JSON.parse(await unpack($('ansIn').value)));note('接続中…')}
+  catch(e){note('返信コードが正しくありません')}
+};
+$('bGuest').onclick=()=>{$('guestBox').hidden=false;$('hostBox').hidden=true;note('')};
+$('mkAns').onclick=async()=>{
+  try{
+    mkPc();pc_.ondatachannel=e=>{dc=e.channel;wire(dc,1)};
+    await pc_.setRemoteDescription(JSON.parse(await unpack($('offIn').value)));
+    await pc_.setLocalDescription(await pc_.createAnswer());await gathered();
+    $('answer').value=await pack(JSON.stringify(pc_.localDescription));note('');
+  }catch(e){note('招待コードが正しくありません')}
+};
+$('cpOffer').onclick=()=>copy('offer');
+$('cpAns').onclick=()=>copy('answer');
+</script>
+</body>
+</html>
