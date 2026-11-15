@@ -1,1 +1,1504 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" href="data:," />
+<title>友達対戦ゲーム ダウンロード版</title>
+<style>
+  :root{
+    --bg:#FFF7EA; --bg2:#FFFDF7; --card:#FFFFFF; --ink:#2B2118; --ink2:#6B5B4A;
+    --line:#F0DFC8; --accent:#E8503A; --accent-ink:#FFFFFF;
+    --teal:#0E9594; --amber:#E8930C; --sky:#2E7FC2; --rose:#D84E7E; --terra:#C96F2E; --green:#3E9B4F;
+    --p1:#E8503A; --p2:#2E7FC2;
+    --shadow:0 2px 10px rgba(120,72,20,.10), 0 10px 28px rgba(120,72,20,.08);
+    --radius:18px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#171310; --bg2:#1F1A16; --card:#2A2320; --ink:#F7EBDD; --ink2:#C4B09A;
+      --line:#453830; --shadow:0 2px 10px rgba(0,0,0,.4), 0 10px 28px rgba(0,0,0,.35);
+    }
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Hiragino Maru Gothic ProN","Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,system-ui,sans-serif;
+    line-height:1.6;
+  }
+  button,[role="button"],select,input:not([type="checkbox"]){min-height:2.25rem;}
+  button{font:inherit; cursor:pointer; border:none; background:none; color:inherit;}
+  .wrap{max-width:1020px; margin:0 auto; padding:20px 16px 64px;}
+  h1{font-size:clamp(1.7rem,5.4vw,2.6rem); line-height:1.25; margin:0; letter-spacing:.02em;}
+  h2{font-size:1.25rem; margin:0 0 12px; display:flex; align-items:center; gap:8px;}
+  h2 .num{display:inline-grid; place-items:center; width:28px; height:28px; border-radius:50%; background:var(--accent); color:#fff; font-size:.95rem; flex:none;}
+  .lead{color:var(--ink2); margin:10px 0 0; font-size:1rem; max-width:44em;}
+  section{margin-top:34px;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow);}
 
+  /* ---------- hero ---------- */
+  .hero{padding:6px 2px 0;}
+  .badges{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px;}
+  .badge{display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:999px; background:var(--card); border:1px solid var(--line); font-size:.88rem; font-weight:700;}
+  .badge .dot{width:9px; height:9px; border-radius:50%;}
+  .dl-row{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:18px;}
+  .btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:10px 20px; border-radius:999px; font-weight:800; font-size:1rem; border:2px solid transparent; transition:transform .08s ease, filter .15s ease;}
+  .btn:active{transform:scale(.97);}
+  .btn-primary{background:var(--accent); color:var(--accent-ink); box-shadow:0 6px 16px rgba(232,80,58,.35);}
+  .btn-ghost{background:var(--card); border-color:var(--line); color:var(--ink);}
+  .btn-small{padding:7px 14px; font-size:.9rem; min-height:2.25rem;}
+  .dl-note{font-size:.85rem; color:var(--ink2);}
+
+  /* ---------- players ---------- */
+  .players{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  @media (max-width:640px){ .players{grid-template-columns:1fr;} }
+  .player{padding:16px;}
+  .player-head{display:flex; align-items:center; gap:10px; margin-bottom:10px;}
+  .avatar{width:44px; height:44px; border-radius:50%; display:grid; place-items:center; font-size:1.35rem; color:#fff; flex:none;}
+  .av1{background:var(--p1);} .av2{background:var(--p2);}
+  .player-head b{font-size:1.05rem;}
+  .player-head span{display:block; font-size:.8rem; color:var(--ink2); font-weight:400;}
+  .name-input{width:100%; padding:10px 12px; font:inherit; font-size:1.05rem; font-weight:700; border:2px solid var(--line); border-radius:12px; background:var(--bg2); color:var(--ink);}
+  .name-input:focus{outline:none; border-color:var(--amber);}
+  .chips{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;}
+  .chip{padding:6px 11px; border-radius:999px; background:var(--bg); border:1.5px solid var(--line); font-size:.85rem; font-weight:700; min-height:2.25rem;}
+  .chip:active{transform:scale(.95);}
+  .chip.picked1{background:var(--p1); border-color:var(--p1); color:#fff;}
+  .chip.picked2{background:var(--p2); border-color:var(--p2); color:#fff;}
+
+  /* ---------- game grid ---------- */
+  .filters{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;}
+  .filter{padding:8px 16px; border-radius:999px; background:var(--card); border:2px solid var(--line); font-weight:800; font-size:.92rem;}
+  .filter.on{background:var(--ink); color:var(--bg); border-color:var(--ink);}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:14px;}
+  .game-card{padding:18px; display:flex; flex-direction:column; gap:10px;}
+  .game-top{display:flex; gap:14px; align-items:flex-start;}
+  .tile{width:64px; height:64px; border-radius:16px; flex:none; display:grid; place-items:center; color:#fff;}
+  .tile svg{width:40px; height:40px;}
+  .game-card h3{margin:0; font-size:1.2rem; line-height:1.3;}
+  .game-card .cat{font-size:.78rem; font-weight:800; letter-spacing:.06em;}
+  .game-card p{margin:0; color:var(--ink2); font-size:.92rem; flex:1;}
+  .meta{display:flex; flex-wrap:wrap; gap:6px 14px; font-size:.83rem; color:var(--ink2); font-weight:700;}
+  .meta .stars{color:var(--amber); letter-spacing:.1em;}
+  .play-btn{width:100%; padding:12px; border-radius:14px; color:#fff; font-weight:800; font-size:1.02rem;}
+  .play-btn:active{transform:scale(.98);}
+
+  /* ---------- steps / stats ---------- */
+  .steps{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+  @media (max-width:640px){ .steps{grid-template-columns:1fr;} }
+  .step{padding:16px;}
+  .step b{display:block; font-size:1rem; margin-bottom:4px;}
+  .step p{margin:0; color:var(--ink2); font-size:.9rem;}
+  .step .n{font-size:1.5rem; font-weight:900; color:var(--accent);}
+  .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
+  @media (max-width:640px){ .stats{grid-template-columns:repeat(2,1fr);} }
+  .stat{padding:14px 16px; text-align:center;}
+  .stat .v{font-size:1.7rem; font-weight:900; line-height:1.2;}
+  .stat .l{font-size:.82rem; color:var(--ink2); font-weight:700;}
+  .gh-note{padding:16px; font-size:.92rem; color:var(--ink2);}
+  .gh-note b{color:var(--ink);}
+  .gh-note ol{margin:8px 0 0; padding-left:1.3em;}
+  footer{margin-top:40px; text-align:center; color:var(--ink2); font-size:.85rem;}
+
+  /* ---------- game screen ---------- */
+  #gameView{display:none;}
+  .g-head{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .back-btn{display:inline-flex; align-items:center; gap:6px; padding:9px 16px; border-radius:999px; background:var(--card); border:2px solid var(--line); font-weight:800;}
+  .g-title{font-size:1.35rem; font-weight:900; margin:0;}
+  .seg{display:inline-flex; background:var(--card); border:2px solid var(--line); border-radius:999px; padding:3px; gap:3px;}
+  .seg button{padding:8px 16px; border-radius:999px; font-weight:800; font-size:.92rem; min-height:2.25rem;}
+  .seg button.on{background:var(--accent); color:#fff;}
+  .diff-sel{padding:8px 10px; border-radius:999px; border:2px solid var(--line); background:var(--card); font:inherit; font-weight:700; color:var(--ink);}
+  .turn-banner{margin-top:14px; padding:12px 16px; border-radius:14px; font-weight:800; font-size:1.05rem; display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .turn-banner .who{display:inline-flex; align-items:center; gap:8px;}
+  .turn-banner .pip{width:14px; height:14px; border-radius:50%; flex:none;}
+  .turn-banner small{font-weight:700; opacity:.85;}
+  .board-card{margin-top:14px; padding:16px;}
+  .board-area{display:flex; flex-direction:column; align-items:center; gap:12px;}
+  .msg{min-height:1.6em; font-weight:700; text-align:center;}
+  .msg.good{color:var(--green);} .msg.bad{color:var(--accent);}
+  .g-controls{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:6px;}
+  details.rules{margin-top:14px; padding:14px 16px;}
+  details.rules summary{font-weight:800; cursor:pointer; min-height:2.25rem; display:flex; align-items:center;}
+  details.rules p, details.rules li{color:var(--ink2); font-size:.92rem;}
+  details.rules ul{margin:6px 0; padding-left:1.2em;}
+
+  /* boards */
+  .gomoku{display:grid; gap:0; background:#E9B96B; border:3px solid #B97F2E; border-radius:10px; padding:6px; width:min(94vw,540px); aspect-ratio:1;}
+  .gomoku button{position:relative; border-radius:50%; min-height:0; padding:0;}
+  .gomoku button::before{content:""; position:absolute; inset:50% auto auto 50%; width:100%; height:1px; background:rgba(120,70,10,.35); transform:translate(-50%,-50%);}
+  .gomoku button::after{content:""; position:absolute; left:50%; top:0; width:1px; height:100%; background:rgba(120,70,10,.35); transform:translateX(-50%);}
+  .gomoku .stone{position:absolute; inset:8%; border-radius:50%; z-index:2; box-shadow:0 1px 3px rgba(0,0,0,.4);}
+  .gomoku .s1{background:radial-gradient(circle at 35% 30%, #666, #111 70%);}
+  .gomoku .s2{background:radial-gradient(circle at 35% 30%, #fff, #cfd4d8 75%); border:1px solid #9aa;}
+  .gomoku .last{box-shadow:0 0 0 2.5px var(--accent), 0 1px 3px rgba(0,0,0,.4);}
+  .reversi{display:grid; grid-template-columns:repeat(8,1fr); gap:3px; background:#1E7A46; border:3px solid #14532D; border-radius:10px; padding:6px; width:min(94vw,480px); aspect-ratio:1;}
+  .reversi button{background:#2E9E5B; border-radius:6px; position:relative; min-height:0; padding:0; aspect-ratio:1;}
+  .reversi .disc{position:absolute; inset:9%; border-radius:50%; box-shadow:0 2px 4px rgba(0,0,0,.35);}
+  .reversi .d1{background:radial-gradient(circle at 35% 30%, #5a5a5a, #0d0d0d 72%);}
+  .reversi .d2{background:radial-gradient(circle at 35% 30%, #ffffff, #d5d9dc 75%);}
+  .reversi .hint::before{content:""; position:absolute; inset:38%; border-radius:50%; background:rgba(255,255,255,.45);}
+  .reversi .lastmove{box-shadow:inset 0 0 0 3px #FFD34D;}
+  .c4-wrap{background:#2E7FC2; border-radius:14px; padding:10px; width:min(94vw,460px);}
+  .c4{display:grid; grid-template-columns:repeat(7,1fr); gap:6px;}
+  .c4 .cell{background:#F4F9FF; border-radius:50%; aspect-ratio:1; position:relative;}
+  .c4 .cell.f1{background:radial-gradient(circle at 35% 30%, #ff9a8a, var(--p1) 70%);}
+  .c4 .cell.f2{background:radial-gradient(circle at 35% 30%, #ffe9a3, #F2B705 70%);}
+  .c4 .cell.win{box-shadow:0 0 0 3px #fff, 0 0 14px 3px #FFD34D;}
+  .c4-cols{display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:8px;}
+  .c4-cols button{background:rgba(255,255,255,.22); color:#fff; border-radius:10px; font-size:1.05rem; font-weight:900; min-height:2.6rem;}
+  .c4-cols button:disabled{opacity:.3;}
+  .sea{display:grid; grid-template-columns:repeat(8,1fr); gap:3px; width:min(94vw,400px); aspect-ratio:1;}
+  .sea button{border-radius:6px; min-height:0; padding:0; aspect-ratio:1; font-size:clamp(.8rem,3.4vw,1.15rem); display:grid; place-items:center; font-weight:900;}
+  .sea.target button{background:#BFE3F7; border:1.5px solid #7FB8DC; color:#12507E;}
+  .sea.target button.hit{background:#FFD9D2; border-color:#E8503A; color:#C22E1D;}
+  .sea.target button.miss{background:#E8F3FA; color:#7FA8C4;}
+  .sea.target button.sunk{background:#E8503A; color:#fff;}
+  .sea.own button{background:#DFF2E4; border:1.5px solid #9CCBA9; color:#1E6B35;}
+  .sea.own button.ship{background:#8FD0A2; border-color:#3E9B4F;}
+  .sea.own button.hit{background:#FFB4A6; border-color:#E8503A; color:#C22E1D;}
+  .sea.own button.miss{background:#EFF8F1; color:#8FB89B;}
+  .sea.place button{background:#FFF3D6; border:1.5px solid #E8C87E; color:#8a6414;}
+  .sea.place button.ship{background:#F2B705; border-color:#C78F04;}
+  .sea.place button.ghost{background:#FFE9A8;}
+  .sea-label{font-weight:800; font-size:.95rem; align-self:flex-start;}
+  .fleet-status{display:flex; flex-wrap:wrap; gap:6px; justify-content:center;}
+  .fleet-status span{padding:4px 10px; border-radius:999px; background:var(--bg); border:1.5px solid var(--line); font-size:.82rem; font-weight:700;}
+  .fleet-status span.sunk{background:#FDE3DE; border-color:#E8503A; color:#C22E1D; text-decoration:line-through;}
+  .pad{display:flex; gap:8px; justify-content:center; flex-wrap:wrap;}
+  .pad button{width:52px; height:52px; border-radius:14px; background:var(--card); border:2px solid var(--line); font-size:1.25rem; font-weight:900;}
+  .pad button:disabled{opacity:.3;}
+  .pad button.sel{background:var(--rose,#D84E7E); border-color:#D84E7E; color:#fff;}
+  .guess-slots{display:flex; gap:8px; justify-content:center;}
+  .guess-slots .slot{width:52px; height:52px; border-radius:14px; border:2.5px dashed var(--line); display:grid; place-items:center; font-size:1.4rem; font-weight:900; background:var(--bg2);}
+  .guess-slots .slot.filled{border-style:solid; border-color:var(--amber); background:#FFF6DE; color:var(--ink);}
+  @media (prefers-color-scheme: dark){ .guess-slots .slot.filled{background:#3A2F1B;} }
+  .log-table{width:100%; border-collapse:collapse; font-size:.92rem;}
+  .log-table th,.log-table td{padding:7px 8px; border-bottom:1px solid var(--line); text-align:left;}
+  .log-table th{font-size:.8rem; color:var(--ink2);}
+  .hb{font-weight:900; white-space:nowrap;}
+  .hb .h{color:var(--accent);} .hb .b{color:var(--sky);}
+  .two-col{display:grid; grid-template-columns:1fr 1fr; gap:14px; width:100%;}
+  @media (max-width:640px){ .two-col{grid-template-columns:1fr;} }
+  .mini-card{background:var(--bg2); border:1px solid var(--line); border-radius:14px; padding:12px;}
+  .mini-card h4{margin:0 0 8px; font-size:.98rem;}
+  .mancala{display:flex; flex-direction:column; gap:8px; width:min(94vw,560px); background:#B9793F; border:3px solid #8A5427; border-radius:18px; padding:10px;}
+  .m-row{display:grid; grid-template-columns:repeat(6,1fr); gap:6px;}
+  .m-stores{display:grid; grid-template-columns:52px 1fr 52px; gap:6px; align-items:stretch;}
+  .pit{border-radius:14px; background:#8A5427; color:#FFE9C9; font-weight:900; min-height:3.4rem; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:4px; border:2px solid transparent;}
+  .pit .stones{font-size:.78rem; font-weight:700; line-height:1.1; word-break:break-all; text-align:center; color:#FFD98F;}
+  .pit .cnt{font-size:1.15rem; line-height:1.1;}
+  .pit.playable{border-color:#FFD34D; background:#9C6228; cursor:pointer;}
+  .pit.store{background:#6E421E; font-size:1.3rem;}
+  .pit.lastpit{box-shadow:0 0 0 3px #FF5A3C;}
+  .dab{display:grid; gap:0; width:min(94vw,440px); }
+  .dab-row{display:flex; align-items:center;}
+  .dab .dot{width:14px; height:14px; border-radius:50%; background:var(--ink); flex:none; z-index:2;}
+  .dab .hedge{flex:1; height:16px; border-radius:8px; background:transparent; min-height:1rem; position:relative; padding:0;}
+  .dab .hedge::before{content:""; position:absolute; left:0; right:0; top:50%; height:5px; transform:translateY(-50%); border-radius:3px; background:var(--line);}
+  .dab .hedge.on::before{background:var(--ink);}
+  .dab .vedge{width:16px; height:44px; border-radius:8px; background:transparent; min-height:2.2rem; position:relative; padding:0; flex:none;}
+  .dab .vedge::before{content:""; position:absolute; top:0; bottom:0; left:50%; width:5px; transform:translateX(-50%); border-radius:3px; background:var(--line);}
+  .dab .vedge.on::before{background:var(--ink);}
+  .dab .box{flex:1; height:44px; border-radius:8px; display:grid; place-items:center; font-weight:900; font-size:1.05rem; color:#fff;}
+  .dab .box.b1{background:var(--p1);} .dab .box.b2{background:#F2B705; color:#5c4300;}
+  .scorebar{display:flex; gap:10px; flex-wrap:wrap; justify-content:center;}
+  .score-pill{display:inline-flex; align-items:center; gap:8px; padding:7px 14px; border-radius:999px; font-weight:800; border:2px solid var(--line); background:var(--card);}
+  .score-pill .pip{width:12px; height:12px; border-radius:50%;}
+  .score-pill.turn{border-color:var(--amber); box-shadow:0 0 0 2px rgba(232,147,12,.35);}
+
+  /* overlays */
+  .overlay{position:fixed; inset:0; background:rgba(30,18,8,.72); display:none; place-items:center; z-index:50; padding:16px;}
+  .overlay.show{display:grid;}
+  .overlay .box{background:var(--card); color:var(--ink); border-radius:22px; padding:28px 24px; max-width:420px; width:100%; text-align:center; box-shadow:var(--shadow);}
+  .overlay .box .big{font-size:2.6rem;}
+  .overlay .box h3{margin:8px 0 6px; font-size:1.4rem;}
+  .overlay .box p{margin:0 0 18px; color:var(--ink2);}
+  .hidden{display:none !important;}
+</style>
+</head>
+<body>
+
+<!-- ================= HOME ================= -->
+<div id="homeView">
+  <div class="wrap">
+    <div class="hero">
+      <h1>友達対戦ゲーム<br>ダウンロード版</h1>
+      <p class="lead">このファイル1つで遊べる、1対1の真剣勝負ゲーム集です。相手がいるときは<strong>同じ端末を交代で使う「友達と対戦」</strong>、ひとりのときは<strong>考えて打つ「CPU対戦」</strong>。ネット接続なしでも動くので、GitHubに置いてそのまま配れます。</p>
+      <div class="badges">
+        <span class="badge"><span class="dot" style="background:var(--p1)"></span>友達と対戦（端末を交代）</span>
+        <span class="badge"><span class="dot" style="background:var(--teal)"></span>CPU対戦（3段階）</span>
+        <span class="badge"><span class="dot" style="background:var(--amber)"></span>全7ゲーム</span>
+        <span class="badge"><span class="dot" style="background:var(--green)"></span>単一HTMLファイル</span>
+      </div>
+      <div class="dl-row">
+        <button class="btn btn-primary" id="dlBtn">⬇ このページをHTMLファイルでダウンロード</button>
+        <span class="dl-note">ダウンロードした <b>index.html</b> をGitHubリポジトリに置けば、そのまま公開できます。</span>
+      </div>
+    </div>
+
+    <section>
+      <h2><span class="num">1</span>プレイヤーの名前を決める</h2>
+      <div class="players">
+        <div class="card player">
+          <div class="player-head">
+            <div class="avatar av1">赤</div>
+            <div><b>プレイヤー1（先手）</b><span>昔話の名前からワンタップでも選べます</span></div>
+          </div>
+          <input class="name-input" id="name1" type="text" maxlength="10" value="桃太郎" aria-label="プレイヤー1の名前">
+          <div class="chips" id="chips1"></div>
+        </div>
+        <div class="card player">
+          <div class="player-head">
+            <div class="avatar av2">青</div>
+            <div><b>プレイヤー2（後手）</b><span>CPU対戦のときは相手がCPUになります</span></div>
+          </div>
+          <input class="name-input" id="name2" type="text" maxlength="10" value="金太郎" aria-label="プレイヤー2の名前">
+          <div class="chips" id="chips2"></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2><span class="num">2</span>ゲームを選ぶ</h2>
+      <div class="filters" id="filters">
+        <button class="filter on" data-f="all">すべて</button>
+        <button class="filter" data-f="board">盤上バトル</button>
+        <button class="filter" data-f="mind">推理・読み合い</button>
+        <button class="filter" data-f="tactics">陣取り・計算</button>
+      </div>
+      <div class="grid" id="gameGrid"></div>
+    </section>
+
+    <section>
+      <h2><span class="num">3</span>遊び方</h2>
+      <div class="steps">
+        <div class="card step"><span class="n">STEP 1</span><b>名前を決める</b><p>2人の名前を入力。桃太郎や金太郎など、昔話チップをタップするだけでもOKです。</p></div>
+        <div class="card step"><span class="n">STEP 2</span><b>モードを選ぶ</b><p>ゲーム画面の上で「CPU対戦」と「友達と対戦」を切り替えます。友達と対戦は、同じ端末を交代で使って遊ぶモードです。</p></div>
+        <div class="card step"><span class="n">STEP 3</span><b>真剣勝負！</b><p>秘密を隠すゲーム（海戦・数当て）では、交代のときに「端末を渡してね」画面が出るので、相手に見られる心配はありません。</p></div>
+      </div>
+    </section>
+
+    <section>
+      <h2><span class="num">4</span>対戦成績（このページを開いている間）</h2>
+      <div class="stats">
+        <div class="card stat"><div class="v" id="stGames">0</div><div class="l">対戦した数</div></div>
+        <div class="card stat"><div class="v" id="stP1" style="color:var(--p1)">0</div><div class="l" id="stP1Label">プレイヤー1の勝ち</div></div>
+        <div class="card stat"><div class="v" id="stP2" style="color:var(--p2)">0</div><div class="l" id="stP2Label">プレイヤー2・CPUの勝ち</div></div>
+        <div class="card stat"><div class="v" id="stDraw">0</div><div class="l">引き分け</div></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="card gh-note">
+        <b>GitHubへの上げ方</b>
+        <ol>
+          <li>上のボタンでこのページをダウンロードし、ファイル名を <b>index.html</b> にします。</li>
+          <li>GitHubで新しいリポジトリを作り、index.html をアップロードします。</li>
+          <li>リポジトリの Settings → Pages で公開を有効にすると、URLで誰でも遊べるようになります。</li>
+        </ol>
+        <p style="margin:10px 0 0">ファイルは1つだけ。中身はHTML・CSS・JavaScriptだけなので、ビルドやサーバーは要りません。</p>
+      </div>
+    </section>
+
+    <footer>友達対戦ゲーム ダウンロード版 ／ 全7ゲーム・CPU対戦＆友達と対戦対応</footer>
+  </div>
+</div>
+
+<!-- ================= GAME ================= -->
+<div id="gameView">
+  <div class="wrap">
+    <div class="g-head">
+      <button class="back-btn" id="backBtn">← ホームへ</button>
+      <h2 class="g-title" id="gTitle">ゲーム</h2>
+    </div>
+    <div class="g-head" style="margin-top:12px;">
+      <div class="seg" role="group" aria-label="対戦モード">
+        <button id="modeCpu">🤖 CPU対戦</button>
+        <button id="modeFriend">👥 友達と対戦</button>
+      </div>
+      <select class="diff-sel" id="diffSel" aria-label="CPUの強さ">
+        <option value="1">CPU：よわい</option>
+        <option value="2" selected>CPU：ふつう</option>
+        <option value="3">CPU：つよい</option>
+      </select>
+      <button class="btn btn-ghost btn-small" id="restartBtn">↻ はじめから</button>
+    </div>
+    <div class="turn-banner card" id="turnBanner"></div>
+    <div class="card board-card">
+      <div class="board-area" id="boardArea"></div>
+    </div>
+    <details class="rules card">
+      <summary>📖 ルールとコツ</summary>
+      <div id="rulesBody"></div>
+    </details>
+  </div>
+</div>
+
+<!-- handoff / result overlay -->
+<div class="overlay" id="overlay">
+  <div class="box">
+    <div class="big" id="ovEmoji">🏆</div>
+    <h3 id="ovTitle">結果</h3>
+    <p id="ovText"></p>
+    <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+      <button class="btn btn-primary" id="ovMain">OK</button>
+      <button class="btn btn-ghost hidden" id="ovSub">ホームへ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   友達対戦ゲーム ダウンロード版
+   単一HTMLファイル / CPU対戦 & 同じ端末で友達と対戦（2人プレイ）
+   ============================================================ */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const rand = n => Math.floor(Math.random()*n);
+const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=rand(i+1); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+
+const FOLK = ["桃太郎","金太郎","浦島太郎","かぐや姫","一寸法師","花咲か爺さん","つる","たぬき","さる","分福茶釜"];
+const state = {
+  names: ["桃太郎","金太郎"],
+  mode: "cpu",           // 'cpu' | 'friend'
+  diff: 2,
+  game: null,            // current game id
+  stats: { games:0, p1:0, p2:0, draw:0 },
+};
+function playerName(p){ // p: 1 | 2
+  if(p===2 && state.mode==="cpu") return "CPU";
+  return state.names[p-1] || ("プレイヤー"+p);
+}
+function refreshStats(){
+  $("#stGames").textContent = state.stats.games;
+  $("#stP1").textContent = state.stats.p1;
+  $("#stP2").textContent = state.stats.p2;
+  $("#stDraw").textContent = state.stats.draw;
+  $("#stP1Label").textContent = (state.names[0]||"プレイヤー1") + "の勝ち";
+  $("#stP2Label").textContent = (state.names[1]||"プレイヤー2") + "・CPUの勝ち";
+}
+function recordResult(winner){ // winner: 1 | 2 | 0(draw) | null(no record)
+  if(winner===null) return;
+  state.stats.games++;
+  if(winner===1) state.stats.p1++;
+  else if(winner===2) state.stats.p2++;
+  else state.stats.draw++;
+  refreshStats();
+}
+
+/* ---------- overlay ---------- */
+let ovMainCb = null;
+function showOverlay(emoji, title, text, mainLabel, cb, showSub){
+  $("#ovEmoji").textContent = emoji;
+  $("#ovTitle").textContent = title;
+  $("#ovText").textContent = text;
+  $("#ovMain").textContent = mainLabel || "OK";
+  $("#ovSub").classList.toggle("hidden", !showSub);
+  ovMainCb = cb || null;
+  $("#overlay").classList.add("show");
+}
+function hideOverlay(){ $("#overlay").classList.remove("show"); }
+$("#ovMain").addEventListener("click", ()=>{ hideOverlay(); if(ovMainCb) ovMainCb(); });
+$("#ovSub").addEventListener("click", ()=>{ hideOverlay(); goHome(); });
+function handoff(nextPlayer, cb){
+  showOverlay("📱", "端末を渡してね", "次は「" + playerName(nextPlayer) + "」さんの番です。用意ができたらボタンを押してください。", playerName(nextPlayer) + "の画面を開く", cb, false);
+}
+function gameOver(winner, text){
+  recordResult(winner);
+  const emoji = winner===0 ? "🤝" : "🏆";
+  const title = winner===0 ? "引き分け！" : playerName(winner) + " の勝ち！";
+  showOverlay(emoji, title, text || "", "もう一局", ()=>{ startGame(state.game); }, true);
+}
+
+/* ---------- download this file ---------- */
+$("#dlBtn").addEventListener("click", ()=>{
+  const html = "<!doctype html>\n" + document.documentElement.outerHTML;
+  const blob = new Blob([html], {type:"text/html;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "index.html";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 3000);
+});
+
+/* ---------- name chips ---------- */
+function buildChips(containerId, inputId, playerIdx){
+  const box = $(containerId);
+  FOLK.forEach(name=>{
+    const b = document.createElement("button");
+    b.className = "chip"; b.textContent = name; b.type = "button";
+    b.addEventListener("click", ()=>{
+      $(inputId).value = name;
+      state.names[playerIdx] = name;
+      paintChips(); refreshStats();
+    });
+    box.appendChild(b);
+  });
+  $(inputId).addEventListener("input", e=>{
+    state.names[playerIdx] = e.target.value.trim();
+    paintChips(); refreshStats();
+  });
+}
+function paintChips(){
+  [["#chips1",0],["#chips2",1]].forEach(([sel,idx])=>{
+    $$(sel+" .chip").forEach(c=>{
+      c.classList.toggle("picked"+(idx+1), c.textContent === state.names[idx]);
+    });
+  });
+}
+buildChips("#chips1","#name1",0);
+buildChips("#chips2","#name2",1);
+paintChips(); refreshStats();
+
+/* ---------- game catalog ---------- */
+const ICONS = {
+  gomoku: '<svg viewBox="0 0 48 48" fill="none"><rect x="4" y="4" width="40" height="40" rx="6" fill="rgba(255,255,255,.25)"/><path d="M14 4v40M24 4v40M34 4v40M4 14h40M4 24h40M4 34h40" stroke="rgba(255,255,255,.7)" stroke-width="2"/><circle cx="14" cy="14" r="5.5" fill="#222"/><circle cx="24" cy="24" r="5.5" fill="#fff"/><circle cx="34" cy="34" r="5.5" fill="#222"/><circle cx="34" cy="14" r="5.5" fill="#fff"/></svg>',
+  reversi: '<svg viewBox="0 0 48 48"><rect x="4" y="4" width="40" height="40" rx="6" fill="rgba(255,255,255,.25)"/><circle cx="17" cy="17" r="7" fill="#fff"/><circle cx="31" cy="17" r="7" fill="#222"/><circle cx="17" cy="31" r="7" fill="#222"/><circle cx="31" cy="31" r="7" fill="#fff"/></svg>',
+  connect4: '<svg viewBox="0 0 48 48"><rect x="4" y="6" width="40" height="36" rx="6" fill="rgba(255,255,255,.25)"/><circle cx="13" cy="15" r="4" fill="#fff"/><circle cx="24" cy="15" r="4" fill="#F2B705"/><circle cx="35" cy="15" r="4" fill="#fff"/><circle cx="13" cy="26" r="4" fill="#F2B705"/><circle cx="24" cy="26" r="4" fill="#fff"/><circle cx="35" cy="26" r="4" fill="#FF6B57"/><circle cx="13" cy="37" r="4" fill="#FF6B57"/><circle cx="24" cy="37" r="4" fill="#FF6B57"/><circle cx="35" cy="37" r="4" fill="#F2B705"/></svg>',
+  battleship: '<svg viewBox="0 0 48 48"><path d="M4 34c4-3 8-3 12 0s8 3 12 0 8-3 12 0v6c-4-3-8-3-12 0s-8-3-12 0-8 3-12 0z" fill="rgba(255,255,255,.55)"/><rect x="10" y="24" width="24" height="6" rx="2" fill="#fff"/><rect x="18" y="17" width="9" height="7" rx="1.5" fill="#fff"/><rect x="22" y="10" width="3.5" height="8" fill="#fff"/><circle cx="38" cy="13" r="4" fill="#FFD34D"/></svg>',
+  number: '<svg viewBox="0 0 48 48"><rect x="6" y="6" width="36" height="36" rx="9" fill="rgba(255,255,255,.25)"/><text x="24" y="21" text-anchor="middle" font-size="13" font-weight="900" fill="#fff">3</text><text x="15" y="37" text-anchor="middle" font-size="12" font-weight="900" fill="#FFD34D">H</text><text x="33" y="37" text-anchor="middle" font-size="12" font-weight="900" fill="#fff">B</text></svg>',
+  mancala: '<svg viewBox="0 0 48 48"><rect x="4" y="12" width="40" height="24" rx="12" fill="rgba(255,255,255,.25)"/><circle cx="13" cy="24" r="4.5" fill="#FFD34D"/><circle cx="24" cy="24" r="4.5" fill="#fff"/><circle cx="35" cy="24" r="4.5" fill="#FF8A75"/><circle cx="18.5" cy="24" r="2" fill="#7ED491"/><circle cx="29.5" cy="24" r="2" fill="#8EC9EE"/></svg>',
+  dots: '<svg viewBox="0 0 48 48"><path d="M12 12h24M12 24h24M12 36h24M12 12v24M24 12v24M36 12v24" stroke="rgba(255,255,255,.75)" stroke-width="3"/><rect x="12" y="12" width="12" height="12" fill="#FFD34D" opacity=".9"/><circle cx="12" cy="12" r="3.4" fill="#fff"/><circle cx="24" cy="12" r="3.4" fill="#fff"/><circle cx="36" cy="12" r="3.4" fill="#fff"/><circle cx="12" cy="24" r="3.4" fill="#fff"/><circle cx="24" cy="24" r="3.4" fill="#fff"/><circle cx="36" cy="24" r="3.4" fill="#fff"/><circle cx="12" cy="36" r="3.4" fill="#fff"/><circle cx="24" cy="36" r="3.4" fill="#fff"/><circle cx="36" cy="36" r="3.4" fill="#fff"/></svg>',
+};
+const GAMES = [
+  { id:"gomoku", name:"五目並べ", cat:"board", catLabel:"盤上バトル", color:"#C07F1F",
+    desc:"15×15の盤に石を交互に置き、先に5つ並べた方が勝ち。攻めと守りの駆け引きが熱い、定番の真剣勝負です。",
+    stars:2, brain:"★★★★☆", luck:"★☆☆☆☆", time:"5〜15分",
+    rules:"<ul><li>先手（黒）が先に置き、交互に空いている交点へ石を置きます。</li><li>縦・横・斜めのどれかで先に5つ並べれば勝ちです。</li></ul><p><b>コツ：</b>「四三（よんさん）」のように、次に2方向へ伸びる形を作ると相手は止めきれません。相手の「あと1つで5つ」は必ず止めましょう。</p>" },
+  { id:"reversi", name:"リバーシ", cat:"board", catLabel:"盤上バトル", color:"#2E8B57",
+    desc:"はさんだ石を全部ひっくり返す8×8の陣取り戦。打てる場所のヒントと自動パス付きで、最後の1手まで逆転があります。",
+    stars:3, brain:"★★★★★", luck:"★☆☆☆☆", time:"5〜10分",
+    rules:"<ul><li>相手の石をはさめる場所にだけ置けます。はさんだ石は全部自分の色になります。</li><li>置ける場所がないときは自動でパス。両者置けなくなったら終了し、石が多い方が勝ちです。</li></ul><p><b>コツ：</b>序盤は石を取りすぎないのが鉄則。角の周り（角の隣）は相手に角を取られる危険地帯です。終盤に一気に返す展開を狙いましょう。</p>" },
+  { id:"connect4", name:"四目並べ", cat:"board", catLabel:"盤上バトル", color:"#2E7FC2",
+    desc:"上からコマを落として、縦・横・斜めのどれかに4つ並べるゲーム。シンプルなのに読みの深さは本物です。",
+    stars:2, brain:"★★★★☆", luck:"★★☆☆☆", time:"3〜8分",
+    rules:"<ul><li>列の上のボタンを押すと、一番下の空きマスにコマが落ちます。</li><li>縦・横・斜めのどれかで先に4つ並べれば勝ちです。</li></ul><p><b>コツ：</b>真ん中の列は縦・横・斜めすべてのラインに関わる最重要ポジション。相手の「あと1つ」は必ずふさぎましょう。</p>" },
+  { id:"battleship", name:"海戦ゲーム", cat:"mind", catLabel:"推理・読み合い", color:"#1D6FB8",
+    desc:"8×8の海に艦隊を隠して撃ち合う推理戦。配置フェーズ付きで、相手の船の位置は命中するまで分かりません。",
+    stars:3, brain:"★★★★☆", luck:"★★★☆☆", time:"5〜12分",
+    rules:"<ul><li>長さ4・3・3・2の船を4隻、自分の海に配置します（回転ボタンで縦横切替、自動配置も可）。</li><li>交互に相手の海の1マスを攻撃。命中したら続けてもう1回攻撃できます。</li><li>船の全マスを当てると撃沈。相手の艦隊を全部沈めた方が勝ちです。</li></ul><p><b>コツ：</b>船は端や角に寄せると見つかりにくくなります。攻撃は市松模様（1マスおき）に撃つと、長い船を効率よく探せます。</p>" },
+  { id:"number", name:"数当てバトル", cat:"mind", catLabel:"推理・読み合い", color:"#D84E7E",
+    desc:"重ならない3ケタの秘密の数字を当て合う、ヒット＆ブローの推理バトル。相手より先に当てるか、読み勝つか。",
+    stars:2, brain:"★★★★★", luck:"★★☆☆☆", time:"5〜10分",
+    rules:"<ul><li>0〜9から重ならない3つの数字で、秘密の数字を決めます。</li><li>交互に相手の数字を予想し、結果が「ヒット（場所も数字も一致）」「ブロー（数字だけ一致）」で返ります。</li><li>先に3ヒット（完全正解）した方が勝ちです。</li></ul><p><b>コツ：</b>最初の予想は 0・1・2 のようにバラけた数字で情報を集めるのが定石。過去の結果と矛盾しない候補だけを残して絞り込みましょう。</p>" },
+  { id:"mancala", name:"マンカラ", cat:"tactics", catLabel:"陣取り・計算", color:"#C96F2E",
+    desc:"石を1つずつまいて、自分のゴールに集める計算バトル。最後の石の落ち場所ひとつで、連続手番も大逆転の奪いも起きます。",
+    stars:3, brain:"★★★★☆", luck:"★☆☆☆☆", time:"5〜10分",
+    rules:"<ul><li>自分の陣地（下段）のポケットを1つ選ぶと、石を反時計回りに1つずつまいていきます。</li><li>最後の石が自分のゴールに入ると、もう1回自分の番（連続手番）。</li><li>最後の石が自分の空ポケットに入ると、向かいの石をまとめて奪えます。</li><li>どちらかの陣地が空になったら終了。残った石は相手のゴールへ。ゴールの石が多い方が勝ちです。</li></ul><p><b>コツ：</b>ゴールにちょうど入るポケットを数えて連続手番をつなぐのが基本戦術。奪いは一気に10個以上の差がつくこともあります。</p>" },
+  { id:"dots", name:"ドット＆ボックス", cat:"tactics", catLabel:"陣取り・計算", color:"#0E9594",
+    desc:"点と点の間に線を引いて、四角を完成させる陣取りゲーム。1つ囲むともう1手引けるので、終盤の連鎖が勝負を決めます。",
+    stars:2, brain:"★★★★☆", luck:"★☆☆☆☆", time:"5〜12分",
+    rules:"<ul><li>点と点の間の線を交互に1本ずつ引きます。</li><li>四角の4辺目を引いた人は、その四角を取ってもう1本引けます（連続手番）。</li><li>全部の線が引かれたら終了。四角を多く取った方が勝ちです。</li></ul><p><b>コツ：</b>相手に「あと1辺で四角」を作らせない線引きが序盤の基本。終盤は、わざと小さい連鎖を渡して大きな連鎖を取る「譲り」の計算が勝負を分けます。</p>" },
+];
+const grid = $("#gameGrid");
+GAMES.forEach(g=>{
+  const card = document.createElement("article");
+  card.className = "card game-card"; card.dataset.cat = g.cat;
+  card.innerHTML =
+    '<div class="game-top"><div class="tile" style="background:'+g.color+'">'+ICONS[g.id]+'</div>' +
+    '<div><span class="cat" style="color:'+g.color+'">'+g.catLabel+'</span><h3>'+g.name+'</h3></div></div>' +
+    '<p>'+g.desc+'</p>' +
+    '<div class="meta"><span>難しさ <span class="stars">'+"★".repeat(g.stars)+"☆".repeat(5-g.stars)+'</span></span><span>頭脳 '+g.brain+'</span><span>運 '+g.luck+'</span><span>⏱ '+g.time+'</span></div>' +
+    '<button class="play-btn" style="background:'+g.color+'">▶ あそぶ</button>';
+  card.querySelector(".play-btn").addEventListener("click", ()=>openGame(g.id));
+  grid.appendChild(card);
+});
+$("#filters").addEventListener("click", e=>{
+  const b = e.target.closest(".filter"); if(!b) return;
+  $$("#filters .filter").forEach(f=>f.classList.toggle("on", f===b));
+  const f = b.dataset.f;
+  $$("#gameGrid .game-card").forEach(c=>{ c.style.display = (f==="all" || c.dataset.cat===f) ? "" : "none"; });
+});
+
+/* ---------- view switching ---------- */
+function openGame(id){
+  state.game = id;
+  $("#homeView").style.display = "none";
+  $("#gameView").style.display = "block";
+  window.scrollTo(0,0);
+  const g = GAMES.find(x=>x.id===id);
+  $("#gTitle").textContent = g.name;
+  $("#rulesBody").innerHTML = g.rules;
+  syncModeUI();
+  startGame(id);
+}
+function goHome(){
+  $("#gameView").style.display = "none";
+  $("#homeView").style.display = "block";
+  state.game = null;
+  window.scrollTo(0,0);
+  refreshStats();
+}
+$("#backBtn").addEventListener("click", goHome);
+function syncModeUI(){
+  $("#modeCpu").classList.toggle("on", state.mode==="cpu");
+  $("#modeFriend").classList.toggle("on", state.mode==="friend");
+  $("#diffSel").style.display = state.mode==="cpu" ? "" : "none";
+}
+$("#modeCpu").addEventListener("click", ()=>{ if(state.mode!=="cpu"){ state.mode="cpu"; syncModeUI(); startGame(state.game); } });
+$("#modeFriend").addEventListener("click", ()=>{ if(state.mode!=="friend"){ state.mode="friend"; syncModeUI(); startGame(state.game); } });
+$("#diffSel").addEventListener("change", e=>{ state.diff = parseInt(e.target.value,10); startGame(state.game); });
+$("#restartBtn").addEventListener("click", ()=>startGame(state.game));
+
+function setBanner(html, color){
+  const b = $("#turnBanner");
+  b.innerHTML = html;
+  b.style.borderLeft = "6px solid " + (color || "var(--line)");
+}
+function turnBanner(turn, extra){
+  const c = turn===1 ? "var(--p1)" : "var(--p2)";
+  setBanner('<span class="who"><span class="pip" style="background:'+c+'"></span>' + playerName(turn) + ' の番です</span>' + (extra ? '<small>'+extra+'</small>' : ''), c);
+}
+function startGame(id){
+  if(!id) return;
+  const area = $("#boardArea");
+  area.innerHTML = "";
+  ({ gomoku:initGomoku, reversi:initReversi, connect4:initConnect4, battleship:initBattleship, number:initNumber, mancala:initMancala, dots:initDots })[id](area);
+}
+const isCpuTurn = turn => state.mode==="cpu" && turn===2;
+function cpuDelay(fn){ setTimeout(fn, 550); }
+
+/* ============================================================
+   1) 五目並べ
+   ============================================================ */
+function initGomoku(area){
+  const N = 15;
+  let board = Array.from({length:N}, ()=>Array(N).fill(0));
+  let turn = 1, over = false, last = null;
+  const gridEl = document.createElement("div");
+  gridEl.className = "gomoku";
+  gridEl.style.gridTemplateColumns = "repeat("+N+",1fr)";
+  const msg = document.createElement("div"); msg.className = "msg";
+  area.append(gridEl, msg);
+  turnBanner(1, "黒石が先手です");
+
+  function winAt(r,c,p){
+    const dirs = [[1,0],[0,1],[1,1],[1,-1]];
+    for(const [dr,dc] of dirs){
+      let n = 1;
+      for(const s of [1,-1]){
+        let rr=r+dr*s, cc=c+dc*s;
+        while(rr>=0&&rr<N&&cc>=0&&cc<N&&board[rr][cc]===p){ n++; rr+=dr*s; cc+=dc*s; }
+      }
+      if(n>=5) return true;
+    }
+    return false;
+  }
+  function render(){
+    gridEl.innerHTML = "";
+    for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+      const b = document.createElement("button");
+      b.type = "button"; b.setAttribute("aria-label", (r+1)+"行"+(c+1)+"列");
+      if(board[r][c]){
+        const s = document.createElement("span");
+        s.className = "stone s"+board[r][c] + (last && last[0]===r && last[1]===c ? " last" : "");
+        b.appendChild(s);
+      }
+      if(!over && !board[r][c] && !isCpuTurn(turn)) b.addEventListener("click", ()=>place(r,c));
+      gridEl.appendChild(b);
+    }
+  }
+  function place(r,c){
+    if(over || board[r][c]) return;
+    board[r][c] = turn; last = [r,c];
+    if(winAt(r,c,turn)){ over = true; render(); gameOver(turn, "5つ並びました！見事な一局でした。"); return; }
+    if(board.every(row=>row.every(v=>v!==0))){ over = true; render(); gameOver(0, "盤がいっぱいになりました。"); return; }
+    turn = 3 - turn; render(); turnBanner(turn);
+    if(isCpuTurn(turn)) cpuDelay(cpuMove);
+  }
+  function lineScore(r,c,p){
+    // score for player p placing at (r,c)
+    let total = 0;
+    const dirs = [[1,0],[0,1],[1,1],[1,-1]];
+    for(const [dr,dc] of dirs){
+      let cnt = 1, open = 0;
+      for(const s of [1,-1]){
+        let rr=r+dr*s, cc=c+dc*s;
+        while(rr>=0&&rr<N&&cc>=0&&cc<N&&board[rr][cc]===p){ cnt++; rr+=dr*s; cc+=dc*s; }
+        if(rr>=0&&rr<N&&cc>=0&&cc<N&&board[rr][cc]===0) open++;
+      }
+      if(cnt>=5) total += 10000000;
+      else if(cnt===4) total += open===2 ? 1200000 : 150000;
+      else if(cnt===3) total += open===2 ? 22000 : 2200;
+      else if(cnt===2) total += open===2 ? 900 : 120;
+      else total += open===2 ? 60 : 8;
+    }
+    return total;
+  }
+  function cpuMove(){
+    if(over) return;
+    const cand = [];
+    const seen = new Set();
+    for(let r=0;r<N;r++) for(let c=0;c<N;c++) if(board[r][c]){
+      for(let dr=-2;dr<=2;dr++) for(let dc=-2;dc<=2;dc++){
+        const rr=r+dr, cc=c+dc, k=rr+","+cc;
+        if(rr>=0&&rr<N&&cc>=0&&cc<N&&board[rr][cc]===0&&!seen.has(k)){ seen.add(k); cand.push([rr,cc]); }
+      }
+    }
+    if(!cand.length){ place(7,7); return; }
+    if(state.diff===1 && Math.random()<0.45){ const [r,c]=cand[rand(cand.length)]; place(r,c); return; }
+    let best=null, bestScore=-1;
+    for(const [r,c] of cand){
+      const atk = lineScore(r,c,2);
+      const def = lineScore(r,c,1);
+      const score = Math.max(atk, def * (state.diff===3 ? 1.0 : 0.92)) + Math.min(atk, def)*0.1 + Math.random()*4;
+      if(score>bestScore){ bestScore=score; best=[r,c]; }
+    }
+    place(best[0], best[1]);
+  }
+  render();
+}
+
+/* ============================================================
+   2) リバーシ
+   ============================================================ */
+function initReversi(area){
+  const N = 8;
+  let board = Array.from({length:N}, ()=>Array(N).fill(0));
+  board[3][3]=2; board[3][4]=1; board[4][3]=1; board[4][4]=2;
+  let turn = 1, over = false, last = null;
+  const gridEl = document.createElement("div"); gridEl.className = "reversi";
+  const msg = document.createElement("div"); msg.className = "msg";
+  const score = document.createElement("div"); score.className = "scorebar";
+  area.append(score, gridEl, msg);
+  const DIRS = [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+  function flipsFor(r,c,p){
+    if(board[r][c]) return [];
+    const out = [];
+    for(const [dr,dc] of DIRS){
+      const line = [];
+      let rr=r+dr, cc=c+dc;
+      while(rr>=0&&rr<N&&cc>=0&&cc<N&&board[rr][cc]===3-p){ line.push([rr,cc]); rr+=dr; cc+=dc; }
+      if(line.length && rr>=0&&rr<N&&cc>=0&&cc<N&&board[rr][cc]===p) out.push(...line);
+    }
+    return out;
+  }
+  function legalMoves(p){
+    const m = [];
+    for(let r=0;r<N;r++) for(let c=0;c<N;c++){ const f = flipsFor(r,c,p); if(f.length) m.push([r,c,f]); }
+    return m;
+  }
+  function counts(){ let a=0,b=0; board.forEach(row=>row.forEach(v=>{ if(v===1)a++; if(v===2)b++; })); return [a,b]; }
+  function render(){
+    const [a,b] = counts();
+    score.innerHTML =
+      '<span class="score-pill'+(turn===1&&!over?' turn':'')+'"><span class="pip" style="background:#222"></span>'+playerName(1)+'：'+a+'枚</span>' +
+      '<span class="score-pill'+(turn===2&&!over?' turn':'')+'"><span class="pip" style="background:#eee;border:1px solid #999"></span>'+playerName(2)+'：'+b+'枚</span>';
+    const legal = over ? [] : legalMoves(turn);
+    const legalSet = new Set(legal.map(m=>m[0]+","+m[1]));
+    gridEl.innerHTML = "";
+    for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+      const btn = document.createElement("button"); btn.type="button";
+      if(board[r][c]){ const d=document.createElement("span"); d.className="disc d"+board[r][c]; btn.appendChild(d); }
+      if(legalSet.has(r+","+c) && !isCpuTurn(turn)) btn.classList.add("hint");
+      if(last && last[0]===r && last[1]===c) btn.classList.add("lastmove");
+      if(!over && legalSet.has(r+","+c) && !isCpuTurn(turn)) btn.addEventListener("click", ()=>place(r,c));
+      gridEl.appendChild(btn);
+    }
+    if(!over) turnBanner(turn, "黒 "+a+" ： 白 "+b);
+  }
+  function place(r,c){
+    const f = flipsFor(r,c,turn); if(!f.length || over) return;
+    board[r][c] = turn; f.forEach(([rr,cc])=>board[rr][cc]=turn); last=[r,c];
+    advance();
+  }
+  function advance(){
+    const next = 3 - turn;
+    if(legalMoves(next).length){ turn = next; render(); if(isCpuTurn(turn)) cpuDelay(cpuMove); return; }
+    if(legalMoves(turn).length){
+      msg.textContent = playerName(next) + " は置ける場所がないのでパス！もう一度 " + playerName(turn) + " の番です。";
+      msg.className = "msg bad";
+      render(); if(isCpuTurn(turn)) cpuDelay(cpuMove); return;
+    }
+    over = true; render();
+    const [a,b] = counts();
+    if(a===b) gameOver(0, "黒 "+a+" ： 白 "+b+" の同点でした。");
+    else gameOver(a>b?1:2, "最終結果は 黒 "+a+" ： 白 "+b+" でした。");
+  }
+  const W = [[120,-20,20,5,5,20,-20,120],[-20,-40,-5,-5,-5,-5,-40,-20],[20,-5,15,3,3,15,-5,20],[5,-5,3,3,3,3,-5,5],[5,-5,3,3,3,3,-5,5],[20,-5,15,3,3,15,-5,20],[-20,-40,-5,-5,-5,-5,-40,-20],[120,-20,20,5,5,20,-20,120]];
+  function cpuMove(){
+    if(over) return;
+    const moves = legalMoves(2); if(!moves.length){ advance(); return; }
+    if(state.diff===1 && Math.random()<0.4){ const m = moves[rand(moves.length)]; place(m[0],m[1]); return; }
+    let best=null, bestScore=-1e9;
+    for(const [r,c,f] of moves){
+      let s = W[r][c]*3 + f.length*2 + Math.random()*3;
+      if(state.diff===3){
+        // simulate and value opponent's best reply negatively
+        const saved = board.map(row=>row.slice());
+        board[r][c]=2; f.forEach(([rr,cc])=>board[rr][cc]=2);
+        const opp = legalMoves(1);
+        let oppBest = 0;
+        for(const [or2,oc] of opp) oppBest = Math.max(oppBest, W[or2][oc]);
+        s -= oppBest * 1.6;
+        board = saved;
+      }
+      if(s>bestScore){ bestScore=s; best=[r,c]; }
+    }
+    place(best[0], best[1]);
+  }
+  render();
+}
+
+/* ============================================================
+   3) 四目並べ
+   ============================================================ */
+function initConnect4(area){
+  const R = 6, C = 7;
+  let board = Array.from({length:R}, ()=>Array(C).fill(0));
+  let turn = 1, over = false, winCells = [];
+  const wrap = document.createElement("div"); wrap.className = "c4-wrap";
+  const cols = document.createElement("div"); cols.className = "c4-cols";
+  const gridEl = document.createElement("div"); gridEl.className = "c4";
+  const msg = document.createElement("div"); msg.className = "msg";
+  wrap.append(cols, gridEl);
+  area.append(wrap, msg);
+  turnBanner(1, "列のボタンを押してコマを落とそう");
+
+  function dropRow(c){ for(let r=R-1;r>=0;r--) if(!board[r][c]) return r; return -1; }
+  function winLine(r,c,p){
+    const dirs = [[1,0],[0,1],[1,1],[1,-1]];
+    for(const [dr,dc] of dirs){
+      const cells = [[r,c]];
+      for(const s of [1,-1]){
+        let rr=r+dr*s, cc=c+dc*s;
+        while(rr>=0&&rr<R&&cc>=0&&cc<C&&board[rr][cc]===p){ cells.push([rr,cc]); rr+=dr*s; cc+=dc*s; }
+      }
+      if(cells.length>=4) return cells;
+    }
+    return null;
+  }
+  function render(){
+    cols.innerHTML = "";
+    for(let c=0;c<C;c++){
+      const b = document.createElement("button"); b.type="button"; b.textContent = "▼";
+      b.setAttribute("aria-label", (c+1)+"列目に落とす");
+      if(over || dropRow(c)<0 || isCpuTurn(turn)) b.disabled = true;
+      else b.addEventListener("click", ()=>drop(c));
+      cols.appendChild(b);
+    }
+    gridEl.innerHTML = "";
+    const winSet = new Set(winCells.map(([r,c])=>r+","+c));
+    for(let r=0;r<R;r++) for(let c=0;c<C;c++){
+      const d = document.createElement("div");
+      d.className = "cell" + (board[r][c] ? " f"+board[r][c] : "") + (winSet.has(r+","+c) ? " win" : "");
+      gridEl.appendChild(d);
+    }
+    if(!over) turnBanner(turn);
+  }
+  function drop(c){
+    if(over) return;
+    const r = dropRow(c); if(r<0) return;
+    board[r][c] = turn;
+    const w = winLine(r,c,turn);
+    if(w){ winCells = w; over = true; render(); gameOver(turn, "4つ並びました！"); return; }
+    if(board[0].every(v=>v!==0)){ over = true; render(); gameOver(0, "盤がいっぱいになりました。"); return; }
+    turn = 3 - turn; render();
+    if(isCpuTurn(turn)) cpuDelay(cpuMove);
+  }
+  function scoreBoard(p){
+    // window scoring for minimax (hard) / greedy (normal)
+    let score = 0;
+    const opp = 3 - p;
+    const evalWin = (cells)=>{
+      const mine = cells.filter(v=>v===p).length;
+      const his = cells.filter(v=>v===opp).length;
+      const empty = cells.filter(v=>v===0).length;
+      if(mine===4) return 100000;
+      if(mine===3 && empty===1) return 800;
+      if(mine===2 && empty===2) return 60;
+      if(his===3 && empty===1) return -900;
+      if(his===2 && empty===2) return -50;
+      return 0;
+    };
+    for(let r=0;r<R;r++) for(let c=0;c<C;c++){
+      if(c+3<C) score += evalWin([board[r][c],board[r][c+1],board[r][c+2],board[r][c+3]]);
+      if(r+3<R) score += evalWin([board[r][c],board[r+1][c],board[r+2][c],board[r+3][c]]);
+      if(r+3<R&&c+3<C) score += evalWin([board[r][c],board[r+1][c+1],board[r+2][c+2],board[r+3][c+3]]);
+      if(r+3<R&&c-3>=0) score += evalWin([board[r][c],board[r+1][c-1],board[r+2][c-2],board[r+3][c-3]]);
+    }
+    for(let r=0;r<R;r++) if(board[r][3]===p) score += 30; // center bonus
+    return score;
+  }
+  function minimax(depth, alpha, beta, maximizing){
+    const valid = [];
+    for(let c=0;c<C;c++) if(dropRow(c)>=0) valid.push(c);
+    if(!valid.length) return 0;
+    if(depth===0) return scoreBoard(2);
+    if(maximizing){
+      let val = -Infinity;
+      for(const c of valid){ const r = dropRow(c); board[r][c]=2;
+        if(winLine(r,c,2)){ board[r][c]=0; return 1000000 + depth; }
+        val = Math.max(val, minimax(depth-1, alpha, beta, false)); board[r][c]=0;
+        alpha = Math.max(alpha, val); if(beta<=alpha) break; }
+      return val;
+    } else {
+      let val = Infinity;
+      for(const c of valid){ const r = dropRow(c); board[r][c]=1;
+        if(winLine(r,c,1)){ board[r][c]=0; return -1000000 - depth; }
+        val = Math.min(val, minimax(depth-1, alpha, beta, true)); board[r][c]=0;
+        beta = Math.min(beta, val); if(beta<=alpha) break; }
+      return val;
+    }
+  }
+  function cpuMove(){
+    if(over) return;
+    const valid = []; for(let c=0;c<C;c++) if(dropRow(c)>=0) valid.push(c);
+    if(!valid.length) return;
+    if(state.diff===1 && Math.random()<0.45){ drop(valid[rand(valid.length)]); return; }
+    if(state.diff===2){
+      // win now / block / best greedy
+      for(const c of valid){ const r=dropRow(c); board[r][c]=2; const w=!!winLine(r,c,2); board[r][c]=0; if(w){ drop(c); return; } }
+      for(const c of valid){ const r=dropRow(c); board[r][c]=1; const w=!!winLine(r,c,1); board[r][c]=0; if(w){ drop(c); return; } }
+      let best=valid[0], bs=-Infinity;
+      for(const c of valid){ const r=dropRow(c); board[r][c]=2; const s=scoreBoard(2)+Math.random()*8; board[r][c]=0; if(s>bs){bs=s;best=c;} }
+      drop(best); return;
+    }
+    let best=valid[0], bs=-Infinity;
+    for(const c of valid){ const r=dropRow(c); board[r][c]=2; const s=minimax(5,-Infinity,Infinity,false); board[r][c]=0; if(s>bs){bs=s;best=c;} }
+    drop(best);
+  }
+  render();
+}
+
+/* ============================================================
+   4) 海戦ゲーム
+   ============================================================ */
+function initBattleship(area){
+  const N = 8;
+  const SHIPS = [ {len:4,name:"戦艦"}, {len:3,name:"巡洋艦"}, {len:3,name:"駆逐艦"}, {len:2,name:"潜水艦"} ];
+  // fleets[p] = { grid: 0 sea / 1 ship, ships: [{cells:[[r,c]..], hits}] }
+  let fleets = { 1:null, 2:null };
+  let shots = { 1:null, 2:null }; // shots[p] = grid of p's attacks on opponent: 0 none / 1 miss / 2 hit / 3 sunk-cell
+  let phase = "place"; // place -> battle
+  let placingPlayer = 1;
+  let turn = 1, over = false;
+  let orient = "h";
+  let placeIdx = 0;
+  let placeGrid = null, placeShips = [];
+
+  const statusEl = document.createElement("div"); statusEl.className = "msg";
+  const mainEl = document.createElement("div");
+  const subEl = document.createElement("div");
+  const ctrlEl = document.createElement("div"); ctrlEl.className = "g-controls";
+  area.append(statusEl, mainEl, subEl, ctrlEl);
+
+  function emptyGrid(){ return Array.from({length:N}, ()=>Array(N).fill(0)); }
+  function randomFleet(){
+    const grid = emptyGrid(); const ships = [];
+    for(const s of SHIPS){
+      let placed = false;
+      while(!placed){
+        const horiz = Math.random()<0.5;
+        const r = rand(N), c = rand(N);
+        const cells = [];
+        let ok = true;
+        for(let i=0;i<s.len;i++){
+          const rr = horiz ? r : r+i, cc = horiz ? c+i : c;
+          if(rr>=N||cc>=N||grid[rr][cc]){ ok=false; break; }
+          cells.push([rr,cc]);
+        }
+        if(ok){ cells.forEach(([rr,cc])=>grid[rr][cc]=1); ships.push({cells, hits:0, len:s.len, name:s.name}); placed=true; }
+      }
+    }
+    return { grid, ships };
+  }
+  function fleetStatusHtml(p){
+    const f = fleets[p]; if(!f) return "";
+    return f.ships.map(s=>{
+      const sunk = s.hits>=s.len;
+      return '<span class="'+(sunk?"sunk":"")+'">'+s.name+"（"+s.len+"）"+(sunk?" 撃沈":"")+'</span>';
+    }).join("");
+  }
+  /* ---------- placement ---------- */
+  function startPlacement(p){
+    placingPlayer = p; placeIdx = 0; orient = "h";
+    placeGrid = emptyGrid(); placeShips = [];
+    renderPlacement();
+  }
+  function canPlace(r,c,len,dir){
+    for(let i=0;i<len;i++){
+      const rr = dir==="v" ? r+i : r, cc = dir==="h" ? c+i : c;
+      if(rr>=N||cc>=N||placeGrid[rr][cc]) return false;
+    }
+    return true;
+  }
+  function renderPlacement(){
+    setBanner('<span class="who"><span class="pip" style="background:'+(placingPlayer===1?"var(--p1)":"var(--p2)")+'"></span>'+playerName(placingPlayer)+' の艦隊を配置してください</span>', placingPlayer===1?"var(--p1)":"var(--p2)");
+    statusEl.className = "msg";
+    statusEl.textContent = placeIdx < SHIPS.length
+      ? "次に置く船：" + SHIPS[placeIdx].name + "（長さ" + SHIPS[placeIdx].len + "）— 海をタップして配置"
+      : "配置が終わりました！";
+    mainEl.innerHTML = '<div class="sea-label">自分の海</div>';
+    const g = document.createElement("div"); g.className = "sea place";
+    for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+      const b = document.createElement("button"); b.type="button";
+      if(placeGrid[r][c]){ b.classList.add("ship"); b.textContent = "🚢"; }
+      if(placeIdx < SHIPS.length) b.addEventListener("click", ()=>{
+        const s = SHIPS[placeIdx];
+        if(!canPlace(r,c,s.len,orient)){ statusEl.textContent = "そこには置けません。向きを変えるか、別の場所を選んでください。"; statusEl.className="msg bad"; return; }
+        const cells = [];
+        for(let i=0;i<s.len;i++){ const rr = orient==="v"?r+i:r, cc = orient==="h"?c+i:c; placeGrid[rr][cc]=1; cells.push([rr,cc]); }
+        placeShips.push({cells, hits:0, len:s.len, name:s.name});
+        placeIdx++; renderPlacement();
+      });
+      g.appendChild(b);
+    }
+    mainEl.appendChild(g);
+    subEl.innerHTML = "";
+    ctrlEl.innerHTML = "";
+    const rot = document.createElement("button"); rot.className="btn btn-ghost btn-small";
+    rot.textContent = "🔄 向き：" + (orient==="h" ? "横向き" : "縦向き");
+    rot.addEventListener("click", ()=>{ orient = orient==="h" ? "v" : "h"; renderPlacement(); });
+    const auto = document.createElement("button"); auto.className="btn btn-ghost btn-small"; auto.textContent = "🎲 自動配置";
+    auto.addEventListener("click", ()=>{ const f = randomFleet(); placeGrid = f.grid; placeShips = f.ships; placeIdx = SHIPS.length; renderPlacement(); });
+    const clear = document.createElement("button"); clear.className="btn btn-ghost btn-small"; clear.textContent = "↩ 配置しなおす";
+    clear.addEventListener("click", ()=>startPlacement(placingPlayer));
+    ctrlEl.append(rot, auto, clear);
+    if(placeIdx >= SHIPS.length){
+      const done = document.createElement("button"); done.className="btn btn-primary btn-small"; done.textContent = "✓ この配置で決定";
+      done.addEventListener("click", ()=>{
+        fleets[placingPlayer] = { grid: placeGrid, ships: placeShips };
+        if(placingPlayer===1){
+          if(state.mode==="cpu"){ fleets[2] = randomFleet(); startBattle(); }
+          else handoff(2, ()=>startPlacement(2));
+        } else startBattle();
+      });
+      ctrlEl.appendChild(done);
+    }
+  }
+  /* ---------- battle ---------- */
+  function startBattle(){
+    phase = "battle"; turn = 1;
+    shots = { 1: emptyGrid(), 2: emptyGrid() };
+    renderBattle("");
+  }
+  function renderBattle(message, isBad){
+    turnBanner(turn, "相手の海を攻撃しよう");
+    statusEl.textContent = message || "相手の海のマスをタップして攻撃！命中したらもう1回攻撃できます。";
+    statusEl.className = "msg" + (isBad ? " bad" : "");
+    mainEl.innerHTML = '<div class="sea-label">相手の海（'+playerName(3-turn)+'）</div>';
+    const g = document.createElement("div"); g.className = "sea target";
+    const opp = fleets[3-turn];
+    for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+      const b = document.createElement("button"); b.type="button";
+      const s = shots[turn][r][c];
+      if(s===1){ b.classList.add("miss"); b.textContent = "・"; }
+      if(s===2){ b.classList.add("hit"); b.textContent = "💥"; }
+      if(s===3){ b.classList.add("sunk"); b.textContent = "🔥"; }
+      if(!s && !over && !isCpuTurn(turn)) b.addEventListener("click", ()=>shoot(r,c));
+      g.appendChild(b);
+    }
+    mainEl.appendChild(g);
+    const fs = document.createElement("div"); fs.className="fleet-status"; fs.style.marginTop="10px";
+    fs.innerHTML = fleetStatusHtml(3-turn);
+    mainEl.appendChild(fs);
+    subEl.innerHTML = '<div class="sea-label" style="margin-top:14px">自分の海（'+playerName(turn)+'）</div>';
+    const g3 = document.createElement("div"); g3.className = "sea own";
+    const mine = fleets[turn];
+    for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+      const b = document.createElement("button"); b.type="button"; b.disabled = true;
+      const oppShot = shots[3-turn][r][c];
+      if(mine.grid[r][c]) b.classList.add("ship");
+      if(oppShot===1){ b.classList.add("miss"); b.textContent="・"; }
+      if(oppShot===2||oppShot===3){ b.classList.add("hit"); b.textContent="💥"; }
+      g3.appendChild(b);
+    }
+    subEl.appendChild(g3);
+    const fs2 = document.createElement("div"); fs2.className="fleet-status"; fs2.style.marginTop="10px";
+    fs2.innerHTML = fleetStatusHtml(turn);
+    subEl.appendChild(fs2);
+    ctrlEl.innerHTML = "";
+  }
+  function shoot(r,c){
+    if(over || shots[turn][r][c]) return;
+    const opp = fleets[3-turn];
+    if(opp.grid[r][c]){
+      shots[turn][r][c] = 2;
+      let ship = opp.ships.find(s=>s.cells.some(([rr,cc])=>rr===r&&cc===c));
+      ship.hits++;
+      let msg = "命中！もう1回攻撃できます。";
+      if(ship.hits>=ship.len){
+        ship.cells.forEach(([rr,cc])=>shots[turn][rr][cc]=3);
+        msg = ship.name + "を撃沈！もう1回攻撃できます。";
+      }
+      if(opp.ships.every(s=>s.hits>=s.len)){
+        over = true; renderBattle("全艦撃沈！");
+        gameOver(turn, playerName(turn) + " が " + playerName(3-turn) + " の艦隊を全滅させました。");
+        return;
+      }
+      renderBattle(msg);
+      if(isCpuTurn(turn)) cpuDelay(()=>{ if(!over) cpuShoot(); });
+    } else {
+      shots[turn][r][c] = 1;
+      const next = 3 - turn;
+      renderBattle("はずれ…。");
+      if(state.mode==="friend" && !over){
+        turn = next;
+        setTimeout(()=>handoff(next, ()=>renderBattle("")), 650);
+      } else {
+        turn = next;
+        if(isCpuTurn(turn)) cpuDelay(cpuShoot);
+        else renderBattle("");
+      }
+    }
+  }
+  // CPU shooting: hunt & target
+  let cpuTargets = [];
+  function cpuShoot(){
+    if(over || phase!=="battle" || turn!==2) return;
+    const myShots = shots[2];
+    let r=-1, c=-1;
+    while(cpuTargets.length){
+      const [tr,tc] = cpuTargets.shift();
+      if(tr>=0&&tr<N&&tc>=0&&tc<N&&!myShots[tr][tc]){ r=tr; c=tc; break; }
+    }
+    if(r<0){
+      // hunt: checkerboard preference
+      const cand = [];
+      for(let i=0;i<N;i++) for(let j=0;j<N;j++) if(!myShots[i][j]) cand.push([i,j]);
+      const checker = cand.filter(([i,j])=>(i+j)%2===0);
+      const pool = (state.diff>=2 && checker.length) ? checker : cand;
+      const pick = state.diff===1 ? cand[rand(cand.length)] : pool[rand(pool.length)];
+      r = pick[0]; c = pick[1];
+    }
+    // register neighbors when this shot hits (checked after shoot via grid state)
+    const before = fleets[1].grid[r][c];
+    shoot(r,c);
+    if(before && !over){
+      [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dr,dc])=>{
+        const rr=r+dr, cc=c+dc;
+        if(rr>=0&&rr<N&&cc>=0&&cc<N&&!shots[2][rr][cc]) cpuTargets.push([rr,cc]);
+      });
+    }
+  }
+  startPlacement(1);
+}
+
+/* ============================================================
+   5) 数当てバトル
+   ============================================================ */
+function initNumber(area){
+  let secrets = { 1:null, 2:null };
+  let logs = { 1:[], 2:[] }; // guesses made BY player p
+  let phase = "set"; // set -> play
+  let settingPlayer = 1;
+  let turn = 1, over = false;
+  let currentGuess = [];
+
+  const statusEl = document.createElement("div"); statusEl.className = "msg";
+  const mainEl = document.createElement("div"); mainEl.style.width = "100%";
+  area.append(statusEl, mainEl);
+
+  function randomSecret(){
+    return shuffle([0,1,2,3,4,5,6,7,8,9]).slice(0,3);
+  }
+  function judge(guess, secret){
+    let h=0, b=0;
+    guess.forEach((d,i)=>{ if(d===secret[i]) h++; else if(secret.includes(d)) b++; });
+    return [h,b];
+  }
+  function digitPad(onDone, title){
+    currentGuess = [];
+    setBanner('<span class="who"><span class="pip" style="background:'+(settingPlayer===1&&phase==="set"?"var(--p1)":"var(--p2)")+'"></span>'+title+'</span>');
+    statusEl.className = "msg";
+    statusEl.textContent = "重ならない数字を3つ選んでください。相手には見えません。";
+    mainEl.innerHTML = "";
+    const slots = document.createElement("div"); slots.className = "guess-slots";
+    const pad = document.createElement("div"); pad.className = "pad"; pad.style.marginTop = "14px";
+    function paint(){
+      slots.innerHTML = "";
+      for(let i=0;i<3;i++){
+        const s = document.createElement("div");
+        s.className = "slot" + (currentGuess[i]!==undefined ? " filled" : "");
+        s.textContent = currentGuess[i]!==undefined ? currentGuess[i] : "？";
+        slots.appendChild(s);
+      }
+      pad.querySelectorAll("button").forEach(btn=>{
+        btn.disabled = currentGuess.includes(parseInt(btn.textContent,10));
+      });
+      doneBtn.disabled = currentGuess.length!==3;
+      doneBtn.style.opacity = currentGuess.length===3 ? "1" : ".45";
+    }
+    for(let d=0; d<=9; d++){
+      const b = document.createElement("button"); b.type="button"; b.textContent = d;
+      b.addEventListener("click", ()=>{ if(currentGuess.length<3 && !currentGuess.includes(d)){ currentGuess.push(d); paint(); } });
+      pad.appendChild(b);
+    }
+    const ctrl = document.createElement("div"); ctrl.className = "g-controls";
+    const del = document.createElement("button"); del.className="btn btn-ghost btn-small"; del.textContent = "⌫ 1つ消す";
+    del.addEventListener("click", ()=>{ currentGuess.pop(); paint(); });
+    const doneBtn = document.createElement("button"); doneBtn.className="btn btn-primary btn-small"; doneBtn.textContent = "✓ 決定";
+    doneBtn.addEventListener("click", ()=>{ if(currentGuess.length===3) onDone(currentGuess.slice()); });
+    ctrl.append(del, doneBtn);
+    mainEl.append(slots, pad, ctrl);
+    paint();
+  }
+  function startSet(p){
+    phase = "set"; settingPlayer = p;
+    digitPad(secret=>{
+      secrets[p] = secret;
+      if(p===1){
+        if(state.mode==="cpu"){ secrets[2] = randomSecret(); startPlay(); }
+        else handoff(2, ()=>startSet(2));
+      } else startPlay();
+    }, playerName(p) + " の秘密の数字を決めてください");
+  }
+  function startPlay(){
+    phase = "play"; turn = 1;
+    renderPlay("");
+    if(isCpuTurn(turn)) cpuDelay(cpuGuess);
+  }
+  function renderPlay(message){
+    turnBanner(turn, "相手の秘密の数字を当てよう");
+    statusEl.className = "msg";
+    statusEl.textContent = message || (playerName(turn) + " の予想：数字を3つ選んで「予想する」を押してください。");
+    mainEl.innerHTML = "";
+    currentGuess = [];
+    const slots = document.createElement("div"); slots.className = "guess-slots";
+    const pad = document.createElement("div"); pad.className = "pad"; pad.style.marginTop = "14px";
+    const ctrl = document.createElement("div"); ctrl.className = "g-controls";
+    const guessBtn = document.createElement("button"); guessBtn.className = "btn btn-primary btn-small"; guessBtn.textContent = "🎯 予想する";
+    function paint(){
+      slots.innerHTML = "";
+      for(let i=0;i<3;i++){
+        const s = document.createElement("div");
+        s.className = "slot" + (currentGuess[i]!==undefined ? " filled" : "");
+        s.textContent = currentGuess[i]!==undefined ? currentGuess[i] : "？";
+        slots.appendChild(s);
+      }
+      pad.querySelectorAll("button").forEach(btn=>{ btn.disabled = currentGuess.includes(parseInt(btn.textContent,10)); });
+      guessBtn.disabled = currentGuess.length!==3;
+      guessBtn.style.opacity = currentGuess.length===3 ? "1" : ".45";
+    }
+    for(let d=0; d<=9; d++){
+      const b = document.createElement("button"); b.type="button"; b.textContent = d;
+      b.addEventListener("click", ()=>{ if(currentGuess.length<3 && !currentGuess.includes(d)){ currentGuess.push(d); paint(); } });
+      pad.appendChild(b);
+    }
+    const del = document.createElement("button"); del.className="btn btn-ghost btn-small"; del.textContent = "⌫ 1つ消す";
+    del.addEventListener("click", ()=>{ currentGuess.pop(); paint(); });
+    guessBtn.addEventListener("click", ()=>{ if(currentGuess.length===3) doGuess(currentGuess.slice()); });
+    ctrl.append(del, guessBtn);
+    const logsWrap = document.createElement("div"); logsWrap.className = "two-col"; logsWrap.style.marginTop = "16px";
+    [1,2].forEach(p=>{
+      const card = document.createElement("div"); card.className = "mini-card";
+      let rows = logs[p].map((l,i)=>'<tr><td>'+(i+1)+'</td><td><b>'+l.g.join("")+'</b></td><td class="hb"><span class="h">'+l.h+'ヒット</span> <span class="b">'+l.b+'ブロー</span></td></tr>').join("");
+      if(!rows) rows = '<tr><td colspan="3" style="color:var(--ink2)">まだ予想していません</td></tr>';
+      card.innerHTML = '<h4>'+playerName(p)+' の予想履歴（'+logs[p].length+'回）</h4><table class="log-table"><tr><th>#</th><th>予想</th><th>結果</th></tr>'+rows+'</table>';
+      logsWrap.appendChild(card);
+    });
+    mainEl.append(slots, pad, ctrl, logsWrap);
+    if(isCpuTurn(turn)){ pad.querySelectorAll("button").forEach(b=>b.disabled=true); guessBtn.disabled = true; del.disabled = true; }
+    paint();
+  }
+  function doGuess(g){
+    if(over) return;
+    const [h,b] = judge(g, secrets[3-turn]);
+    logs[turn].push({ g, h, b });
+    if(h===3){
+      over = true;
+      renderPlay("");
+      gameOver(turn, playerName(turn) + " が " + logs[turn].length + " 回目の予想で当てました！相手の数字は " + secrets[3-turn].join("") + " でした。");
+      return;
+    }
+    const next = 3 - turn;
+    const msg = g.join("") + " → " + h + "ヒット " + b + "ブロー。";
+    turn = next;
+    if(state.mode==="friend"){
+      renderPlay("");
+      handoff(next, ()=>renderPlay("前の結果：" + msg));
+    } else {
+      renderPlay(msg);
+      if(isCpuTurn(turn)) cpuDelay(cpuGuess);
+    }
+  }
+  // CPU: keep all candidates consistent with feedback, guess from them
+  let cpuCandidates = null;
+  function allCandidates(){
+    const out = [];
+    for(let a=0;a<=9;a++) for(let b=0;b<=9;b++){ if(b===a) continue; for(let c=0;c<=9;c++){ if(c===a||c===b) continue; out.push([a,b,c]); } }
+    return out;
+  }
+  function cpuGuess(){
+    if(over || turn!==2) return;
+    if(state.diff===1){
+      doGuess(randomSecret()); return;
+    }
+    if(!cpuCandidates) cpuCandidates = allCandidates();
+    // filter by own past feedback
+    cpuCandidates = cpuCandidates.filter(cand => logs[2].every(l=>{
+      const [h,b] = judge(l.g, cand); return h===l.h && b===l.b;
+    }));
+    if(!cpuCandidates.length) cpuCandidates = allCandidates();
+    const pick = state.diff===3 ? cpuCandidates[0] : cpuCandidates[rand(cpuCandidates.length)];
+    doGuess(pick.slice());
+  }
+  if(state.mode==="cpu"){ cpuCandidates = null; }
+  startSet(1);
+}
+
+/* ============================================================
+   6) マンカラ
+   ============================================================ */
+function initMancala(area){
+  // pits: 0-5 = P1, 6 = P1 store, 7-12 = P2, 13 = P2 store
+  let pits = Array(14).fill(4); pits[6] = 0; pits[13] = 0;
+  let turn = 1, over = false, lastPit = -1;
+  const boardEl = document.createElement("div"); boardEl.className = "mancala";
+  const msg = document.createElement("div"); msg.className = "msg";
+  area.append(boardEl, msg);
+  const stoneStr = n => "●".repeat(Math.min(n, 12)) + (n>12 ? "…" : "");
+
+  function render(message){
+    msg.textContent = message || "";
+    boardEl.innerHTML = "";
+    turnBanner(turn, "ゴール： "+playerName(1)+" "+pits[6]+"個 ／ "+playerName(2)+" "+pits[13]+"個");
+    const mid = document.createElement("div"); mid.className = "m-stores";
+    const rowsWrap = document.createElement("div");
+    const topRow2 = document.createElement("div"); topRow2.className = "m-row";
+    for(let i=12;i>=7;i--) topRow2.appendChild(pitEl(i));
+    const botRow = document.createElement("div"); botRow.className = "m-row";
+    for(let i=0;i<=5;i++) botRow.appendChild(pitEl(i));
+    rowsWrap.append(topRow2, botRow);
+    rowsWrap.style.display = "flex"; rowsWrap.style.flexDirection = "column"; rowsWrap.style.gap = "8px";
+    mid.append(storeEl(13, playerName(2)), rowsWrap, storeEl(6, playerName(1)));
+    boardEl.append(mid);
+  }
+  function storeEl(idx, label){
+    const d = document.createElement("div");
+    d.className = "pit store" + (lastPit===idx ? " lastpit" : "");
+    d.innerHTML = '<span style="font-size:.7rem">'+label+'のゴール</span><span class="cnt">'+pits[idx]+'</span><span class="stones">'+stoneStr(pits[idx])+'</span>';
+    return d;
+  }
+  function pitEl(i){
+    const owner = i<6 ? 1 : 2;
+    const b = document.createElement("button"); b.type = "button";
+    b.className = "pit" + (lastPit===i ? " lastpit" : "");
+    b.innerHTML = '<span class="cnt">'+pits[i]+'</span><span class="stones">'+stoneStr(pits[i])+'</span>';
+    if(!over && owner===turn && pits[i]>0 && !isCpuTurn(turn)){
+      b.classList.add("playable");
+      b.addEventListener("click", ()=>sow(i));
+    } else b.disabled = true;
+    return b;
+  }
+  function sow(i){
+    if(over) return;
+    const p = turn;
+    let stones = pits[i]; pits[i] = 0;
+    let idx = i;
+    while(stones>0){
+      idx = (idx+1) % 14;
+      if(idx === (p===1 ? 13 : 6)) continue; // skip opponent store
+      pits[idx]++; stones--;
+    }
+    lastPit = idx;
+    let message = "";
+    let extra = false;
+    if(idx === (p===1 ? 6 : 13)){ extra = true; message = "ゴールに入ったので、もう1回 " + playerName(p) + " の番です！"; }
+    else if((p===1 ? (idx>=0&&idx<=5) : (idx>=7&&idx<=12)) && pits[idx]===1){
+      const opp = 12 - idx;
+      if(pits[opp]>0){
+        const captured = pits[opp] + 1;
+        pits[p===1?6:13] += captured;
+        pits[opp] = 0; pits[idx] = 0;
+        message = "奪い成功！" + captured + "個をゴールへ。";
+      }
+    }
+    // end check
+    const side1 = pits.slice(0,6).reduce((a,b)=>a+b,0);
+    const side2 = pits.slice(7,13).reduce((a,b)=>a+b,0);
+    if(side1===0 || side2===0){
+      pits[6] += side1; pits[13] += side2;
+      for(let k=0;k<6;k++){ pits[k]=0; pits[7+k]=0; }
+      over = true; render(message);
+      if(pits[6]===pits[13]) gameOver(0, "ゴールは " + pits[6] + " ： " + pits[13] + " の同点でした。");
+      else gameOver(pits[6]>pits[13]?1:2, "最終ゴールは " + playerName(1) + " " + pits[6] + "個 ： " + playerName(2) + " " + pits[13] + "個でした。");
+      return;
+    }
+    if(!extra) turn = 3 - turn;
+    render(message);
+    if(isCpuTurn(turn)) cpuDelay(cpuMove);
+  }
+  function simulate(pitsIn, i, p){
+    const q = pitsIn.slice();
+    let stones = q[i]; q[i] = 0; let idx = i;
+    while(stones>0){ idx = (idx+1)%14; if(idx===(p===1?13:6)) continue; q[idx]++; stones--; }
+    let extra = idx === (p===1?6:13);
+    if(!extra && (p===1 ? (idx>=0&&idx<=5) : (idx>=7&&idx<=12)) && q[idx]===1){
+      const opp = 12 - idx;
+      if(q[opp]>0){ q[p===1?6:13] += q[opp]+1; q[opp]=0; q[idx]=0; }
+    }
+    return { q, extra };
+  }
+  function cpuMove(){
+    if(over || turn!==2) return;
+    const mine = [7,8,9,10,11,12].filter(i=>pits[i]>0);
+    if(!mine.length) return;
+    if(state.diff===1 && Math.random()<0.4){ sow(mine[rand(mine.length)]); return; }
+    let best = mine[0], bestScore = -Infinity;
+    for(const i of mine){
+      const { q, extra } = simulate(pits, i, 2);
+      let s = (q[13]-pits[13]) * 3 + (extra ? 6 : 0) + Math.random()*1.5;
+      if(state.diff===3){
+        // penalize opponent's best capture reply
+        let oppBest = 0;
+        for(let j=0;j<6;j++) if(q[j]>0){ const r2 = simulate(q, j, 1); oppBest = Math.max(oppBest, (r2.q[6]-q[6]) * 3 + (r2.extra?6:0)); }
+        s -= oppBest * 0.8;
+      }
+      if(s>bestScore){ bestScore = s; best = i; }
+    }
+    sow(best);
+  }
+  render("");
+}
+
+/* ============================================================
+   7) ドット＆ボックス
+   ============================================================ */
+function initDots(area){
+  const B = 4; // 4x4 boxes, 5x5 dots
+  // hEdges[r][c]: r in 0..B, c in 0..B-1 ; vEdges[r][c]: r in 0..B-1, c in 0..B
+  let hE = Array.from({length:B+1}, ()=>Array(B).fill(0));
+  let vE = Array.from({length:B}, ()=>Array(B+1).fill(0));
+  let boxes = Array.from({length:B}, ()=>Array(B).fill(0));
+  let turn = 1, over = false;
+  const boardEl = document.createElement("div"); boardEl.className = "dab";
+  const score = document.createElement("div"); score.className = "scorebar";
+  const msg = document.createElement("div"); msg.className = "msg";
+  area.append(score, boardEl, msg);
+
+  function boxComplete(r,c){ return hE[r][c] && hE[r+1][c] && vE[r][c] && vE[r][c+1]; }
+  function counts(){ let a=0,b=0; boxes.forEach(row=>row.forEach(v=>{ if(v===1)a++; if(v===2)b++; })); return [a,b]; }
+  function render(message){
+    const [a,b] = counts();
+    score.innerHTML =
+      '<span class="score-pill'+(turn===1&&!over?' turn':'')+'"><span class="pip" style="background:var(--p1)"></span>'+playerName(1)+'：'+a+'個</span>' +
+      '<span class="score-pill'+(turn===2&&!over?' turn':'')+'"><span class="pip" style="background:#F2B705"></span>'+playerName(2)+'：'+b+'個</span>';
+    msg.textContent = message || "";
+    boardEl.innerHTML = "";
+    for(let r=0;r<=B;r++){
+      const rowEl = document.createElement("div"); rowEl.className = "dab-row";
+      for(let c=0;c<=B;c++){
+        const d = document.createElement("div"); d.className = "dot"; rowEl.appendChild(d);
+        if(c<B){
+          const e = document.createElement("button"); e.type="button";
+          e.className = "hedge" + (hE[r][c] ? " on" : "");
+          e.setAttribute("aria-label", "横の線 "+r+"-"+c);
+          if(!hE[r][c] && !over && !isCpuTurn(turn)) e.addEventListener("click", ()=>drawH(r,c));
+          else e.disabled = true;
+          rowEl.appendChild(e);
+        }
+      }
+      boardEl.appendChild(rowEl);
+      if(r<B){
+        const rowEl2 = document.createElement("div"); rowEl2.className = "dab-row";
+        for(let c=0;c<=B;c++){
+          const e = document.createElement("button"); e.type="button";
+          e.className = "vedge" + (vE[r][c] ? " on" : "");
+          e.setAttribute("aria-label", "縦の線 "+r+"-"+c);
+          if(!vE[r][c] && !over && !isCpuTurn(turn)) e.addEventListener("click", ()=>drawV(r,c));
+          else e.disabled = true;
+          rowEl2.appendChild(e);
+          if(c<B){
+            const bx = document.createElement("div");
+            bx.className = "box" + (boxes[r][c] ? " b"+boxes[r][c] : "");
+            bx.textContent = boxes[r][c] ? (boxes[r][c]===1 ? "1" : "2") : "";
+            rowEl2.appendChild(bx);
+          }
+        }
+        boardEl.appendChild(rowEl2);
+      }
+    }
+    if(!over) turnBanner(turn, "四角を完成させると、もう1本引けます");
+  }
+  function afterDraw(gained){
+    // check end
+    let remaining = 0;
+    hE.forEach(row=>row.forEach(v=>{ if(!v) remaining++; }));
+    vE.forEach(row=>row.forEach(v=>{ if(!v) remaining++; }));
+    if(remaining===0){
+      over = true; render("");
+      const [a,b] = counts();
+      if(a===b) gameOver(0, "四角は " + a + " ： " + b + " の同点でした。");
+      else gameOver(a>b?1:2, "四角は " + playerName(1) + " " + a + "個 ： " + playerName(2) + " " + b + "個でした。");
+      return;
+    }
+    if(!gained) turn = 3 - turn;
+    render(gained ? "四角ゲット！もう1本引けます。" : "");
+    if(isCpuTurn(turn)) cpuDelay(cpuMove);
+  }
+  function drawH(r,c){
+    if(hE[r][c] || over) return;
+    hE[r][c] = turn;
+    let gained = 0;
+    if(r>0 && !boxes[r-1][c] && boxComplete(r-1,c)){ boxes[r-1][c]=turn; gained++; }
+    if(r<B && !boxes[r][c] && boxComplete(r,c)){ boxes[r][c]=turn; gained++; }
+    afterDraw(gained);
+  }
+  function drawV(r,c){
+    if(vE[r][c] || over) return;
+    vE[r][c] = turn;
+    let gained = 0;
+    if(c>0 && !boxes[r][c-1] && boxComplete(r,c-1)){ boxes[r][c-1]=turn; gained++; }
+    if(c<B && !boxes[r][c] && boxComplete(r,c)){ boxes[r][c]=turn; gained++; }
+    afterDraw(gained);
+  }
+  function boxEdgeCount(r,c){ return (hE[r][c]?1:0)+(hE[r+1][c]?1:0)+(vE[r][c]?1:0)+(vE[r][c+1]?1:0); }
+  function allEdges(){
+    const out = [];
+    for(let r=0;r<=B;r++) for(let c=0;c<B;c++) if(!hE[r][c]) out.push(["h",r,c]);
+    for(let r=0;r<B;r++) for(let c=0;c<=B;c++) if(!vE[r][c]) out.push(["v",r,c]);
+    return out;
+  }
+  function completesWith(type,r,c){
+    if(type==="h"){
+      let n=0;
+      if(r>0 && boxEdgeCount(r-1,c)===3) n++;
+      if(r<B && boxEdgeCount(r,c)===3) n++;
+      return n;
+    }
+    let n=0;
+    if(c>0 && boxEdgeCount(r,c-1)===3) n++;
+    if(c<B && boxEdgeCount(r,c)===3) n++;
+    return n;
+  }
+  function createsThree(type,r,c){
+    // after drawing, would any adjacent box reach 3 edges (a gift)?
+    let gift = 0;
+    const test = (br,bc)=>{ if(br>=0&&br<B&&bc>=0&&bc<B&&!boxes[br][bc]&&boxEdgeCount(br,bc)===2) gift++; };
+    if(type==="h"){ test(r-1,c); test(r,c); } else { test(r,c-1); test(r,c); }
+    return gift;
+  }
+  function cpuMove(){
+    if(over || turn!==2) return;
+    const edges = allEdges(); if(!edges.length) return;
+    if(state.diff===1 && Math.random()<0.35){ const [t,r,c]=edges[rand(edges.length)]; t==="h"?drawH(r,c):drawV(r,c); return; }
+    // 1) take any completing edge (most boxes first)
+    let best = null, bestGain = 0;
+    for(const [t,r,c] of edges){ const g = completesWith(t,r,c); if(g>bestGain){ bestGain=g; best=[t,r,c]; } }
+    if(best){ best[0]==="h" ? drawH(best[1],best[2]) : drawV(best[1],best[2]); return; }
+    // 2) safe edge (creates no 3-sided box)
+    const safe = edges.filter(([t,r,c])=>createsThree(t,r,c)===0);
+    if(safe.length){ const [t,r,c] = safe[rand(safe.length)]; t==="h"?drawH(r,c):drawV(r,c); return; }
+    // 3) forced to give: pick edge whose adjacent chain is smallest
+    let bestEdge = edges[0], bestCost = Infinity;
+    for(const [t,r,c] of edges){
+      // rough chain size: count connected 2-edge boxes near
+      let cost = 0;
+      const check = (br,bc)=>{ if(br>=0&&br<B&&bc>=0&&bc<B&&boxEdgeCount(br,bc)===2) cost += 1; };
+      if(t==="h"){ check(r-1,c); check(r,c); } else { check(r,c-1); check(r,c); }
+      if(state.diff===3) cost += Math.random()*0.2; else cost += Math.random()*2;
+      if(cost<bestCost){ bestCost=cost; bestEdge=[t,r,c]; }
+    }
+    bestEdge[0]==="h" ? drawH(bestEdge[1],bestEdge[2]) : drawV(bestEdge[1],bestEdge[2]);
+  }
+  render("");
+}
+</script>
+</body>
+</html>
