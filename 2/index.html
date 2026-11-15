@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="color-scheme" content="light dark" />
 <link rel="icon" href="data:," />
-<title>友達対戦ゲーム ダウンロード版</title>
+<title>友達対戦ゲーム</title>
 <style>
   :root{
     --bg:#FFF7EA; --bg2:#FFFDF7; --card:#FFFFFF; --ink:#2B2118; --ink2:#6B5B4A;
@@ -209,6 +209,19 @@
   .score-pill .pip{width:12px; height:12px; border-radius:50%;}
   .score-pill.turn{border-color:var(--amber); box-shadow:0 0 0 2px rgba(232,147,12,.35);}
 
+  /* ---------- p2p ---------- */
+  .p2p-panel{margin-top:14px; padding:14px 16px;}
+  .p2p-row{display:flex; flex-wrap:wrap; gap:8px; align-items:center;}
+  .p2p-or{color:var(--ink2); font-size:.9rem; font-weight:700;}
+  .p2p-code-input{width:9.5em; padding:9px 12px; font:inherit; font-weight:800; letter-spacing:.18em; text-transform:uppercase; border:2px solid var(--line); border-radius:12px; background:var(--bg2); color:var(--ink);}
+  .p2p-code-input:focus{outline:none; border-color:var(--amber);}
+  .p2p-code{margin-top:10px; font-size:1rem;}
+  .p2p-code b{font-size:1.7rem; letter-spacing:.3em; color:var(--accent); margin:0 6px;}
+  .p2p-code span{display:block; font-size:.85rem; color:var(--ink2);}
+  .p2p-status{margin:10px 0 0; font-size:.92rem; color:var(--ink2); font-weight:700;}
+  .p2p-status.ok{color:var(--green);}
+  .p2p-status.bad{color:var(--accent);}
+
   /* overlays */
   .overlay{position:fixed; inset:0; background:rgba(30,18,8,.72); display:none; place-items:center; z-index:50; padding:16px;}
   .overlay.show{display:grid;}
@@ -225,17 +238,13 @@
 <div id="homeView">
   <div class="wrap">
     <div class="hero">
-      <h1>友達対戦ゲーム<br>ダウンロード版</h1>
-      <p class="lead">このファイル1つで遊べる、1対1の真剣勝負ゲーム集です。相手がいるときは<strong>同じ端末を交代で使う「友達と対戦」</strong>、ひとりのときは<strong>考えて打つ「CPU対戦」</strong>。ネット接続なしでも動くので、GitHubに置いてそのまま配れます。</p>
+      <h1>友達対戦ゲーム</h1>
+      <p class="lead">1人1台の端末で戦える、1対1の真剣勝負ゲーム集です。友達とは<strong>P2P対戦</strong>：片方が部屋を作って6文字のルームコードを伝え、もう片方が自分の端末で入力して参加するだけ。ブラウザ同士が直接つながるので、対戦用サーバーは要りません。ひとりのときは<strong>考えて打つ「CPU対戦」</strong>、同じ場所にいるときは<strong>1台で交代する「2人対戦」</strong>もできます。</p>
       <div class="badges">
-        <span class="badge"><span class="dot" style="background:var(--p1)"></span>友達と対戦（端末を交代）</span>
+        <span class="badge"><span class="dot" style="background:var(--p1)"></span>P2P対戦（1人1台・ルームコード）</span>
         <span class="badge"><span class="dot" style="background:var(--teal)"></span>CPU対戦（3段階）</span>
         <span class="badge"><span class="dot" style="background:var(--amber)"></span>全7ゲーム</span>
-        <span class="badge"><span class="dot" style="background:var(--green)"></span>単一HTMLファイル</span>
-      </div>
-      <div class="dl-row">
-        <button class="btn btn-primary" id="dlBtn">⬇ このページをHTMLファイルでダウンロード</button>
-        <span class="dl-note">ダウンロードした <b>index.html</b> をGitHubリポジトリに置けば、そのまま公開できます。</span>
+        <span class="badge"><span class="dot" style="background:var(--green)"></span>2人対戦（1台で交代）</span>
       </div>
     </div>
 
@@ -276,8 +285,8 @@
       <h2><span class="num">3</span>遊び方</h2>
       <div class="steps">
         <div class="card step"><span class="n">STEP 1</span><b>名前を決める</b><p>2人の名前を入力。桃太郎や金太郎など、昔話チップをタップするだけでもOKです。</p></div>
-        <div class="card step"><span class="n">STEP 2</span><b>モードを選ぶ</b><p>ゲーム画面の上で「CPU対戦」と「友達と対戦」を切り替えます。友達と対戦は、同じ端末を交代で使って遊ぶモードです。</p></div>
-        <div class="card step"><span class="n">STEP 3</span><b>真剣勝負！</b><p>秘密を隠すゲーム（海戦・数当て）では、交代のときに「端末を渡してね」画面が出るので、相手に見られる心配はありません。</p></div>
+        <div class="card step"><span class="n">STEP 2</span><b>モードを選ぶ</b><p>ゲーム画面の上でモードを切り替えます。離れた友達とは「P2P対戦」、ひとりなら「CPU対戦」、同じ場所なら「2人対戦（1台）」です。</p></div>
+        <div class="card step"><span class="n">STEP 3</span><b>P2Pでつながる</b><p>P2P対戦では、片方が「部屋を作る」で出た6文字コードを友達に伝え、友達が自分の端末で入力して「参加する」を押せば接続完了。そのまま真剣勝負です。</p></div>
       </div>
     </section>
 
@@ -291,19 +300,8 @@
       </div>
     </section>
 
-    <section>
-      <div class="card gh-note">
-        <b>GitHubへの上げ方</b>
-        <ol>
-          <li>上のボタンでこのページをダウンロードし、ファイル名を <b>index.html</b> にします。</li>
-          <li>GitHubで新しいリポジトリを作り、index.html をアップロードします。</li>
-          <li>リポジトリの Settings → Pages で公開を有効にすると、URLで誰でも遊べるようになります。</li>
-        </ol>
-        <p style="margin:10px 0 0">ファイルは1つだけ。中身はHTML・CSS・JavaScriptだけなので、ビルドやサーバーは要りません。</p>
-      </div>
-    </section>
 
-    <footer>友達対戦ゲーム ダウンロード版 ／ 全7ゲーム・CPU対戦＆友達と対戦対応</footer>
+    <footer>友達対戦ゲーム ／ 全7ゲーム・P2P対戦＆CPU対戦＆2人対戦対応</footer>
   </div>
 </div>
 
@@ -317,7 +315,8 @@
     <div class="g-head" style="margin-top:12px;">
       <div class="seg" role="group" aria-label="対戦モード">
         <button id="modeCpu">🤖 CPU対戦</button>
-        <button id="modeFriend">👥 友達と対戦</button>
+        <button id="modeP2p">🌐 P2P対戦</button>
+        <button id="modeFriend">👥 2人対戦（1台）</button>
       </div>
       <select class="diff-sel" id="diffSel" aria-label="CPUの強さ">
         <option value="1">CPU：よわい</option>
@@ -325,6 +324,17 @@
         <option value="3">CPU：つよい</option>
       </select>
       <button class="btn btn-ghost btn-small" id="restartBtn">↻ はじめから</button>
+    </div>
+    <div class="card p2p-panel hidden" id="p2pPanel">
+      <div class="p2p-row">
+        <button class="btn btn-primary btn-small" id="p2pCreate">部屋を作る</button>
+        <span class="p2p-or">または</span>
+        <input class="p2p-code-input" id="p2pJoinCode" type="text" maxlength="6" placeholder="6文字コード" aria-label="参加するルームコード">
+        <button class="btn btn-ghost btn-small" id="p2pJoin">参加する</button>
+        <button class="btn btn-ghost btn-small hidden" id="p2pLeave">切断する</button>
+      </div>
+      <div class="p2p-code hidden" id="p2pCodeBox">ルームコード：<b id="p2pCode"></b><span>友達にこのコードを伝えてください</span></div>
+      <p class="p2p-status" id="p2pStatus">P2P対戦は1人1台の端末で遊ぶモードです。部屋を作った人が先手（プレイヤー1）になります。相手に表示される名前は、ホームの「プレイヤー1」の欄に入れたものが使われます。</p>
     </div>
     <div class="turn-banner card" id="turnBanner"></div>
     <div class="card board-card">
@@ -350,11 +360,12 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script>
 "use strict";
 /* ============================================================
-   友達対戦ゲーム ダウンロード版
-   単一HTMLファイル / CPU対戦 & 同じ端末で友達と対戦（2人プレイ）
+   友達対戦ゲーム
+   CPU対戦 & P2P対戦（PeerJS/WebRTC・1人1台）& 2人対戦（同じ端末）
    ============================================================ */
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
@@ -364,15 +375,22 @@ const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=rand(
 const FOLK = ["桃太郎","金太郎","浦島太郎","かぐや姫","一寸法師","花咲か爺さん","つる","たぬき","さる","分福茶釜"];
 const state = {
   names: ["桃太郎","金太郎"],
-  mode: "cpu",           // 'cpu' | 'friend'
+  mode: "cpu",           // 'cpu' | 'p2p' | 'friend'
   diff: 2,
   game: null,            // current game id
+  myPlayer: 1,           // P2P時の自分の番号（部屋を作った側=1）
+  applyingRemote: false, // P2Pで相手の手を適用中か
+  netGameHandler: null,  // 海戦・数当てなどゲーム固有のP2P受信ハンドラ
+  net: { peer:null, conn:null, connected:false, isHost:false, code:"" },
   stats: { games:0, p1:0, p2:0, draw:0 },
 };
 function playerName(p){ // p: 1 | 2
   if(p===2 && state.mode==="cpu") return "CPU";
   return state.names[p-1] || ("プレイヤー"+p);
 }
+// 名前は相手（P2P）や入力欄から来る文字列なので、innerHTMLに入れる箇所では必ずエスケープする
+function escHtml(str){ return String(str).replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch])); }
+function playerNameHtml(p){ return escHtml(playerName(p)); }
 function refreshStats(){
   $("#stGames").textContent = state.stats.games;
   $("#stP1").textContent = state.stats.p1;
@@ -411,19 +429,8 @@ function gameOver(winner, text){
   recordResult(winner);
   const emoji = winner===0 ? "🤝" : "🏆";
   const title = winner===0 ? "引き分け！" : playerName(winner) + " の勝ち！";
-  showOverlay(emoji, title, text || "", "もう一局", ()=>{ startGame(state.game); }, true);
+  showOverlay(emoji, title, text || "", "もう一局", ()=>{ if(state.mode==="p2p") netSend({t:"restart", game: state.game}); startGame(state.game); }, true);
 }
-
-/* ---------- download this file ---------- */
-$("#dlBtn").addEventListener("click", ()=>{
-  const html = "<!doctype html>\n" + document.documentElement.outerHTML;
-  const blob = new Blob([html], {type:"text/html;charset=utf-8"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "index.html";
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(()=>URL.revokeObjectURL(a.href), 3000);
-});
 
 /* ---------- name chips ---------- */
 function buildChips(containerId, inputId, playerIdx){
@@ -536,13 +543,16 @@ function goHome(){
 $("#backBtn").addEventListener("click", goHome);
 function syncModeUI(){
   $("#modeCpu").classList.toggle("on", state.mode==="cpu");
+  $("#modeP2p").classList.toggle("on", state.mode==="p2p");
   $("#modeFriend").classList.toggle("on", state.mode==="friend");
   $("#diffSel").style.display = state.mode==="cpu" ? "" : "none";
+  $("#p2pPanel").classList.toggle("hidden", state.mode!=="p2p");
 }
-$("#modeCpu").addEventListener("click", ()=>{ if(state.mode!=="cpu"){ state.mode="cpu"; syncModeUI(); startGame(state.game); } });
-$("#modeFriend").addEventListener("click", ()=>{ if(state.mode!=="friend"){ state.mode="friend"; syncModeUI(); startGame(state.game); } });
+$("#modeCpu").addEventListener("click", ()=>{ if(state.mode!=="cpu"){ if(state.mode==="p2p") p2pTeardown(true); state.mode="cpu"; syncModeUI(); startGame(state.game); } });
+$("#modeP2p").addEventListener("click", ()=>{ if(state.mode!=="p2p"){ state.mode="p2p"; syncModeUI(); startGame(state.game); } });
+$("#modeFriend").addEventListener("click", ()=>{ if(state.mode!=="friend"){ if(state.mode==="p2p") p2pTeardown(true); state.mode="friend"; syncModeUI(); startGame(state.game); } });
 $("#diffSel").addEventListener("change", e=>{ state.diff = parseInt(e.target.value,10); startGame(state.game); });
-$("#restartBtn").addEventListener("click", ()=>startGame(state.game));
+$("#restartBtn").addEventListener("click", ()=>{ if(state.mode==="p2p") netSend({t:"restart", game: state.game}); startGame(state.game); });
 
 function setBanner(html, color){
   const b = $("#turnBanner");
@@ -551,16 +561,108 @@ function setBanner(html, color){
 }
 function turnBanner(turn, extra){
   const c = turn===1 ? "var(--p1)" : "var(--p2)";
-  setBanner('<span class="who"><span class="pip" style="background:'+c+'"></span>' + playerName(turn) + ' の番です</span>' + (extra ? '<small>'+extra+'</small>' : ''), c);
+  setBanner('<span class="who"><span class="pip" style="background:'+c+'"></span>' + playerNameHtml(turn) + ' の番です</span>' + (extra ? '<small>'+extra+'</small>' : ''), c);
 }
 function startGame(id){
   if(!id) return;
   const area = $("#boardArea");
   area.innerHTML = "";
+  G_api = null;
+  state.netGameHandler = null;
   ({ gomoku:initGomoku, reversi:initReversi, connect4:initConnect4, battleship:initBattleship, number:initNumber, mancala:initMancala, dots:initDots })[id](area);
 }
 const isCpuTurn = turn => state.mode==="cpu" && turn===2;
+const inputLocked = turn => isCpuTurn(turn) || (state.mode==="p2p" && (!state.net.connected || turn !== state.myPlayer));
+let G_api = null; // 現在のゲームの「相手の手を適用する」関数
+function netSend(obj){ if(state.mode==="p2p" && state.net.conn && state.net.connected){ try{ state.net.conn.send(obj); }catch(e){} } }
+function netForward(obj){ if(state.mode==="p2p" && !state.applyingRemote) netSend(obj); }
+function applyRemote(fn){ state.applyingRemote = true; try{ fn(); } finally { state.applyingRemote = false; } }
 function cpuDelay(fn){ setTimeout(fn, 550); }
+
+/* ============================================================
+   P2P対戦（PeerJS / WebRTC・1人1台・ルームコード方式）
+   ============================================================ */
+const P2P_PREFIX = "muse-tomodachi-battle-v1-";
+const CODE_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+function makeRoomCode(){ let out=""; for(let i=0;i<6;i++) out += CODE_CHARS[rand(CODE_CHARS.length)]; return out; }
+function p2pStatus(text, cls){
+  const el = $("#p2pStatus"); if(!el) return;
+  el.textContent = text;
+  el.className = "p2p-status" + (cls ? " " + cls : "");
+}
+function p2pTeardown(silent){
+  if(state.net.conn){ try{ state.net.conn.close(); }catch(e){} }
+  if(state.net.peer){ try{ state.net.peer.destroy(); }catch(e){} }
+  state.net.conn = null; state.net.peer = null;
+  state.net.connected = false; state.net.isHost = false; state.net.code = "";
+  state.myPlayer = 1;
+  const cb = $("#p2pCodeBox"); if(cb) cb.classList.add("hidden");
+  const lv = $("#p2pLeave"); if(lv) lv.classList.add("hidden");
+  if(!silent) p2pStatus("切断しました。部屋を作るか、友達のコードで参加してください。");
+}
+function p2pSetupConn(conn){
+  state.net.conn = conn;
+  conn.on("open", ()=>{
+    state.net.connected = true;
+    state.myPlayer = state.net.isHost ? 1 : 2;
+    if(!state.net.isHost) state.names[1] = state.names[0]; // 参加側：自分の名前はプレイヤー2欄へ
+    refreshStats();
+    $("#p2pLeave").classList.remove("hidden");
+    p2pStatus("接続しました！あなたは" + (state.myPlayer===1 ? "先手（プレイヤー1）" : "後手（プレイヤー2）") + "です。", "ok");
+    netSend({ t:"hello", name: state.names[state.myPlayer-1] || ("プレイヤー"+state.myPlayer), game: state.game });
+    if(state.game) applyRemote(()=>startGame(state.game));
+  });
+  conn.on("data", data=>{ if(data && data.t) handleNetData(data); });
+  conn.on("close", ()=>{
+    state.net.connected = false;
+    p2pStatus("相手との接続が切れました。", "bad");
+    if(state.game) startGame(state.game);
+  });
+  conn.on("error", ()=>{ p2pStatus("接続エラーが発生しました。コードを確認してもう一度お試しください。", "bad"); });
+}
+function handleNetData(d){
+  if(d.t==="hello"){
+    const other = state.myPlayer===1 ? 2 : 1;
+    if(d.name){ state.names[other-1] = String(d.name).slice(0, 20); refreshStats(); }
+    p2pStatus("「" + (d.name || "相手") + "」さんと接続中。あなたは" + (state.myPlayer===1 ? "先手" : "後手") + "です。", "ok");
+    if(!state.net.isHost && d.game && d.game!==state.game) openGame(d.game);
+    return;
+  }
+  if(d.t==="restart"){
+    if(d.game && d.game!==state.game){
+      const g = GAMES.find(x=>x.id===d.game);
+      if(g){ state.game = d.game; $("#gTitle").textContent = g.name; $("#rulesBody").innerHTML = g.rules; }
+    }
+    applyRemote(()=>startGame(state.game));
+    return;
+  }
+  if(d.t==="fleet" || d.t==="secret"){ if(state.netGameHandler) state.netGameHandler(d); return; }
+  if(d.t==="move" && G_api){ applyRemote(()=>G_api(d)); return; }
+}
+$("#p2pCreate").addEventListener("click", ()=>{
+  if(typeof Peer === "undefined"){ p2pStatus("P2P用のライブラリを読み込めませんでした。ネット接続を確認してください。", "bad"); return; }
+  p2pTeardown(true);
+  const code = makeRoomCode();
+  state.net.code = code; state.net.isHost = true;
+  $("#p2pCode").textContent = code;
+  $("#p2pCodeBox").classList.remove("hidden");
+  p2pStatus("友達の接続を待っています…。この6文字コードを友達に伝えてください。");
+  state.net.peer = new Peer(P2P_PREFIX + code);
+  state.net.peer.on("connection", conn=>p2pSetupConn(conn));
+  state.net.peer.on("error", ()=>{ p2pStatus("接続エラーが発生しました。もう一度「部屋を作る」を押してください。", "bad"); });
+});
+$("#p2pJoin").addEventListener("click", ()=>{
+  if(typeof Peer === "undefined"){ p2pStatus("P2P用のライブラリを読み込めませんでした。ネット接続を確認してください。", "bad"); return; }
+  const code = $("#p2pJoinCode").value.trim().toUpperCase();
+  if(code.length!==6){ p2pStatus("6文字のルームコードを入力してください。", "bad"); return; }
+  p2pTeardown(true);
+  state.net.code = code; state.net.isHost = false;
+  p2pStatus("部屋「" + code + "」に接続しています…");
+  state.net.peer = new Peer();
+  state.net.peer.on("open", ()=>{ p2pSetupConn(state.net.peer.connect(P2P_PREFIX + code, { reliable:true })); });
+  state.net.peer.on("error", ()=>{ p2pStatus("接続できませんでした。コードが合っているか、相手が部屋を作っているか確認してください。", "bad"); });
+});
+$("#p2pLeave").addEventListener("click", ()=>{ p2pTeardown(false); if(state.game) startGame(state.game); });
 
 /* ============================================================
    1) 五目並べ
@@ -575,6 +677,7 @@ function initGomoku(area){
   const msg = document.createElement("div"); msg.className = "msg";
   area.append(gridEl, msg);
   turnBanner(1, "黒石が先手です");
+  G_api = d => { if(d.game==="gomoku") place(d.r, d.c); };
 
   function winAt(r,c,p){
     const dirs = [[1,0],[0,1],[1,1],[1,-1]];
@@ -598,12 +701,13 @@ function initGomoku(area){
         s.className = "stone s"+board[r][c] + (last && last[0]===r && last[1]===c ? " last" : "");
         b.appendChild(s);
       }
-      if(!over && !board[r][c] && !isCpuTurn(turn)) b.addEventListener("click", ()=>place(r,c));
+      if(!over && !board[r][c] && !inputLocked(turn)) b.addEventListener("click", ()=>place(r,c));
       gridEl.appendChild(b);
     }
   }
   function place(r,c){
     if(over || board[r][c]) return;
+    netForward({t:"move", game:"gomoku", r:r, c:c});
     board[r][c] = turn; last = [r,c];
     if(winAt(r,c,turn)){ over = true; render(); gameOver(turn, "5つ並びました！見事な一局でした。"); return; }
     if(board.every(row=>row.every(v=>v!==0))){ over = true; render(); gameOver(0, "盤がいっぱいになりました。"); return; }
@@ -665,6 +769,7 @@ function initReversi(area){
   const msg = document.createElement("div"); msg.className = "msg";
   const score = document.createElement("div"); score.className = "scorebar";
   area.append(score, gridEl, msg);
+  G_api = d => { if(d.game==="reversi") place(d.r, d.c); };
   const DIRS = [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
   function flipsFor(r,c,p){
     if(board[r][c]) return [];
@@ -686,23 +791,24 @@ function initReversi(area){
   function render(){
     const [a,b] = counts();
     score.innerHTML =
-      '<span class="score-pill'+(turn===1&&!over?' turn':'')+'"><span class="pip" style="background:#222"></span>'+playerName(1)+'：'+a+'枚</span>' +
-      '<span class="score-pill'+(turn===2&&!over?' turn':'')+'"><span class="pip" style="background:#eee;border:1px solid #999"></span>'+playerName(2)+'：'+b+'枚</span>';
+      '<span class="score-pill'+(turn===1&&!over?' turn':'')+'"><span class="pip" style="background:#222"></span>'+playerNameHtml(1)+'：'+a+'枚</span>' +
+      '<span class="score-pill'+(turn===2&&!over?' turn':'')+'"><span class="pip" style="background:#eee;border:1px solid #999"></span>'+playerNameHtml(2)+'：'+b+'枚</span>';
     const legal = over ? [] : legalMoves(turn);
     const legalSet = new Set(legal.map(m=>m[0]+","+m[1]));
     gridEl.innerHTML = "";
     for(let r=0;r<N;r++) for(let c=0;c<N;c++){
       const btn = document.createElement("button"); btn.type="button";
       if(board[r][c]){ const d=document.createElement("span"); d.className="disc d"+board[r][c]; btn.appendChild(d); }
-      if(legalSet.has(r+","+c) && !isCpuTurn(turn)) btn.classList.add("hint");
+      if(legalSet.has(r+","+c) && !inputLocked(turn)) btn.classList.add("hint");
       if(last && last[0]===r && last[1]===c) btn.classList.add("lastmove");
-      if(!over && legalSet.has(r+","+c) && !isCpuTurn(turn)) btn.addEventListener("click", ()=>place(r,c));
+      if(!over && legalSet.has(r+","+c) && !inputLocked(turn)) btn.addEventListener("click", ()=>place(r,c));
       gridEl.appendChild(btn);
     }
     if(!over) turnBanner(turn, "黒 "+a+" ： 白 "+b);
   }
   function place(r,c){
     const f = flipsFor(r,c,turn); if(!f.length || over) return;
+    netForward({t:"move", game:"reversi", r:r, c:c});
     board[r][c] = turn; f.forEach(([rr,cc])=>board[rr][cc]=turn); last=[r,c];
     advance();
   }
@@ -757,6 +863,7 @@ function initConnect4(area){
   const msg = document.createElement("div"); msg.className = "msg";
   wrap.append(cols, gridEl);
   area.append(wrap, msg);
+  G_api = d => { if(d.game==="connect4") drop(d.c); };
   turnBanner(1, "列のボタンを押してコマを落とそう");
 
   function dropRow(c){ for(let r=R-1;r>=0;r--) if(!board[r][c]) return r; return -1; }
@@ -777,7 +884,7 @@ function initConnect4(area){
     for(let c=0;c<C;c++){
       const b = document.createElement("button"); b.type="button"; b.textContent = "▼";
       b.setAttribute("aria-label", (c+1)+"列目に落とす");
-      if(over || dropRow(c)<0 || isCpuTurn(turn)) b.disabled = true;
+      if(over || dropRow(c)<0 || inputLocked(turn)) b.disabled = true;
       else b.addEventListener("click", ()=>drop(c));
       cols.appendChild(b);
     }
@@ -793,6 +900,7 @@ function initConnect4(area){
   function drop(c){
     if(over) return;
     const r = dropRow(c); if(r<0) return;
+    netForward({t:"move", game:"connect4", c:c});
     board[r][c] = turn;
     const w = winLine(r,c,turn);
     if(w){ winCells = w; over = true; render(); gameOver(turn, "4つ並びました！"); return; }
@@ -886,6 +994,9 @@ function initBattleship(area){
   const subEl = document.createElement("div");
   const ctrlEl = document.createElement("div"); ctrlEl.className = "g-controls";
   area.append(statusEl, mainEl, subEl, ctrlEl);
+  G_api = d => { if(d.game==="battleship") shoot(d.r, d.c); };
+  let peerFleet = null, myFleetSent = false;
+  state.netGameHandler = d => { if(d.t==="fleet"){ peerFleet = d.fleet; fleets[state.myPlayer===1?2:1] = d.fleet; if(myFleetSent) startBattle(); } };
 
   function emptyGrid(){ return Array.from({length:N}, ()=>Array(N).fill(0)); }
   function randomFleet(){
@@ -928,7 +1039,7 @@ function initBattleship(area){
     return true;
   }
   function renderPlacement(){
-    setBanner('<span class="who"><span class="pip" style="background:'+(placingPlayer===1?"var(--p1)":"var(--p2)")+'"></span>'+playerName(placingPlayer)+' の艦隊を配置してください</span>', placingPlayer===1?"var(--p1)":"var(--p2)");
+    setBanner('<span class="who"><span class="pip" style="background:'+(placingPlayer===1?"var(--p1)":"var(--p2)")+'"></span>'+playerNameHtml(placingPlayer)+' の艦隊を配置してください</span>', placingPlayer===1?"var(--p1)":"var(--p2)");
     statusEl.className = "msg";
     statusEl.textContent = placeIdx < SHIPS.length
       ? "次に置く船：" + SHIPS[placeIdx].name + "（長さ" + SHIPS[placeIdx].len + "）— 海をタップして配置"
@@ -963,6 +1074,13 @@ function initBattleship(area){
       const done = document.createElement("button"); done.className="btn btn-primary btn-small"; done.textContent = "✓ この配置で決定";
       done.addEventListener("click", ()=>{
         fleets[placingPlayer] = { grid: placeGrid, ships: placeShips };
+        if(state.mode==="p2p"){
+          myFleetSent = true;
+          netSend({ t:"fleet", fleet: fleets[placingPlayer] });
+          if(peerFleet) startBattle();
+          else { statusEl.textContent = "配置完了！相手の配置が終わるのを待っています…"; statusEl.className = "msg"; ctrlEl.innerHTML = ""; }
+          return;
+        }
         if(placingPlayer===1){
           if(state.mode==="cpu"){ fleets[2] = randomFleet(); startBattle(); }
           else handoff(2, ()=>startPlacement(2));
@@ -981,7 +1099,7 @@ function initBattleship(area){
     turnBanner(turn, "相手の海を攻撃しよう");
     statusEl.textContent = message || "相手の海のマスをタップして攻撃！命中したらもう1回攻撃できます。";
     statusEl.className = "msg" + (isBad ? " bad" : "");
-    mainEl.innerHTML = '<div class="sea-label">相手の海（'+playerName(3-turn)+'）</div>';
+    mainEl.innerHTML = '<div class="sea-label">相手の海（'+playerNameHtml(3-turn)+'）</div>';
     const g = document.createElement("div"); g.className = "sea target";
     const opp = fleets[3-turn];
     for(let r=0;r<N;r++) for(let c=0;c<N;c++){
@@ -990,14 +1108,14 @@ function initBattleship(area){
       if(s===1){ b.classList.add("miss"); b.textContent = "・"; }
       if(s===2){ b.classList.add("hit"); b.textContent = "💥"; }
       if(s===3){ b.classList.add("sunk"); b.textContent = "🔥"; }
-      if(!s && !over && !isCpuTurn(turn)) b.addEventListener("click", ()=>shoot(r,c));
+      if(!s && !over && !inputLocked(turn)) b.addEventListener("click", ()=>shoot(r,c));
       g.appendChild(b);
     }
     mainEl.appendChild(g);
     const fs = document.createElement("div"); fs.className="fleet-status"; fs.style.marginTop="10px";
     fs.innerHTML = fleetStatusHtml(3-turn);
     mainEl.appendChild(fs);
-    subEl.innerHTML = '<div class="sea-label" style="margin-top:14px">自分の海（'+playerName(turn)+'）</div>';
+    subEl.innerHTML = '<div class="sea-label" style="margin-top:14px">自分の海（'+playerNameHtml(turn)+'）</div>';
     const g3 = document.createElement("div"); g3.className = "sea own";
     const mine = fleets[turn];
     for(let r=0;r<N;r++) for(let c=0;c<N;c++){
@@ -1016,6 +1134,7 @@ function initBattleship(area){
   }
   function shoot(r,c){
     if(over || shots[turn][r][c]) return;
+    netForward({t:"move", game:"battleship", r:r, c:c});
     const opp = fleets[3-turn];
     if(opp.grid[r][c]){
       shots[turn][r][c] = 2;
@@ -1076,7 +1195,7 @@ function initBattleship(area){
       });
     }
   }
-  startPlacement(1);
+  startPlacement(state.mode==="p2p" ? state.myPlayer : 1);
 }
 
 /* ============================================================
@@ -1142,11 +1261,18 @@ function initNumber(area){
     phase = "set"; settingPlayer = p;
     digitPad(secret=>{
       secrets[p] = secret;
+      if(state.mode==="p2p"){
+        mySecretSent = true;
+        netSend({ t:"secret", secret: secret });
+        if(peerSecret) startPlay();
+        else { setBanner('<span class="who">相手が数字を決めるのを待っています…</span>'); statusEl.textContent = "あなたの数字は決定済みです。相手の準備が終わるまでお待ちください。"; statusEl.className = "msg"; mainEl.innerHTML = ""; }
+        return;
+      }
       if(p===1){
         if(state.mode==="cpu"){ secrets[2] = randomSecret(); startPlay(); }
         else handoff(2, ()=>startSet(2));
       } else startPlay();
-    }, playerName(p) + " の秘密の数字を決めてください");
+    }, playerNameHtml(p) + " の秘密の数字を決めてください");
   }
   function startPlay(){
     phase = "play"; turn = 1;
@@ -1189,15 +1315,16 @@ function initNumber(area){
       const card = document.createElement("div"); card.className = "mini-card";
       let rows = logs[p].map((l,i)=>'<tr><td>'+(i+1)+'</td><td><b>'+l.g.join("")+'</b></td><td class="hb"><span class="h">'+l.h+'ヒット</span> <span class="b">'+l.b+'ブロー</span></td></tr>').join("");
       if(!rows) rows = '<tr><td colspan="3" style="color:var(--ink2)">まだ予想していません</td></tr>';
-      card.innerHTML = '<h4>'+playerName(p)+' の予想履歴（'+logs[p].length+'回）</h4><table class="log-table"><tr><th>#</th><th>予想</th><th>結果</th></tr>'+rows+'</table>';
+      card.innerHTML = '<h4>'+playerNameHtml(p)+' の予想履歴（'+logs[p].length+'回）</h4><table class="log-table"><tr><th>#</th><th>予想</th><th>結果</th></tr>'+rows+'</table>';
       logsWrap.appendChild(card);
     });
     mainEl.append(slots, pad, ctrl, logsWrap);
-    if(isCpuTurn(turn)){ pad.querySelectorAll("button").forEach(b=>b.disabled=true); guessBtn.disabled = true; del.disabled = true; }
+    if(inputLocked(turn)){ pad.querySelectorAll("button").forEach(b=>b.disabled=true); guessBtn.disabled = true; del.disabled = true; }
     paint();
   }
   function doGuess(g){
     if(over) return;
+    netForward({t:"move", game:"number", g:g});
     const [h,b] = judge(g, secrets[3-turn]);
     logs[turn].push({ g, h, b });
     if(h===3){
@@ -1239,7 +1366,10 @@ function initNumber(area){
     doGuess(pick.slice());
   }
   if(state.mode==="cpu"){ cpuCandidates = null; }
-  startSet(1);
+  G_api = d => { if(d.game==="number") doGuess(d.g); };
+  let peerSecret = null, mySecretSent = false;
+  state.netGameHandler = d => { if(d.t==="secret"){ peerSecret = d.secret; secrets[state.myPlayer===1?2:1] = d.secret; if(mySecretSent) startPlay(); } };
+  startSet(state.mode==="p2p" ? state.myPlayer : 1);
 }
 
 /* ============================================================
@@ -1252,12 +1382,13 @@ function initMancala(area){
   const boardEl = document.createElement("div"); boardEl.className = "mancala";
   const msg = document.createElement("div"); msg.className = "msg";
   area.append(boardEl, msg);
+  G_api = d => { if(d.game==="mancala") sow(d.i); };
   const stoneStr = n => "●".repeat(Math.min(n, 12)) + (n>12 ? "…" : "");
 
   function render(message){
     msg.textContent = message || "";
     boardEl.innerHTML = "";
-    turnBanner(turn, "ゴール： "+playerName(1)+" "+pits[6]+"個 ／ "+playerName(2)+" "+pits[13]+"個");
+    turnBanner(turn, "ゴール： "+playerNameHtml(1)+" "+pits[6]+"個 ／ "+playerNameHtml(2)+" "+pits[13]+"個");
     const mid = document.createElement("div"); mid.className = "m-stores";
     const rowsWrap = document.createElement("div");
     const topRow2 = document.createElement("div"); topRow2.className = "m-row";
@@ -1272,7 +1403,7 @@ function initMancala(area){
   function storeEl(idx, label){
     const d = document.createElement("div");
     d.className = "pit store" + (lastPit===idx ? " lastpit" : "");
-    d.innerHTML = '<span style="font-size:.7rem">'+label+'のゴール</span><span class="cnt">'+pits[idx]+'</span><span class="stones">'+stoneStr(pits[idx])+'</span>';
+    d.innerHTML = '<span style="font-size:.7rem">'+escHtml(label)+'のゴール</span><span class="cnt">'+pits[idx]+'</span><span class="stones">'+stoneStr(pits[idx])+'</span>';
     return d;
   }
   function pitEl(i){
@@ -1280,7 +1411,7 @@ function initMancala(area){
     const b = document.createElement("button"); b.type = "button";
     b.className = "pit" + (lastPit===i ? " lastpit" : "");
     b.innerHTML = '<span class="cnt">'+pits[i]+'</span><span class="stones">'+stoneStr(pits[i])+'</span>';
-    if(!over && owner===turn && pits[i]>0 && !isCpuTurn(turn)){
+    if(!over && owner===turn && pits[i]>0 && !inputLocked(turn)){
       b.classList.add("playable");
       b.addEventListener("click", ()=>sow(i));
     } else b.disabled = true;
@@ -1288,6 +1419,7 @@ function initMancala(area){
   }
   function sow(i){
     if(over) return;
+    netForward({t:"move", game:"mancala", i:i});
     const p = turn;
     let stones = pits[i]; pits[i] = 0;
     let idx = i;
@@ -1371,14 +1503,15 @@ function initDots(area){
   const score = document.createElement("div"); score.className = "scorebar";
   const msg = document.createElement("div"); msg.className = "msg";
   area.append(score, boardEl, msg);
+  G_api = d => { if(d.game!=="dots") return; if(d.kind==="h") drawH(d.r, d.c); else drawV(d.r, d.c); };
 
   function boxComplete(r,c){ return hE[r][c] && hE[r+1][c] && vE[r][c] && vE[r][c+1]; }
   function counts(){ let a=0,b=0; boxes.forEach(row=>row.forEach(v=>{ if(v===1)a++; if(v===2)b++; })); return [a,b]; }
   function render(message){
     const [a,b] = counts();
     score.innerHTML =
-      '<span class="score-pill'+(turn===1&&!over?' turn':'')+'"><span class="pip" style="background:var(--p1)"></span>'+playerName(1)+'：'+a+'個</span>' +
-      '<span class="score-pill'+(turn===2&&!over?' turn':'')+'"><span class="pip" style="background:#F2B705"></span>'+playerName(2)+'：'+b+'個</span>';
+      '<span class="score-pill'+(turn===1&&!over?' turn':'')+'"><span class="pip" style="background:var(--p1)"></span>'+playerNameHtml(1)+'：'+a+'個</span>' +
+      '<span class="score-pill'+(turn===2&&!over?' turn':'')+'"><span class="pip" style="background:#F2B705"></span>'+playerNameHtml(2)+'：'+b+'個</span>';
     msg.textContent = message || "";
     boardEl.innerHTML = "";
     for(let r=0;r<=B;r++){
@@ -1389,7 +1522,7 @@ function initDots(area){
           const e = document.createElement("button"); e.type="button";
           e.className = "hedge" + (hE[r][c] ? " on" : "");
           e.setAttribute("aria-label", "横の線 "+r+"-"+c);
-          if(!hE[r][c] && !over && !isCpuTurn(turn)) e.addEventListener("click", ()=>drawH(r,c));
+          if(!hE[r][c] && !over && !inputLocked(turn)) e.addEventListener("click", ()=>drawH(r,c));
           else e.disabled = true;
           rowEl.appendChild(e);
         }
@@ -1401,7 +1534,7 @@ function initDots(area){
           const e = document.createElement("button"); e.type="button";
           e.className = "vedge" + (vE[r][c] ? " on" : "");
           e.setAttribute("aria-label", "縦の線 "+r+"-"+c);
-          if(!vE[r][c] && !over && !isCpuTurn(turn)) e.addEventListener("click", ()=>drawV(r,c));
+          if(!vE[r][c] && !over && !inputLocked(turn)) e.addEventListener("click", ()=>drawV(r,c));
           else e.disabled = true;
           rowEl2.appendChild(e);
           if(c<B){
@@ -1434,6 +1567,7 @@ function initDots(area){
   }
   function drawH(r,c){
     if(hE[r][c] || over) return;
+    netForward({t:"move", game:"dots", kind:"h", r:r, c:c});
     hE[r][c] = turn;
     let gained = 0;
     if(r>0 && !boxes[r-1][c] && boxComplete(r-1,c)){ boxes[r-1][c]=turn; gained++; }
@@ -1442,6 +1576,7 @@ function initDots(area){
   }
   function drawV(r,c){
     if(vE[r][c] || over) return;
+    netForward({t:"move", game:"dots", kind:"v", r:r, c:c});
     vE[r][c] = turn;
     let gained = 0;
     if(c>0 && !boxes[r][c-1] && boxComplete(r,c-1)){ boxes[r][c-1]=turn; gained++; }
