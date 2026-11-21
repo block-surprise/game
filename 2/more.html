@@ -761,15 +761,15 @@ function tkSimShot(st, seat, angleDeg, power, record){
     vx+=windAcc; vy+=0.32;
     x+=vx; y+=vy;
     if(record&&t%2===0)pts.push([x,y]);
-    if(x<-20||x>TK_W+20||y>TK_H+30) return {hit:false, pts:pts};
+    if(x<-20||x>TK_W+20||y>TK_H+30) return {hit:false, ex:x, ey:y, pts:pts};
     for(let i=0;i<2;i++){
       const tt=st.tanks[i], ty=tkGroundY(st,tt.x)-8;
       const dx=x-tt.x, dy=y-ty;
-      if(dx*dx+dy*dy<17*17) return {hit:true, x:tt.x, y:ty, pts:pts};
+      if(dx*dx+dy*dy<17*17) return {hit:true, x:tt.x, y:ty, ex:x, ey:y, pts:pts};
     }
-    if(y>=tkGroundY(st,x)) return {hit:true, x:x, y:y, pts:pts};
+    if(y>=tkGroundY(st,x)) return {hit:true, x:x, y:y, ex:x, ey:y, pts:pts};
   }
-  return {hit:false, pts:pts};
+  return {hit:false, ex:x, ey:y, pts:pts};
 }
 function tkExplode(st, hx, hy){
   const R=34;
@@ -812,20 +812,29 @@ const G_tank={
     return null;
   },
   cpu(st){
-    const me=st.tanks[1], op=st.tanks[0];
-    let best=null, bestD=1e9;
+    const op=st.tanks[0];
+    const oy=tkGroundY(st,op.x)-8;
+    function score(ang,pw){
+      const r=tkSimShot(st,1,ang,pw,false);
+      const ix=r.hit? r.x : r.ex, iy=r.hit? r.y : r.ey;
+      const d=Math.hypot(ix-op.x, iy-oy);
+      return d<46? 78*(1-d/46) : -d*0.05;
+    }
+    let best={ang:120,pw:60}, bestS=-1e9;
     for(let ang=15;ang<=165;ang+=3){
       for(let pw=25;pw<=100;pw+=4){
-        const r=tkSimShot(st,1,ang,pw,false);
-        if(!r.pts.length)continue;
-        const last=r.pts[r.pts.length-1];
-        const oy=tkGroundY(st,op.x)-8;
-        const d=r.hit? Math.hypot(r.x-op.x, r.y-oy) : Math.hypot(last[0]-op.x, last[1]-oy);
-        if(d<bestD){ bestD=d; best={ang:ang,pw:pw}; }
+        const s=score(ang,pw);
+        if(s>bestS){ bestS=s; best={ang:ang,pw:pw}; }
       }
     }
-    if(!best) best={ang:120,pw:60};
-    return {k:'fire', angle:Math.round(best.ang+(Math.random()*6-3)), power:Math.round(best.pw+(Math.random()*8-4))};
+    for(let ang=best.ang-3;ang<=best.ang+3;ang+=1){
+      for(let pw=best.pw-4;pw<=best.pw+4;pw+=1){
+        if(ang<5||ang>175||pw<10||pw>100)continue;
+        const s=score(ang,pw);
+        if(s>bestS){ bestS=s; best={ang:ang,pw:pw}; }
+      }
+    }
+    return {k:'fire', angle:Math.round(best.ang+(Math.random()*1.6-0.8)), power:Math.round(best.pw+(Math.random()*2.4-1.2))};
   },
   afterSync(){ tankAnimate(); },
   afterGuestView(){ tankAnimate(); }
@@ -842,9 +851,12 @@ function tankAnimate(){
   const ctx=cv.getContext('2d');
   function step(){
     drawTank();
-    const p=pts[Math.min(i,pts.length-1)];
-    ctx.fillStyle='#fff200'; ctx.strokeStyle='#ff7847'; ctx.lineWidth=2;
-    ctx.beginPath(); ctx.arc(p[0],p[1],5,0,6.29); ctx.fill(); ctx.stroke();
+    for(let k=Math.max(0,i-8);k<=Math.min(i,pts.length-1);k+=2){
+      const p=pts[k], last=k===Math.min(i,pts.length-1);
+      ctx.fillStyle=last?'#333':'rgba(255,120,40,.5)';
+      ctx.beginPath(); ctx.arc(p[0],p[1],last?6:4,0,6.29); ctx.fill();
+      if(last){ ctx.fillStyle='#fff200'; ctx.beginPath(); ctx.arc(p[0],p[1],3.5,0,6.29); ctx.fill(); }
+    }
     i+=2;
     if(i<pts.length+6) requestAnimationFrame(step);
     else drawTank(true);
