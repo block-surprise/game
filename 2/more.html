@@ -834,7 +834,7 @@ const G_tank={
         if(s>bestS){ bestS=s; best={ang:ang,pw:pw}; }
       }
     }
-    return {k:'fire', angle:Math.round(best.ang+(Math.random()*1.6-0.8)), power:Math.round(best.pw+(Math.random()*2.4-1.2))};
+    return {k:'fire', angle:Math.round(best.ang+(Math.random()*2.8-1.4)), power:Math.round(best.pw+(Math.random()*4-2))};
   },
   afterSync(){ tankAnimate(); },
   afterGuestView(){ tankAnimate(); }
