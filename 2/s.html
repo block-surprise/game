@@ -98,7 +98,7 @@ let S,sel=null,over=false,win=null,endMsg='',chk=false,mode='local',me=0;
 function init(){
   const row=(s,o)=>[...s].map(t=>t=='.'?null:[t,o]);
   const e=()=>Array(9).fill(null);
-  return{b:[row('LNSGKGSNL',1),row('.B.....R.',1),row('PPPPPPPPP',1),e(),e(),e(),row('PPPPPPPPP',0),row('.R.....B.',0),row('LNSGKGSNL',0)],h:[{},{}],t:0,last:null};
+  return{b:[row('LNSGKGSNL',1),row('.R.....B.',1),row('PPPPPPPPP',1),e(),e(),e(),row('PPPPPPPPP',0),row('.B.....R.',0),row('LNSGKGSNL',0)],h:[{},{}],t:0,last:null};
 }
 function targets(b,r,c){
   const[t,o]=b[r][c],f=o?1:-1,out=[];
