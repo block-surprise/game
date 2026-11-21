@@ -106,6 +106,7 @@ input.code{font-size:22px;letter-spacing:.35em;text-align:center;padding:12px;bo
     <div id="join-box" class="hidden mt">
       <input id="join-code" class="code" maxlength="6" placeholder="コード6文字">
       <button class="btn btn-blue mt" style="width:100%" onclick="joinRoom()">この部屋に入る</button>
+      <p class="note center" id="join-status"></p>
     </div>
     <div id="room-info" class="hidden mt">
       <div class="roomcode" id="room-code-disp">------</div>
@@ -266,11 +267,13 @@ function hideOverlay(){ document.getElementById('overlay').classList.add('hidden
 
 /* ================= P2P ================= */
 function hostRoom(){
+  if(S.peer){try{S.peer.destroy();}catch(e){} S.peer=null;}
   S.code=newCode(); S.isHost=true;
   document.getElementById('room-info').classList.remove('hidden');
   document.getElementById('room-code-disp').textContent=S.code;
-  document.getElementById('room-status').textContent='友達の参加を待っているよ…';
+  document.getElementById('room-status').textContent='接続中…';
   S.peer=new Peer(PREFIX+S.code);
+  S.peer.on('open',()=>{ document.getElementById('room-status').textContent='部屋ができた！友達の参加を待っているよ…'; });
   S.peer.on('connection',c=>{
     S.conn=c;
     c.on('open',()=>{ S.guestReady=true; document.getElementById('room-status').textContent='✅ 友達がつながった！下のゲーム一覧から選んでね'; renderGrid(); });
@@ -283,17 +286,27 @@ function hostRoom(){
 function showJoin(){ document.getElementById('join-box').classList.remove('hidden'); }
 function joinRoom(){
   const code=document.getElementById('join-code').value.trim().toUpperCase();
-  if(code.length!==6){ alert('6文字のコードを入れてね'); return; }
+  const js=document.getElementById('join-status');
+  if(code.length!==6){ js.textContent='6文字のコードを入れてね'; return; }
+  if(S.peer){try{S.peer.destroy();}catch(e){} S.peer=null;}
   S.code=code; S.isHost=false; S.mode='p2p';
+  js.textContent='接続中…（最大20秒くらいかかることがあるよ）';
+  let opened=false;
+  const timer=setTimeout(()=>{ if(!opened){ js.textContent='⚠️ つながらなかった。コードが合っているか、ホストが部屋を作ったままか確認して、もう一度押してね'; } },20000);
   S.peer=new Peer();
   S.peer.on('open',()=>{
     const c=S.peer.connect(PREFIX+code,{reliable:true});
     S.conn=c;
-    c.on('open',()=>{ showOverlay('<div class="big">✅ つながった！</div><p>ホストがゲームを選ぶのを待ってね</p>'); });
+    c.on('open',()=>{ opened=true; clearTimeout(timer); js.textContent=''; showOverlay('<div class="big">✅ つながった！</div><p>ホストがゲームを選ぶのを待ってね</p>'); });
     c.on('data',d=>guestOnData(d));
     c.on('close',()=>{ alert('ホストとの接続が切れたよ'); hideOverlay(); backHome(); });
   });
-  S.peer.on('error',e=>{ alert('つながらなかった：'+e.type+'（コードを確認してね）'); });
+  S.peer.on('error',e=>{
+    clearTimeout(timer);
+    if(e.type==='peer-unavailable'){ js.textContent='⚠️ そのコードの部屋が見つからない。コードと、ホストが部屋を作ったままかを確認してね'; }
+    else if(e.type==='network'||e.type==='server-error'){ js.textContent='⚠️ 通信エラー。電波の良いところでもう一度試してね'; }
+    else { js.textContent='⚠️ つながらなかった（'+e.type+'）。コードを確認してもう一度試してね'; }
+  });
 }
 function hostOnData(d){
   if(d.t==='act'){ const err=GAMES[S.game].act(S.state,1,d.a); if(err&&S.conn){try{S.conn.send({t:'err',msg:err});}catch(e){}} S.sel=[]; syncView(); }
