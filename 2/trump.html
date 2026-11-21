@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>トランプ広場 | 友達対戦ゲーム</title>
+<meta name="description" content="ババ抜き・神経衰弱・七並べ・大富豪・ブラックジャック・ハイ＆ロー。CPU対戦と、1人一台のP2P友達対戦ができるトランプゲーム集。">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{touch-action:manipulation}
+body{margin:0;font-family:"Hiragino Maru Gothic ProN","Hiragino Sans","Noto Sans JP",sans-serif;background:#fff7e8;color:#3d2c1e;min-height:100vh}
+header{background:linear-gradient(135deg,#0b7a43,#12a150);color:#fff;padding:14px 16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+header h1{margin:0;font-size:24px;letter-spacing:.05em}
+header p{margin:4px 0 0;font-size:12.5px;opacity:.92}
+.wrap{max-width:760px;margin:0 auto;padding:14px 12px 40px}
+.card-panel{background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 10px rgba(90,60,20,.10);margin-bottom:14px}
+h2{font-size:18px;margin:0 0 10px;color:#0b7a43}
+.btn{display:inline-block;border:none;cursor:pointer;border-radius:999px;padding:12px 22px;font-size:16px;font-weight:700;font-family:inherit;transition:transform .06s, filter .15s}
+.btn:active{transform:scale(.96)}
+.btn-main{background:#ff7847;color:#fff;box-shadow:0 3px 0 #d65327}
+.btn-green{background:#12a150;color:#fff;box-shadow:0 3px 0 #0b7a43}
+.btn-blue{background:#3d8bfd;color:#fff;box-shadow:0 3px 0 #2568c4}
+.btn-ghost{background:#fff;color:#0b7a43;border:2px solid #12a150;box-shadow:none}
+.btn:disabled{filter:grayscale(.6);opacity:.55;cursor:not-allowed}
+.mode-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mode-row .btn{width:100%;padding:16px 8px;font-size:17px}
+.game-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:480px){.game-grid{grid-template-columns:1fr 1fr}}
+.game-card{background:#fff;border:2px solid #ffe1b8;border-radius:16px;padding:14px 12px;cursor:pointer;text-align:left;font-family:inherit;transition:transform .08s,border-color .15s;width:100%}
+.game-card:active{transform:scale(.97)}
+.game-card:hover{border-color:#ffb066}
+.game-card .ic{font-size:34px}
+.game-card .nm{font-size:17px;font-weight:800;margin:6px 0 4px;color:#3d2c1e}
+.game-card .ds{font-size:12px;color:#8a6d4f;line-height:1.5}
+input.code{font-size:22px;letter-spacing:.35em;text-align:center;padding:12px;border:2px solid #d9c7a7;border-radius:12px;width:100%;text-transform:uppercase;font-family:inherit;font-weight:700;background:#fffdf7}
+.roomcode{font-size:34px;font-weight:900;letter-spacing:.3em;text-align:center;color:#0b7a43;background:#e9f9ef;border:2px dashed #12a150;border-radius:14px;padding:12px 6px 12px 18px}
+.note{font-size:12.5px;color:#8a6d4f;line-height:1.6}
+.status{font-size:14px;background:#e9f9ef;border-radius:10px;padding:9px 12px;color:#0b6b39;margin-bottom:10px}
+.log{background:#2f2a26;color:#ffe9c9;border-radius:12px;padding:10px 12px;font-size:12.5px;line-height:1.7;max-height:118px;overflow-y:auto;white-space:pre-line}
+.felt{background:radial-gradient(ellipse at 50% 38%,#17a55c,#0b7a43 75%);border-radius:20px;padding:14px 12px;box-shadow:inset 0 0 0 6px #8a5a2b, inset 0 0 40px rgba(0,0,0,.25);min-height:300px;color:#fff}
+.zone-label{font-size:12px;font-weight:700;opacity:.95;margin:2px 0 6px}
+.hand{display:flex;flex-wrap:wrap;gap:5px;min-height:74px;align-items:flex-start}
+.pcard{width:52px;height:72px;background:#fff;border-radius:8px;border:1.5px solid #c9c2b8;position:relative;flex:0 0 auto;box-shadow:0 2px 4px rgba(0,0,0,.25);color:#222;font-weight:800;user-select:none}
+.pcard .rk{position:absolute;top:3px;left:5px;font-size:16px;line-height:1.05}
+.pcard .st{position:absolute;bottom:4px;right:6px;font-size:19px}
+.pcard.red{color:#d92b2b}
+.pcard.joker{background:linear-gradient(160deg,#7b2ff7,#f72fd7);color:#fff;border-color:#fff}
+.pcard.joker .rk{font-size:11px;left:3px}
+.pcard.back{background:repeating-linear-gradient(45deg,#2456c8,#2456c8 6px,#3d74e8 6px,#3d74e8 12px);border-color:#dbe7ff;cursor:pointer}
+.pcard.back:active{transform:translateY(-4px)}
+.pcard.sel{outline:3px solid #ffb020;transform:translateY(-8px)}
+.pcard.playable{cursor:pointer}
+.pcard.dim{opacity:.45}
+.pcard.small{width:42px;height:58px}
+.pcard.small .rk{font-size:13px}.pcard.small .st{font-size:15px}
+.slot{width:42px;height:58px;border-radius:8px;border:1.5px dashed rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center;font-size:12px;color:rgba(255,255,255,.75);flex:0 0 auto}
+.slot.filled{border:none;background:#fff;color:#222;font-weight:800;position:relative;box-shadow:0 2px 4px rgba(0,0,0,.25)}
+.slot.filled.red{color:#d92b2b}
+.sevens{display:grid;grid-template-columns:repeat(13,1fr);gap:3px}
+@media(max-width:560px){.sevens{gap:2px}.slot{width:auto;height:44px;font-size:10px}}
+.memgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+@media(max-width:560px){.memgrid{grid-template-columns:repeat(7,1fr);gap:4px}}
+.memgrid .pcard{width:100%;height:auto;aspect-ratio:5/7}
+.memgrid .pcard .rk{font-size:15px}
+.field-area{min-height:96px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:rgba(0,0,0,.13);border-radius:14px;padding:10px;margin:10px 0}
+.scorebar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.chip{background:#fff;border-radius:999px;padding:6px 13px;font-size:13.5px;font-weight:700;box-shadow:0 1px 4px rgba(90,60,20,.15)}
+.chip.turn{outline:3px solid #ffb020}
+.overlay{position:fixed;inset:0;background:rgba(40,25,10,.55);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.overlay .box{background:#fff;border-radius:20px;padding:24px 20px;max-width:420px;width:100%;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.overlay .box .big{font-size:30px;font-weight:900;margin-bottom:8px}
+.hidden{display:none!important}
+.row-btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:10px}
+.center{text-align:center}
+.mt{margin-top:12px}
+.bigcard{font-size:20px}
+.streak{color:#ffd34d;font-weight:900}
+</style>
+</head>
+<body>
+<header>
+<h1>🃏 トランプ広場</h1>
+<p>CPU対戦＆1人一台のP2P友達対戦 ｜ 6種類のトランプゲーム</p>
+</header>
+<div class="wrap">
+
+<!-- ホーム -->
+<div id="scr-home">
+  <div class="card-panel">
+    <h2>あそび方をえらんでね</h2>
+    <div class="mode-row">
+      <button class="btn btn-main" onclick="chooseMode('cpu')">🤖 CPUと対戦</button>
+      <button class="btn btn-blue" onclick="chooseMode('p2p')">📱 友達とP2P対戦</button>
+    </div>
+    <p class="note mt">友達対戦は1人一台。ホストが部屋コードを教える → ゲストが入力するだけでつながるよ。同じゲームを同じ部屋で続けて遊べる。</p>
+  </div>
+  <div id="p2p-panel" class="card-panel hidden">
+    <h2>📱 友達対戦の部屋</h2>
+    <div class="mode-row">
+      <button class="btn btn-green" onclick="hostRoom()">部屋を作る（ホスト）</button>
+      <button class="btn btn-ghost" onclick="showJoin()">部屋に入る（ゲスト）</button>
+    </div>
+    <div id="join-box" class="hidden mt">
+      <input id="join-code" class="code" maxlength="6" placeholder="コード6文字">
+      <button class="btn btn-blue mt" style="width:100%" onclick="joinRoom()">この部屋に入る</button>
+    </div>
+    <div id="room-info" class="hidden mt">
+      <div class="roomcode" id="room-code-disp">------</div>
+      <p class="note center" id="room-status">友達の参加を待っているよ…</p>
+    </div>
+  </div>
+  <div class="card-panel">
+    <h2>🎴 ゲーム一覧</h2>
+    <div class="game-grid" id="game-grid"></div>
+    <p class="note mt" id="grid-note">CPUモード：タップですぐ始まるよ。</p>
+  </div>
+</div>
+
+<!-- ゲーム画面 -->
+<div id="scr-game" class="hidden">
+  <div class="scorebar" id="scorebar"></div>
+  <div class="status" id="game-status">…</div>
+  <div class="felt" id="felt"></div>
+  <div class="row-btns">
+    <button class="btn btn-ghost" onclick="backHome()">🏠 ホームへ</button>
+    <button class="btn btn-green hidden" id="btn-rematch" onclick="rematch()">🔁 もう一回</button>
+  </div>
+  <div class="log mt" id="game-log"></div>
+</div>
+
+</div>
+
+<div id="overlay" class="overlay hidden"><div class="box" id="overlay-box"></div></div>
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+'use strict';
+/* ================= 共通 ================= */
+const SUITS=['♠','♥','♦','♣'];
+const RED={1:true,2:true}; // ♥♦ index
+function rankLabel(n){return n===1?'A':n===11?'J':n===12?'Q':n===13?'K':''+n;}
+function mkDeck(joker){
+  const d=[];
+  for(let s=0;s<4;s++)for(let n=1;n<=13;n++)d.push({s:s,n:n});
+  if(joker)d.push({j:true});
+  return d;
+}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function cardKey(c){return c.j?'JOKER':c.s+'-'+c.n;}
+function sortHand(h){h.sort((a,b)=>{const va=a.j?99:a.n, vb=b.j?99:b.n; if(va!==vb)return va-vb; return (a.s||0)-(b.s||0);});}
+function cardHTML(c,opts){
+  opts=opts||{};
+  const cls=['pcard'];
+  if(opts.small)cls.push('small');
+  if(opts.cls)cls.push(opts.cls);
+  if(c==null||c.back)return '<div class="'+cls.join(' ')+' back" '+(opts.onclick?'onclick="'+opts.onclick+'"':'')+'></div>';
+  if(c.j)return '<div class="'+cls.join(' ')+' joker" '+(opts.onclick?'onclick="'+opts.onclick+'"':'')+'><span class="rk">JOKER</span><span class="st">★</span></div>';
+  if(RED[c.s])cls.push('red');
+  return '<div class="'+cls.join(' ')+'" '+(opts.onclick?'onclick="'+opts.onclick+'"':'')+'><span class="rk">'+rankLabel(c.n)+'</span><span class="st">'+SUITS[c.s]+'</span></div>';
+}
+function esc(s){return s;}
+const NAMES=['あなた','あいて'];
+
+/* ================= セッション ================= */
+const S={mode:null,game:null,state:null,view:null,peer:null,conn:null,code:null,isHost:false,guestReady:false,sel:[]};
+const PREFIX='bs-trump-';
+const CODECH='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+function newCode(){let c='';for(let i=0;i<6;i++)c+=CODECH[Math.floor(Math.random()*CODECH.length)];return c;}
+
+function chooseMode(m){
+  S.mode=m;
+  document.getElementById('p2p-panel').classList.toggle('hidden',m!=='p2p');
+  document.getElementById('grid-note').textContent = m==='cpu' ? 'CPUモード：タップですぐ始まるよ。' : 'P2Pモード：部屋を作って友達が入ったら、ホストがゲームを選んでスタート。';
+  renderGrid();
+}
+function renderGrid(){
+  const g=document.getElementById('game-grid');
+  g.innerHTML=Object.keys(GAMES).map(id=>{
+    const gm=GAMES[id];
+    const dis = S.mode==='p2p' && (!S.isHost || !S.guestReady);
+    return '<button class="game-card" '+(dis?'disabled style="opacity:.5"':'')+' onclick="pickGame(\''+id+'\')"><div class="ic">'+gm.icon+'</div><div class="nm">'+gm.name+'</div><div class="ds">'+gm.desc+'</div></button>';
+  }).join('');
+}
+function pickGame(id){
+  if(S.mode==='cpu'){ startLocal(id); }
+  else if(S.mode==='p2p' && S.isHost && S.guestReady){ hostStartGame(id); }
+}
+function startLocal(id){
+  S.game=id; S.state=GAMES[id].init(); S.sel=[];
+  showGame(); syncView(); maybeCpu();
+}
+function showGame(){
+  document.getElementById('scr-home').classList.add('hidden');
+  document.getElementById('scr-game').classList.remove('hidden');
+  window.scrollTo(0,0);
+}
+function backHome(){
+  if(S.conn){try{S.conn.send({t:'bye'});}catch(e){}}
+  if(S.peer){try{S.peer.destroy();}catch(e){} S.peer=null;S.conn=null;S.isHost=false;S.guestReady=false;}
+  S.state=null;S.view=null;S.game=null;
+  document.getElementById('scr-game').classList.add('hidden');
+  document.getElementById('scr-home').classList.remove('hidden');
+  document.getElementById('room-info').classList.add('hidden');
+  renderGrid();
+}
+function rematch(){
+  if(S.game==='blackjack'&&S.view&&S.view.phase==='done'&&(S.view.winner===null||S.view.winner===undefined)){ doAct({k:'next'}); return; }
+  if(S.mode==='guest'){ S.conn.send({t:'rematch'}); setStatus('ホストがもう一回始めるのを待っているよ…'); return; }
+  S.state=GAMES[S.game].init(); S.sel=[];
+  syncView(); maybeCpu();
+}
+/* 状態→自分のビューを描画し、ホストならゲストへ送る */
+function syncView(){
+  if(!S.state)return;
+  S.view=GAMES[S.game].view(S.state,0);
+  renderGame();
+  if(S.mode==='p2p'&&S.isHost&&S.conn&&S.conn.open){
+    S.conn.send({t:'state',game:S.game,view:GAMES[S.game].view(S.state,1)});
+  }
+  handlePending();
+}
+function handlePending(){
+  const st=S.state;
+  if(st&&st.pending&&!st._ptimer){
+    st._ptimer=setTimeout(()=>{ st._ptimer=null; GAMES[S.game].settle(st); syncView(); maybeCpu(); }, st.pendingDelay||1000);
+  }
+  if(st&&st.phase==='dealer'&&!st._dtimer&&S.mode!=='guest'){
+    st._dtimer=setTimeout(()=>{ st._dtimer=null; GAMES[S.game].dealerPlay(st); syncView(); },900);
+  }
+}
+function doAct(a){
+  if(S.mode==='guest'){ S.conn.send({t:'act',a:a}); return; }
+  const err=GAMES[S.game].act(S.state,0,a);
+  if(err){ setStatus(err); return; }
+  S.sel=[];
+  syncView(); maybeCpu();
+}
+function maybeCpu(){
+  if(S.mode!=='cpu'||!S.state)return;
+  const st=S.state;
+  if(st.winner!==null&&st.winner!==undefined)return;
+  if(st.pending)return;
+  if(st.turn!==1)return;
+  setTimeout(()=>{
+    if(S.mode!=='cpu'||!S.state||S.state!==st)return;
+    if(st.winner!==null&&st.winner!==undefined||st.pending||st.turn!==1)return;
+    const a=GAMES[S.game].cpu(st);
+    if(a){ GAMES[S.game].act(st,1,a); syncView(); maybeCpu(); }
+  },850);
+}
+function setStatus(t){ document.getElementById('game-status').textContent=t; }
+function renderGame(){
+  const v=S.view; if(!v)return;
+  document.getElementById('btn-rematch').classList.toggle('hidden', !(v.winner!==null&&v.winner!==undefined||v.phase==='done'));
+  document.getElementById('game-log').textContent=(v.log||[]).join('\n');
+  RENDER[S.game](v);
+  if(v.winner!==null&&v.winner!==undefined){
+    setStatus(v.winner===0?'🎉 あなたの勝ち！':(v.winner===2?'引き分け':'😢 あいての勝ち'));
+  }
+}
+function showOverlay(html){ const o=document.getElementById('overlay'); document.getElementById('overlay-box').innerHTML=html; o.classList.remove('hidden'); }
+function hideOverlay(){ document.getElementById('overlay').classList.add('hidden'); }
+
+/* ================= P2P ================= */
+function hostRoom(){
+  S.code=newCode(); S.isHost=true;
+  document.getElementById('room-info').classList.remove('hidden');
+  document.getElementById('room-code-disp').textContent=S.code;
+  document.getElementById('room-status').textContent='友達の参加を待っているよ…';
+  S.peer=new Peer(PREFIX+S.code);
+  S.peer.on('connection',c=>{
+    S.conn=c;
+    c.on('open',()=>{ S.guestReady=true; document.getElementById('room-status').textContent='✅ 友達がつながった！下のゲーム一覧から選んでね'; renderGrid(); });
+    c.on('data',d=>hostOnData(d));
+    c.on('close',()=>{ S.guestReady=false; alert('友達との接続が切れたよ'); backHome(); });
+  });
+  S.peer.on('error',e=>{ document.getElementById('room-status').textContent='接続エラー：'+e.type; });
+  renderGrid();
+}
+function showJoin(){ document.getElementById('join-box').classList.remove('hidden'); }
+function joinRoom(){
+  const code=document.getElementById('join-code').value.trim().toUpperCase();
+  if(code.length!==6){ alert('6文字のコードを入れてね'); return; }
+  S.code=code; S.isHost=false; S.mode='p2p';
+  S.peer=new Peer();
+  S.peer.on('open',()=>{
+    const c=S.peer.connect(PREFIX+code,{reliable:true});
+    S.conn=c;
+    c.on('open',()=>{ showOverlay('<div class="big">✅ つながった！</div><p>ホストがゲームを選ぶのを待ってね</p>'); });
+    c.on('data',d=>guestOnData(d));
+    c.on('close',()=>{ alert('ホストとの接続が切れたよ'); hideOverlay(); backHome(); });
+  });
+  S.peer.on('error',e=>{ alert('つながらなかった：'+e.type+'（コードを確認してね）'); });
+}
+function hostOnData(d){
+  if(d.t==='act'){ const err=GAMES[S.game].act(S.state,1,d.a); if(err&&S.conn){try{S.conn.send({t:'err',msg:err});}catch(e){}} S.sel=[]; syncView(); }
+  else if(d.t==='rematch'){ if(S.game){ S.state=GAMES[S.game].init(); syncView(); } }
+  else if(d.t==='bye'){ S.guestReady=false; }
+}
+function guestOnData(d){
+  if(d.t==='state'){
+    hideOverlay();
+    if(S.game!==d.game){ S.game=d.game; showGame(); }
+    S.view=d.view; S.state=null;
+    renderGame();
+  }
+  else if(d.t==='err'){ setStatus('⚠️ '+d.msg); }
+  else if(d.t==='bye'){ alert('ホストがホームに戻ったよ'); backHome(); }
+}
+</script>
+<script>
+'use strict';
+/* ================= ゲーム定義 ================= */
+function addLog(st,msg){ st.log.push(msg); if(st.log.length>40)st.log.splice(0,st.log.length-40); }
+function viewLog(st){ return st.log.slice(-8); }
+
+/* ---------- ババ抜き ---------- */
+function stripPairs(hand){
+  const removed=[]; let changed=true;
+  while(changed){
+    changed=false;
+    for(let n=1;n<=13;n++){
+      const idxs=[]; hand.forEach((c,i)=>{ if(!c.j&&c.n===n)idxs.push(i); });
+      if(idxs.length>=2){ removed.push(n); hand.splice(idxs[1],1); hand.splice(idxs[0],1); changed=true; break; }
+    }
+  }
+  return removed;
+}
+const G_babanuki={
+  name:'ババ抜き', icon:'🃏', desc:'ペアを捨てて、ジョーカーを押しつけろ！最後までジョーカーを持っていた方が負け。',
+  init(){
+    const deck=shuffle(mkDeck(true)); const hands=[[],[]];
+    deck.forEach((c,i)=>hands[i%2].push(c));
+    const st={hands:hands,turn:0,winner:null,log:[]};
+    [0,1].forEach(p=>{ const rm=stripPairs(hands[p]); rm.forEach(n=>addLog(st,NAMES[p]+'が '+rankLabel(n)+' のペアを捨てた')); });
+    addLog(st,'ゲームスタート！');
+    if(hands[0].length===0)st.winner=0; if(hands[1].length===0)st.winner=1;
+    return st;
+  },
+  view(st,seat){ return {you:seat,turn:st.turn,winner:st.winner,log:viewLog(st),myHand:st.hands[seat],oppCount:st.hands[1-seat].length}; },
+  act(st,seat,a){
+    if(st.winner!==null)return 'もう終わっているよ';
+    if(st.turn!==seat)return '相手の番だよ';
+    if(a.k!=='draw')return 'カードを引いてね';
+    const opp=1-seat;
+    if(a.i<0||a.i>=st.hands[opp].length)return 'そのカードはないよ';
+    const card=st.hands[opp].splice(a.i,1)[0];
+    st.hands[seat].push(card);
+    addLog(st,NAMES[seat]+'がカードを1枚引いた');
+    const rm=stripPairs(st.hands[seat]);
+    rm.forEach(n=>addLog(st,NAMES[seat]+'が '+rankLabel(n)+' のペアを捨てた'));
+    if(st.hands[seat].length===0){ st.winner=seat; addLog(st,NAMES[seat]+'の手札がなくなった！'); }
+    else if(st.hands[opp].length===0){ st.winner=opp; addLog(st,NAMES[opp]+'の手札がなくなった！'); }
+    else st.turn=opp;
+    return null;
+  },
+  cpu(st){ return {k:'draw', i:Math.floor(Math.random()*st.hands[0].length)}; }
+};
+
+/* ---------- 神経衰弱 ---------- */
+const G_memory={
+  name:'神経衰弱', icon:'🧠', desc:'52枚のカードをめくってペアを作ろう。たくさん取った方の勝ち。合わせると続けてめくれる。',
+  init(){
+    const deck=shuffle(mkDeck(false));
+    return {board:deck.map(c=>({c:c,st:'down'})),turn:0,pairs:[0,0],flipped:[],pending:null,pendingDelay:1100,winner:null,seen:[],log:['ゲームスタート！']};
+  },
+  view(st,seat){ return {you:seat,turn:st.turn,winner:st.winner,log:viewLog(st),pairs:st.pairs,pending:!!st.pending,
+    board:st.board.map(b=>({st:b.st, c:b.st==='down'?null:b.c}))}; },
+  act(st,seat,a){
+    if(st.winner!==null)return 'もう終わっているよ';
+    if(st.turn!==seat)return '相手の番だよ';
+    if(st.pending)return 'ちょっと待ってね';
+    if(a.k!=='flip')return 'カードをめくってね';
+    const b=st.board[a.i];
+    if(!b||b.st!=='down')return 'そのカードはめくれないよ';
+    b.st='up'; st.flipped.push(a.i);
+    st.seen.push({i:a.i,key:'n'+b.c.n});
+    if(st.flipped.length===2){ st.pending={idxs:st.flipped.slice()}; st.flipped=[]; }
+    return null;
+  },
+  settle(st){
+    if(!st.pending)return;
+    const i=st.pending.idxs[0], j=st.pending.idxs[1]; st.pending=null;
+    const A=st.board[i], B=st.board[j];
+    if(A.c.n===B.c.n){
+      A.st='gone'; B.st='gone'; st.pairs[st.turn]++;
+      addLog(st,NAMES[st.turn]+'が '+rankLabel(A.c.n)+' のペアをゲット！');
+      if(st.board.every(b=>b.st==='gone')){
+        st.winner = st.pairs[0]>st.pairs[1]?0 : st.pairs[1]>st.pairs[0]?1 : 2;
+        addLog(st,'全部のカードがなくなった');
+      }
+    }else{
+      A.st='down'; B.st='down'; st.turn=1-st.turn;
+    }
+  },
+  cpu(st){
+    const down=[]; st.board.forEach((b,i)=>{ if(b.st==='down')down.push(i); });
+    const mem={}; st.seen.forEach(s=>{ mem[s.i]=s.key; });
+    const isDown=i=>st.board[i].st==='down';
+    if(st.flipped.length===1){
+      const f=st.flipped[0], key='n'+st.board[f].c.n;
+      for(const i of down){ if(i!==f&&mem[i]===key) return {k:'flip',i:i}; }
+      const unknown=down.filter(i=>!(i in mem)&&i!==f);
+      const pool=unknown.length?unknown:down.filter(i=>i!==f);
+      return {k:'flip', i:pool[Math.floor(Math.random()*pool.length)]};
+    }
+    const byKey={};
+    down.forEach(i=>{ if(i in mem){ (byKey[mem[i]]=byKey[mem[i]]||[]).push(i); } });
+    for(const k in byKey){ if(byKey[k].length>=2) return {k:'flip', i:byKey[k][0]}; }
+    const unknown=down.filter(i=>!(i in mem));
+    const pool=unknown.length?unknown:down;
+    return {k:'flip', i:pool[Math.floor(Math.random()*pool.length)]};
+  }
+};
+
+/* ---------- 七並べ ---------- */
+function sevenPlaceable(st,c){
+  if(st.table[c.s][c.n-1])return false;
+  if(c.n===7)return true;
+  if(c.n<7)return !!st.table[c.s][c.n];
+  return !!st.table[c.s][c.n-2];
+}
+const G_sevens={
+  name:'七並べ', icon:'7️⃣', desc:'7の横に続くカードを並べていこう。先に手札をなくした方の勝ち。パスは3回まで。',
+  init(){
+    const deck=shuffle(mkDeck(false)); const hands=[[],[]];
+    deck.forEach((c,i)=>hands[i%2].push(c));
+    hands.forEach(sortHand);
+    const table=[]; for(let s=0;s<4;s++){ table.push(new Array(13).fill(false)); }
+    const st={hands:hands,table:table,turn:0,passes:[0,0],dropped:[false,false],winner:null,log:['ゲームスタート！']};
+    [0,1].forEach(p=>{
+      for(let i=hands[p].length-1;i>=0;i--){ if(hands[p][i].n===7){ table[hands[p][i].s][6]=true; hands[p].splice(i,1); } }
+    });
+    addLog(st,'両方の7が場に並んだ');
+    return st;
+  },
+  view(st,seat){ return {you:seat,turn:st.turn,winner:st.winner,log:viewLog(st),table:st.table,passes:st.passes,
+    myHand:st.hands[seat].map(c=>({c:c,ok:sevenPlaceable(st,c)})), oppCount:st.hands[1-seat].length}; },
+  act(st,seat,a){
+    if(st.winner!==null)return 'もう終わっているよ';
+    if(st.turn!==seat)return '相手の番だよ';
+    if(a.k==='place'){
+      const c=st.hands[seat][a.ci];
+      if(!c)return 'そのカードはないよ';
+      if(!sevenPlaceable(st,c))return 'そこには出せないよ（7の横から順番に）';
+      st.table[c.s][c.n-1]=true; st.hands[seat].splice(a.ci,1);
+      addLog(st,NAMES[seat]+'が '+SUITS[c.s]+rankLabel(c.n)+' を並べた');
+      if(st.hands[seat].length===0){ st.winner=seat; addLog(st,NAMES[seat]+'の手札がなくなった！'); }
+      else st.turn=1-seat;
+      return null;
+    }
+    if(a.k==='pass'){
+      st.passes[seat]++;
+      addLog(st,NAMES[seat]+'がパス（'+st.passes[seat]+'回目）');
+      if(st.passes[seat]>3){
+        st.dropped[seat]=true;
+        st.hands[seat].forEach(c=>{ st.table[c.s][c.n-1]=true; });
+        st.hands[seat]=[];
+        st.winner=1-seat;
+        addLog(st,NAMES[seat]+'はパス4回で脱落…');
+      }else st.turn=1-seat;
+      return null;
+    }
+    return '操作が違うよ';
+  },
+  cpu(st){
+    const h=st.hands[1];
+    for(let i=0;i<h.length;i++){ if(sevenPlaceable(st,h[i])) return {k:'place',ci:i}; }
+    return {k:'pass'};
+  }
+};
+
+const GAMES={babanuki:G_babanuki, memory:G_memory, sevens:G_sevens};
+const RENDER={};
+
+/* ---------- 描画：共通部品 ---------- */
+function chipsHTML(items){ return items.map(t=>'<span class="chip">'+t+'</span>').join(''); }
+function myTurn(v){ return v.turn===v.you && (v.winner===null||v.winner===undefined); }
+
+/* ---------- 描画：ババ抜き ---------- */
+RENDER.babanuki=function(v){
+  document.getElementById('scorebar').innerHTML=chipsHTML(['あなた：'+v.myHand.length+'枚','あいて：'+v.oppCount+'枚', v.turn===v.you?'👉 あなたの番':'👉 あいての番']);
+  let backs='';
+  for(let i=0;i<v.oppCount;i++){ backs+=cardHTML(null,{onclick: myTurn(v)?'doAct({k:\'draw\',i:'+i+'})':''}); }
+  document.getElementById('felt').innerHTML=
+    '<div class="zone-label">あいての手札（タップで1枚引く）</div><div class="hand">'+backs+'</div>'+
+    '<div class="field-area"><div style="font-size:26px">🃏</div><div style="font-size:13px;opacity:.9">ジョーカーを持っている方が負け</div></div>'+
+    '<div class="zone-label">あなたの手札</div><div class="hand">'+v.myHand.map(c=>cardHTML(c)).join('')+'</div>';
+  if(v.winner===null||v.winner===undefined) setStatus(v.turn===v.you?'あなたの番：あいてのカードをタップして1枚引いてね':'あいての番…');
+};
+/* ---------- 描画：神経衰弱 ---------- */
+RENDER.memory=function(v){
+  document.getElementById('scorebar').innerHTML=chipsHTML(['あなたのペア：'+v.pairs[v.you],'あいてのペア：'+v.pairs[1-v.you], v.turn===v.you?'👉 あなたの番':'👉 あいての番']);
+  const cells=v.board.map((b,i)=>{
+    if(b.st==='gone')return '<div></div>';
+    if(b.st==='up')return cardHTML(b.c);
+    return cardHTML(null,{onclick:(myTurn(v)&&!v.pending)?'doAct({k:\'flip\',i:'+i+'})':''});
+  }).join('');
+  document.getElementById('felt').innerHTML='<div class="memgrid">'+cells+'</div>';
+  if(v.winner===null||v.winner===undefined) setStatus(v.turn===v.you?'あなたの番：カードを2枚めくってね':'あいての番…');
+};
+/* ---------- 描画：七並べ ---------- */
+RENDER.sevens=function(v){
+  document.getElementById('scorebar').innerHTML=chipsHTML(['あなたの手札：'+v.myHand.length+'枚','あいて：'+v.oppCount+'枚','あなたのパス：'+v.passes[v.you]+'/3','あいてのパス：'+v.passes[1-v.you]+'/3']);
+  let rows='';
+  for(let s=0;s<4;s++){
+    rows+='<div class="sevens" style="margin-bottom:4px">';
+    for(let n=1;n<=13;n++){
+      if(v.table[s][n-1]) rows+='<div class="slot filled'+(RED[s]?' red':'')+'">'+rankLabel(n)+'</div>';
+      else rows+='<div class="slot">'+SUITS[s]+rankLabel(n)+'</div>';
+    }
+    rows+='</div>';
+  }
+  const hand=v.myHand.map((e,ci)=>cardHTML(e.c,{cls:(myTurn(v)&&e.ok)?'playable':'dim', onclick:(myTurn(v)&&e.ok)?'doAct({k:\'place\',ci:'+ci+'})':''})).join('');
+  document.getElementById('felt').innerHTML=
+    '<div class="zone-label">場（7から左右に並べる）</div>'+rows+
+    '<div class="zone-label" style="margin-top:10px">あなたの手札（光っているカードが出せる）</div><div class="hand">'+hand+'</div>'+
+    (myTurn(v)?'<div class="row-btns"><button class="btn btn-ghost" onclick="doAct({k:\'pass\'})">パスする（残り'+(3-v.passes[v.you])+'回）</button></div>':'');
+  if(v.winner===null||v.winner===undefined) setStatus(v.turn===v.you?'あなたの番：出せるカードをタップ、なければパス':'あいての番…');
+};
+</script>
+<script>
+'use strict';
+/* ---------- 大富豪 ---------- */
+function dfVal(c){ return c.j?16 : c.n===1?14 : c.n===2?15 : c.n; }
+function comboInfo(cards){
+  const nj=cards.filter(c=>!c.j);
+  if(nj.length===0) return {count:cards.length, str:16, rank:null};
+  const r=nj[0].n;
+  if(!nj.every(c=>c.n===r)) return null;
+  return {count:cards.length, str:dfVal(nj[0]), rank:r};
+}
+function dfValid(field, revolution, cards){
+  const info=comboInfo(cards); if(!info) return false;
+  if(!field||field.length===0) return true;
+  const fi=comboInfo(field); if(!fi) return false;
+  if(info.count!==fi.count) return false;
+  return revolution ? info.str<fi.str : info.str>fi.str;
+}
+const G_daifugo={
+  name:'大富豪', icon:'👑', desc:'2人用の大富豪。場より強いカードを出していき、先に手札をなくした方の勝ち。8切り・革命（4枚以上）あり。',
+  init(){
+    const deck=shuffle(mkDeck(true)); const hands=[[],[]];
+    deck.forEach((c,i)=>hands[i%2].push(c));
+    hands.forEach(h=>h.sort((a,b)=>dfVal(a)-dfVal(b)||(a.s||0)-(b.s||0)));
+    return {hands:hands,field:[],fieldOwner:null,revolution:false,turn:0,winner:null,log:['ゲームスタート！ 3が一番弱く、2が一番強いよ']};
+  },
+  view(st,seat){ return {you:seat,turn:st.turn,winner:st.winner,log:viewLog(st),myHand:st.hands[seat],field:st.field,oppCount:st.hands[1-seat].length,revolution:st.revolution}; },
+  act(st,seat,a){
+    if(st.winner!==null)return 'もう終わっているよ';
+    if(st.turn!==seat)return '相手の番だよ';
+    if(a.k==='pass'){
+      if(!st.field.length)return 'リードの時はパスできないよ（何か出してね）';
+      addLog(st,NAMES[seat]+'がパス');
+      st.field=[]; st.turn=st.fieldOwner;
+      return null;
+    }
+    if(a.k==='play'){
+      const idxs=a.idxs.slice().sort((x,y)=>y-x);
+      const cards=idxs.map(i=>st.hands[seat][i]);
+      if(cards.some(c=>!c))return 'そのカードはないよ';
+      if(!comboInfo(cards))return '同じ数字の組み合わせで出してね';
+      if(!dfValid(st.field,st.revolution,cards))return st.field.length?('場のカードより'+(st.revolution?'弱い':'強い')+'カードを同じ枚数で出してね'):'その組み合わせでは出せないよ';
+      idxs.forEach(i=>st.hands[seat].splice(i,1));
+      const info=comboInfo(cards);
+      addLog(st,NAMES[seat]+'が '+cards.map(c=>c.j?'JOKER':SUITS[c.s]+rankLabel(c.n)).join(' ')+' を出した');
+      if(st.hands[seat].length===0){ st.winner=seat; st.field=cards; addLog(st,NAMES[seat]+'の手札がなくなった！'); return null; }
+      if(info.count>=4){ st.revolution=!st.revolution; addLog(st,st.revolution?'🔥 革命！強さが逆転':'革命が終わった'); }
+      st.field=cards; st.fieldOwner=seat;
+      if(cards.some(c=>!c.j&&c.n===8)){ st.field=[]; addLog(st,'8切り！'+NAMES[seat]+'がもう一度出せる'); }
+      else st.turn=1-seat;
+      return null;
+    }
+    return '操作が違うよ';
+  },
+  cpu(st){
+    const hand=st.hands[1];
+    const groups={};
+    hand.forEach((c,i)=>{ if(!c.j){ (groups[c.n]=groups[c.n]||[]).push(i); } });
+    const jokerIdx=hand.findIndex(c=>c.j);
+    const cands=[];
+    Object.keys(groups).forEach(n=>{
+      const g=groups[n];
+      for(let k=1;k<=g.length;k++){
+        cands.push(g.slice(0,k));
+        if(jokerIdx>=0) cands.push(g.slice(0,k).concat([jokerIdx]));
+      }
+    });
+    if(jokerIdx>=0) cands.push([jokerIdx]);
+    const valid=cands.filter(idxs=>dfValid(st.field,st.revolution,idxs.map(i=>hand[i])));
+    if(!valid.length) return st.field.length?{k:'pass'}:null;
+    valid.sort((A,B)=>{
+      const ia=comboInfo(A.map(i=>hand[i])), ib=comboInfo(B.map(i=>hand[i]));
+      if(!st.field.length){ if(ib.count!==ia.count)return ib.count-ia.count; return ia.str-ib.str; }
+      return ia.str-ib.str;
+    });
+    return {k:'play', idxs:valid[0]};
+  }
+};
+
+/* ---------- ブラックジャック ---------- */
+function bjVal(hand){
+  let t=0, aces=0;
+  hand.forEach(c=>{ if(c.n===1){aces++; t+=11;} else t+=Math.min(c.n,10); });
+  while(t>21&&aces>0){ t-=10; aces--; }
+  return t;
+}
+function bjNewRound(st){
+  const deck=shuffle(mkDeck(false));
+  st.deck=deck;
+  st.hands=[[deck.pop(),deck.pop()],[deck.pop(),deck.pop()]];
+  st.dealer=[deck.pop(),deck.pop()];
+  st.phase='turns'; st.cur=0; st.turn=0; st.bust=[false,false]; st.result=null;
+  st.round++;
+  addLog(st,'ラウンド'+st.round+'：カードを配った（先に5勝で優勝）');
+}
+const G_blackjack={
+  name:'ブラックジャック', icon:'🂡', desc:'ディーラーより21に近づけよう。2人ともディーラーと勝負して、先に5勝した方の優勝。',
+  init(){
+    const st={scores:[0,0],round:0,winner:null,log:['ゲームスタート！ 先に5勝で優勝']};
+    bjNewRound(st);
+    return st;
+  },
+  view(st,seat){ return {you:seat,turn:st.turn,winner:st.winner,log:viewLog(st),phase:st.phase,cur:st.cur,scores:st.scores,round:st.round,
+    myHand:st.hands[seat],oppHand:st.hands[1-seat],dealer:st.dealer,result:st.result,bust:st.bust,
+    myVal:bjVal(st.hands[seat]),oppVal:bjVal(st.hands[1-seat]),dealerVal:st.phase==='turns'?bjVal([st.dealer[0]]):bjVal(st.dealer)}; },
+  act(st,seat,a){
+    if(a.k==='next'){
+      if(st.phase!=='done')return 'まだラウンド中だよ';
+      if(st.winner!==null)return '試合は終わっているよ';
+      bjNewRound(st); return null;
+    }
+    if(st.winner!==null)return 'もう終わっているよ';
+    if(st.phase!=='turns')return '今は操作できないよ';
+    if(st.cur!==seat)return '相手の番だよ';
+    if(a.k==='hit'){
+      st.hands[seat].push(st.deck.pop());
+      const v=bjVal(st.hands[seat]);
+      addLog(st,NAMES[seat]+'がヒット → '+v);
+      if(v>21){ st.bust[seat]=true; addLog(st,NAMES[seat]+'はバスト…'); bjAdvance(st); }
+      else if(v===21){ bjAdvance(st); }
+      return null;
+    }
+    if(a.k==='stand'){ addLog(st,NAMES[seat]+'がスタンド（'+bjVal(st.hands[seat])+'）'); bjAdvance(st); return null; }
+    return '操作が違うよ';
+  },
+  dealerPlay(st){
+    if(st.phase!=='dealer')return;
+    while(bjVal(st.dealer)<17){ st.dealer.push(st.deck.pop()); }
+    const dv=bjVal(st.dealer);
+    addLog(st,'ディーラーは '+dv+(dv>21?'（バスト）':''));
+    const dBJ=st.dealer.length===2&&dv===21;
+    st.result=[0,1].map(p=>{
+      if(st.bust[p])return 'lose';
+      const pv=bjVal(st.hands[p]); const pBJ=st.hands[p].length===2&&pv===21;
+      if(pBJ&&!dBJ)return 'win';
+      if(dBJ&&!pBJ)return 'lose';
+      if(dv>21)return 'win';
+      if(pv>dv)return 'win';
+      if(pv<dv)return 'lose';
+      return 'push';
+    });
+    [0,1].forEach(p=>{ if(st.result[p]==='win'){ st.scores[p]++; addLog(st,NAMES[p]+'の勝ち！'); } else if(st.result[p]==='push') addLog(st,NAMES[p]+'は引き分け'); else addLog(st,NAMES[p]+'の負け'); });
+    st.phase='done'; st.turn=-1;
+    if(st.scores[0]>=5||st.scores[1]>=5){ st.winner=st.scores[0]>st.scores[1]?0:1; addLog(st,'🏆 '+NAMES[st.winner]+'が5勝に到達！'); }
+  },
+  cpu(st){
+    if(st.phase!=='turns'||st.cur!==1)return null;
+    return bjVal(st.hands[1])<17?{k:'hit'}:{k:'stand'};
+  }
+};
+function bjAdvance(st){
+  st.cur++;
+  if(st.cur>1){ st.phase='dealer'; st.turn=-1; }
+  else st.turn=st.cur;
+}
+
+/* ---------- ハイ＆ロー ---------- */
+const G_highlow={
+  name:'ハイ＆ロー', icon:'🔼', desc:'次のカードが今のカードより高いか低いか当てるだけ。当て続けてポイントを稼ごう。同じ数字はハズレ。',
+  init(){
+    const deck=shuffle(mkDeck(false));
+    const base=deck.pop();
+    return {deck:deck,base:base,turn:0,scores:[0,0],streak:0,last:null,winner:null,log:['ゲームスタート！ 最初のカードは '+SUITS[base.s]+rankLabel(base.n)]};
+  },
+  view(st,seat){ return {you:seat,turn:st.turn,winner:st.winner,log:viewLog(st),base:st.base,last:st.last,scores:st.scores,streak:st.streak,left:st.deck.length}; },
+  act(st,seat,a){
+    if(st.winner!==null)return 'もう終わっているよ';
+    if(st.turn!==seat)return '相手の番だよ';
+    if(a.k!=='guess')return 'ハイかローを選んでね';
+    const next=st.deck.pop();
+    const res=next.n===st.base.n?'same':(next.n>st.base.n?'high':'low');
+    const ok=(res===a.dir);
+    st.last={card:next,dir:a.dir,ok:ok,by:seat,res:res};
+    if(ok){ st.scores[seat]++; st.streak++; addLog(st,NAMES[seat]+'が正解！（'+st.streak+'連続）'); }
+    else{ addLog(st,NAMES[seat]+'はハズレ…（'+SUITS[next.s]+rankLabel(next.n)+' だった）'); st.streak=0; st.turn=1-seat; }
+    st.base=next;
+    if(st.deck.length===0){
+      st.winner=st.scores[0]>st.scores[1]?0:st.scores[1]>st.scores[0]?1:2;
+      addLog(st,'山札がなくなった');
+    }
+    return null;
+  },
+  cpu(st){
+    const r=st.base.n;
+    let dir=r<=7?'high':'low';
+    if(Math.random()<0.12)dir=dir==='high'?'low':'high';
+    return {k:'guess',dir:dir};
+  }
+};
+
+Object.assign(GAMES,{daifugo:G_daifugo, blackjack:G_blackjack, highlow:G_highlow});
+
+/* ---------- 描画：大富豪 ---------- */
+RENDER.daifugo=function(v){
+  document.getElementById('scorebar').innerHTML=chipsHTML(['あなたの手札：'+v.myHand.length+'枚','あいて：'+v.oppCount+'枚', v.revolution?'🔥 革命中':'通常', v.turn===v.you?'👉 あなたの番':'👉 あいての番']);
+  const field=v.field.length? v.field.map(c=>cardHTML(c)).join('') : '<span style="opacity:.85;font-size:14px">（リード：好きなカードを出せる）</span>';
+  const hand=v.myHand.map((c,i)=>{
+    const sel=S.sel.includes(i);
+    return cardHTML(c,{cls:sel?'sel':'', onclick: myTurn(v)?'toggleSel('+i+')':''});
+  }).join('');
+  let btns='';
+  if(myTurn(v)){
+    btns='<div class="row-btns"><button class="btn btn-main" onclick="playSel()">このカードを出す</button>'+
+      (v.field.length?'<button class="btn btn-ghost" onclick="doAct({k:\'pass\'})">パス</button>':'')+'</div>';
+  }
+  document.getElementById('felt').innerHTML=
+    '<div class="zone-label">あいての手札（'+v.oppCount+'枚）</div><div class="hand">'+Array.from({length:Math.min(v.oppCount,14)},()=>cardHTML(null,{small:true})).join('')+'</div>'+
+    '<div class="field-area"><div class="zone-label" style="margin:0">場のカード</div><div class="hand" style="min-height:60px;justify-content:center">'+field+'</div></div>'+
+    '<div class="zone-label">あなたの手札（タップで選ぶ）</div><div class="hand">'+hand+'</div>'+btns;
+  if(v.winner===null||v.winner===undefined) setStatus(v.turn===v.you?'あなたの番：カードを選んで「出す」':'あいての番…');
+};
+function toggleSel(i){
+  const p=S.sel.indexOf(i);
+  if(p>=0)S.sel.splice(p,1); else S.sel.push(i);
+  renderGame();
+}
+function playSel(){
+  if(!S.sel.length){ setStatus('カードを選んでね'); return; }
+  doAct({k:'play', idxs:S.sel.slice()});
+}
+/* ---------- 描画：ブラックジャック ---------- */
+RENDER.blackjack=function(v){
+  document.getElementById('scorebar').innerHTML=chipsHTML(['ラウンド'+v.round,'あなた '+v.scores[v.you]+'勝','あいて '+v.scores[1-v.you]+'勝','先に5勝で優勝']);
+  const dCards=v.phase==='turns'
+    ? cardHTML(v.dealer[0])+cardHTML(null)
+    : v.dealer.map(c=>cardHTML(c)).join('');
+  let mid='';
+  if(v.phase==='turns'&&v.cur===v.you&&(v.winner===null||v.winner===undefined)){
+    mid='<div class="row-btns"><button class="btn btn-main" onclick="doAct({k:\'hit\'})">ヒット（1枚引く）</button><button class="btn btn-ghost" onclick="doAct({k:\'stand\'})">スタンド（勝負）</button></div>';
+  }
+  if(v.phase==='done'){
+    const r=v.result?v.result[v.you]:null;
+    mid='<div class="center" style="font-size:19px;font-weight:900">'+(v.winner!==null&&v.winner!==undefined?'':(r==='win'?'🎉 このラウンドは勝ち！':r==='push'?'△ 引き分け':'😢 このラウンドは負け'))+'</div>';
+    document.getElementById('btn-rematch').textContent=(v.winner!==null&&v.winner!==undefined)?'🔁 もう一回':'▶ 次のラウンド';
+  }else{
+    document.getElementById('btn-rematch').textContent='🔁 もう一回';
+  }
+  document.getElementById('felt').innerHTML=
+    '<div class="zone-label">ディーラー（'+(v.phase==='turns'?'見えているカードで '+v.dealerVal:v.dealerVal)+'）</div><div class="hand">'+dCards+'</div>'+
+    '<div class="field-area">'+mid+'</div>'+
+    '<div class="zone-label">あいての手札（'+v.oppVal+'）'+(v.bust[1-v.you]?' バスト':'')+'</div><div class="hand">'+v.oppHand.map(c=>cardHTML(c)).join('')+'</div>'+
+    '<div class="zone-label">あなたの手札（'+v.myVal+'）'+(v.bust[v.you]?' バスト':'')+'</div><div class="hand">'+v.myHand.map(c=>cardHTML(c)).join('')+'</div>';
+  if(v.winner===null||v.winner===undefined){
+    if(v.phase==='turns') setStatus(v.cur===v.you?'あなたの番：ヒットかスタンドを選んでね':'あいての番…');
+    else if(v.phase==='dealer') setStatus('ディーラーの番…');
+    else setStatus('ラウンド終了');
+  }
+};
+/* ---------- 描画：ハイ＆ロー ---------- */
+RENDER.highlow=function(v){
+  document.getElementById('scorebar').innerHTML=chipsHTML(['あなた '+v.scores[v.you]+'点','あいて '+v.scores[1-v.you]+'点','残り山札 '+v.left+'枚', v.streak>0?('🔥 '+v.streak+'連続正解中'):'']);
+  const lastHtml=v.last? '<div style="font-size:14px">'+(v.last.ok?'⭕ 正解！':'❌ ハズレ')+' 次は '+SUITS[v.last.card.s]+rankLabel(v.last.card.n)+' でした</div>':'<div style="font-size:14px;opacity:.85">次のカードは高い？低い？</div>';
+  document.getElementById('felt').innerHTML=
+    '<div class="zone-label center">今のカード</div>'+
+    '<div class="center">'+cardHTML(v.base)+'</div>'+
+    '<div class="field-area">'+lastHtml+
+    (myTurn(v)?'<div class="row-btns"><button class="btn btn-main" onclick="doAct({k:\'guess\',dir:\'high\'})">🔼 ハイ（もっと高い）</button><button class="btn btn-blue" onclick="doAct({k:\'guess\',dir:\'low\'})">🔽 ロー（もっと低い）</button></div>':'')+
+    '</div>'+
+    '<p class="center" style="font-size:12.5px;opacity:.9;margin:4px 0 0">Aが一番低く、Kが一番高い。同じ数字はハズレだよ</p>';
+  if(v.winner===null||v.winner===undefined) setStatus(v.turn===v.you?'あなたの番：ハイかローを選んでね':'あいての番…');
+};
+
+/* 初期表示 */
+chooseMode('cpu');
+</script>
+</body>
+</html>
