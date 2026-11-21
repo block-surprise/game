@@ -22,6 +22,8 @@ button:focus-visible,textarea:focus-visible{outline:3px solid var(--sel);outline
 button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
 textarea{width:100%;height:84px;font:12px/1.3 monospace;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:6px;word-break:break-all}
 #note{color:var(--red);min-height:1.5em;font-size:.9rem}
+#roomCode{font-size:2rem;font-weight:800;letter-spacing:.35em;text-align:center;background:var(--bg);border:2px dashed var(--sel);border-radius:8px;padding:10px 4px 10px 14px;margin:8px 0}
+#joinCode{font-size:1.3rem;letter-spacing:.3em;text-transform:uppercase;width:100%;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font-family:inherit;font-weight:700;text-align:center;margin-bottom:6px}
 #status{font-weight:800;font-size:1.1rem;margin-bottom:6px;min-height:1.7em}
 #who{font-weight:500;font-size:.85rem;opacity:.75;margin-left:8px}
 .hand{display:flex;flex-wrap:wrap;align-items:center;gap:4px;min-height:56px;padding:4px 0}
@@ -53,25 +55,20 @@ textarea{width:100%;height:84px;font:12px/1.3 monospace;background:var(--bg);col
 <main>
 <h1>P2P将棋</h1>
 <section id="lobby">
-  <p>サーバーなしで、ブラウザ同士が直接つながって対戦します。コードを相手にLINEなどで送り合って接続してください。</p>
+  <p>1人一台で対戦します。ホストが部屋を作ると6文字の部屋コードが出るので、それを相手に伝えるだけでつながります。</p>
   <button id="bHost">部屋を作る（先手）</button>
   <button id="bGuest">参加する（後手）</button>
   <button id="bLocal" class="ghost">1台で対戦</button>
   <div id="hostBox" hidden>
-    <p>1. 招待コードを相手に送る</p>
-    <textarea id="offer" readonly placeholder="作成中…"></textarea>
-    <button id="cpOffer" class="ghost">コピー</button>
-    <p>2. 相手の返信コードを貼り付ける</p>
-    <textarea id="ansIn"></textarea>
-    <button id="doConn">接続する</button>
+    <p>この部屋コードを相手に伝えてね</p>
+    <div id="roomCode">------</div>
+    <p id="hostStatus">接続中…</p>
   </div>
   <div id="guestBox" hidden>
-    <p>1. 相手の招待コードを貼り付ける</p>
-    <textarea id="offIn"></textarea>
-    <button id="mkAns">返信コードを作る</button>
-    <p>2. 返信コードを相手に送る。相手が接続すると対局が始まります。</p>
-    <textarea id="answer" readonly></textarea>
-    <button id="cpAns" class="ghost">コピー</button>
+    <p>相手の部屋コード（6文字）を入れてね</p>
+    <input id="joinCode" maxlength="6" placeholder="コード6文字">
+    <button id="doJoin">この部屋に入る</button>
+    <p id="guestStatus"></p>
   </div>
   <div id="note"></div>
 </section>
@@ -84,6 +81,7 @@ textarea{width:100%;height:84px;font:12px/1.3 monospace;background:var(--bg);col
   <div id="note2" style="color:var(--red)"></div>
 </section>
 </main>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <div id="pm" hidden><div><p>成りますか？</p><button id="pY">成る</button><button id="pN" class="ghost">成らない</button></div></div>
 <script>
 const $=id=>document.getElementById(id);
@@ -254,35 +252,12 @@ $('again').onclick=()=>{if(mode=='net'){send({again:1});me=1-me}reset();render()
 function start(m,side){mode=m;me=side||0;reset();$('lobby').hidden=true;$('game').hidden=false;render()}
 $('bLocal').onclick=()=>start('local');
 
-/* ---- P2P (WebRTC・手動シグナリング) ---- */
-let pc_,dc;
-const ICE={iceServers:[{urls:['stun:stun.l.google.com:19302','stun:stun.cloudflare.com:3478']}]};
+/* ---- P2P (PeerJS・部屋コード) ---- */
+let peer=null,conn=null;
+const PREFIX='bs-shogi-';
+const CODECH='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const note=t=>{$('note').textContent=t;$('note2').textContent=t};
-async function pack(s){
-  const st=new Blob([s]).stream().pipeThrough(new CompressionStream('deflate-raw'));
-  return btoa(String.fromCharCode(...new Uint8Array(await new Response(st).arrayBuffer())));
-}
-async function unpack(t){
-  const bin=Uint8Array.from(atob(t.trim()),c=>c.charCodeAt(0));
-  return await new Response(new Blob([bin]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text();
-}
-function mkPc(){
-  pc_=new RTCPeerConnection(ICE);
-  pc_.onconnectionstatechange=()=>{if(['failed','disconnected','closed'].includes(pc_.connectionState))note('相手との接続が切れました')};
-}
-function gathered(){
-  return new Promise(res=>{
-    if(pc_.iceGatheringState=='complete')return res();
-    pc_.onicegatheringstatechange=()=>pc_.iceGatheringState=='complete'&&res();
-    setTimeout(res,5000);
-  });
-}
-function wire(ch,side){
-  ch.onopen=()=>start('net',side);
-  ch.onmessage=e=>recv(JSON.parse(e.data));
-  ch.onclose=()=>note('相手との接続が切れました');
-}
-function send(o){try{dc.send(JSON.stringify(o))}catch(e){note('送信できませんでした')}}
+function send(o){if(conn&&conn.open){try{conn.send(o)}catch(e){note('送信できませんでした')}}}
 function recv(d){
   if(d.m){
     if(over||S.t==me)return;
@@ -291,33 +266,45 @@ function recv(d){
   }else if(d.resign){over=true;win=me;endMsg='相手が投了';render()}
   else if(d.again){me=1-me;reset();render()}
 }
-async function copy(id){
-  const t=$(id);t.select();
-  try{await navigator.clipboard.writeText(t.value)}catch(e){document.execCommand('copy')}
-}
-$('bHost').onclick=async()=>{
+$('bHost').onclick=()=>{
   $('hostBox').hidden=false;$('guestBox').hidden=true;note('');
-  try{
-    mkPc();dc=pc_.createDataChannel('shogi');wire(dc,0);
-    await pc_.setLocalDescription(await pc_.createOffer());await gathered();
-    $('offer').value=await pack(JSON.stringify(pc_.localDescription));
-  }catch(e){note('コードを作れませんでした: '+e.message)}
-};
-$('doConn').onclick=async()=>{
-  try{await pc_.setRemoteDescription(JSON.parse(await unpack($('ansIn').value)));note('接続中…')}
-  catch(e){note('返信コードが正しくありません')}
+  if(peer){try{peer.destroy()}catch(e){} peer=null}
+  let code='';for(let i=0;i<6;i++)code+=CODECH[Math.floor(Math.random()*CODECH.length)];
+  $('roomCode').textContent=code;
+  $('hostStatus').textContent='接続中…';
+  peer=new Peer(PREFIX+code);
+  peer.on('open',()=>{$('hostStatus').textContent='部屋ができた！相手にコードを伝えて、参加を待ってね'});
+  peer.on('connection',c=>{
+    conn=c;
+    c.on('open',()=>start('net',0));
+    c.on('data',d=>recv(d));
+    c.on('close',()=>note('相手との接続が切れました'));
+  });
+  peer.on('error',e=>{$('hostStatus').textContent='接続エラー：'+e.type});
 };
 $('bGuest').onclick=()=>{$('guestBox').hidden=false;$('hostBox').hidden=true;note('')};
-$('mkAns').onclick=async()=>{
-  try{
-    mkPc();pc_.ondatachannel=e=>{dc=e.channel;wire(dc,1)};
-    await pc_.setRemoteDescription(JSON.parse(await unpack($('offIn').value)));
-    await pc_.setLocalDescription(await pc_.createAnswer());await gathered();
-    $('answer').value=await pack(JSON.stringify(pc_.localDescription));note('');
-  }catch(e){note('招待コードが正しくありません')}
+$('doJoin').onclick=()=>{
+  const code=$('joinCode').value.trim().toUpperCase();
+  const st=$('guestStatus');
+  if(code.length!==6){st.textContent='6文字のコードを入れてね';return}
+  if(peer){try{peer.destroy()}catch(e){} peer=null}
+  st.textContent='接続中…（最大20秒くらいかかることがあるよ）';
+  let opened=false;
+  const timer=setTimeout(()=>{if(!opened)st.textContent='⚠️ つながらなかった。コードが合っているか、相手が部屋を作ったままか確認して、もう一度押してね'},20000);
+  peer=new Peer();
+  peer.on('open',()=>{
+    conn=peer.connect(PREFIX+code,{reliable:true});
+    conn.on('open',()=>{opened=true;clearTimeout(timer);start('net',1)});
+    conn.on('data',d=>recv(d));
+    conn.on('close',()=>note('相手との接続が切れました'));
+  });
+  peer.on('error',e=>{
+    clearTimeout(timer);
+    if(e.type==='peer-unavailable')st.textContent='⚠️ そのコードの部屋が見つからない。コードと、相手が部屋を作ったままかを確認してね';
+    else if(e.type==='network'||e.type==='server-error')st.textContent='⚠️ 通信エラー。電波の良いところでもう一度試してね';
+    else st.textContent='⚠️ つながらなかった（'+e.type+'）';
+  });
 };
-$('cpOffer').onclick=()=>copy('offer');
-$('cpAns').onclick=()=>copy('answer');
 </script>
 </body>
 </html>
