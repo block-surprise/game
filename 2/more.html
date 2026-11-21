@@ -263,7 +263,7 @@ function joinRoom(){
   const js=document.getElementById('join-status');
   if(code.length!==6){ js.textContent='6文字のコードを入れてね'; return; }
   if(S.peer){try{S.peer.destroy();}catch(e){} S.peer=null;}
-  S.code=code; S.isHost=false; S.mode='p2p';
+  S.code=code; S.isHost=false; S.mode='guest';
   js.textContent='接続中…（最大20秒くらいかかることがあるよ）';
   let opened=false;
   const timer=setTimeout(()=>{ if(!opened){ js.textContent='⚠️ つながらなかった。コードが合っているか、ホストが部屋を作ったままか確認して、もう一度押してね'; } },20000);
